@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人教版高中物理可视化教学资源</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+    
+    .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 40px 20px; text-align: center; }
+    .header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 10px; }
+    .header p { color: #a0aec0; font-size: 1rem; }
+    .header .stats { display: flex; justify-content: center; gap: 30px; margin-top: 15px; font-size: 0.9rem; }
+    .header .stats span { color: #a0aec0; }
+    .header .stats strong { color: #4361ee; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+    
+    .search-box { margin-bottom: 30px; }
+    .search-box input { width: 100%; max-width: 500px; margin: 0 auto; display: block; padding: 14px 20px; border: none; border-radius: 12px; font-size: 1rem; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.08); outline: none; }
+    .search-box input:focus { box-shadow: 0 4px 20px rgba(26,26,46,0.15); }
+    
+    .book-section { margin-bottom: 50px; }
+    .book-title { font-size: 1.5rem; font-weight: 600; color: #1a1a2e; margin-bottom: 20px; padding-left: 15px; border-left: 4px solid #4361ee; }
+    
+    .category-block { margin-bottom: 30px; }
+    .category-title { font-size: 1.1rem; font-weight: 600; color: #374151; margin-bottom: 12px; padding-left: 10px; border-left: 3px solid #10b981; }
+    
+    .chapter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    
+    .resource-item { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.3s; border: 2px solid transparent; }
+    .resource-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .resource-item.has-link { border-color: #4361ee; }
+    
+    .resource-item h4 { font-size: 0.95rem; font-weight: 600; color: #1a1a2e; margin-bottom: 10px; }
+    
+    .resource-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #4361ee; color: white; text-decoration: none; border-radius: 6px; font-size: 0.85rem; font-weight: 500; transition: all 0.3s; }
+    .resource-link:hover { background: #3a56d4; transform: translateX(4px); }
+    .resource-link.placeholder { background: #e5e7eb; color: #9ca3af; cursor: default; }
+    .resource-link.placeholder:hover { background: #e5e7eb; transform: none; }
+    
+    .chapter-desc { font-size: 0.8rem; color: #64748b; margin-top: 8px; line-height: 1.6; }
+    
+    .footer { text-align: center; padding: 30px; color: #9ca3af; font-size: 0.85rem; }
+    .hidden { display: none !important; }
+    
+    @media (max-width: 768px) { .chapter-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📚 人教版高中物理可视化教学资源</h1>
+    <p>张兴刚工作室 · 物理教学动画与互动课件</p>
+    <div class="stats">
+      <span>共 <strong>39</strong> 个可视化资源</span>
+      <span>覆盖 <strong>14</strong> 个知识模块</span>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="🔍 搜索资源名称..." oninput="filterResources()">
+    </div>
+    
+    <!-- 必修第一册 -->
+    <div class="book-section" data-book="必修第一册">
+      <h2 class="book-title">📖 必修第一册</h2>
+      
+      <div class="category-block">
+        <div class="category-title">第一章 运动的描述</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>匀变速直线运动积分演示</h4>
+            <a href="01-直线运动/匀变速直线运动积分演示.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>追击相遇问题教学动画（含v-t图）</h4>
+            <a href="01-直线运动/追击相遇问题教学动画（含v-t图）.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>积分求位移演示</h4>
+            <a href="01-直线运动/积分求位移的HTML演示.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>积分求位移过程演示</h4>
+            <a href="01-直线运动/积分求位移过程演示.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第三章 相互作用——力</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>力的合成</h4>
+            <a href="02-相互作用/力的合成.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第四章 运动和力的关系</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>23年高考物理第十题</h4>
+            <a href="03-牛顿定律/23年第十题.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 必修第二册 -->
+    <div class="book-section" data-book="必修第二册">
+      <h2 class="book-title">📖 必修第二册</h2>
+      
+      <div class="category-block">
+        <div class="category-title">第七章 万有引力与宇宙航行</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>卫星运动</h4>
+            <a href="05-万有引力/卫星运动.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>宇宙发射速度演示</h4>
+            <a href="05-万有引力/宇宙发射速度演示.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>开普勒第一定律</h4>
+            <a href="05-万有引力/开普勒第一定律.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>开普勒第二定律</h4>
+            <a href="05-万有引力/开普勒第二定律.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>开普勒第三定律</h4>
+            <a href="05-万有引力/开普勒第三定律.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>拉格朗日卫星运动动画</h4>
+            <a href="05-万有引力/拉格朗日卫星运动动画演示.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>星下点教学动画</h4>
+            <a href="05-万有引力/星下点教学动画.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>星下点轨迹图强化版</h4>
+            <a href="05-万有引力/星下点轨迹图强化版.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>星下点轨迹图强化版2</h4>
+            <a href="05-万有引力/星下点轨迹图强化版2.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>月地检验</h4>
+            <a href="05-万有引力/月地检验.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 必修第三册 -->
+    <div class="book-section" data-book="必修第三册">
+      <h2 class="book-title">📖 必修第三册</h2>
+      
+      <div class="category-block">
+        <div class="category-title">第九章 静电场及其应用</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>电场线</h4>
+            <a href="07-电场与磁场/电场线.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>3D点电荷</h4>
+            <a href="07-电场与磁场/3D点电荷.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>点电荷3D仿真</h4>
+            <a href="07-电场与磁场/点电荷3D仿真.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>Electric Field</h4>
+            <a href="07-电场与磁场/electric_field.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>多电荷电场线等势线</h4>
+            <a href="07-电场与磁场/多电荷电场线等势线.HTML" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>不等量点电荷电场线与等势线</h4>
+            <a href="07-电场与磁场/不等量点电荷电场线与等势线演示.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>正多面体电荷电场线</h4>
+            <a href="07-电场与磁场/正多面体电荷电场线.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第十章 静电场中的能量</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>点电荷电场与电势分布3D可视化</h4>
+            <a href="07-电场与磁场/点电荷电场与电势分布 - 3D可视化.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 选择性必修第一册 -->
+    <div class="book-section" data-book="选择性必修第一册">
+      <h2 class="book-title">📖 选择性必修第一册</h2>
+      
+      <div class="category-block">
+        <div class="category-title">第一章 动量守恒定律</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>凹槽水平动量守恒</h4>
+            <a href="10-动量/凹槽水平动量守恒.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>两小球动量守恒</h4>
+            <a href="10-动量/两小球动量守恒.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>配速法</h4>
+            <a href="10-动量/配速法.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>配速法修正</h4>
+            <a href="10-动量/配速法修正.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第二章 机械振动</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>单摆测重力加速度</h4>
+            <a href="11-机械振动与波/单摆测重力加速度.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第三章 机械波</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>波的形成</h4>
+            <a href="11-机械振动与波/波的形成.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第四章 光</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>光的反射折射</h4>
+            <a href="12-光学/光的反射折射.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>光的干涉</h4>
+            <a href="12-光学/光的干涉.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>衍射教学动画</h4>
+            <a href="12-光学/衍射教学动画.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 选择性必修第二册 -->
+    <div class="book-section" data-book="选择性必修第二册">
+      <h2 class="book-title">📖 选择性必修第二册</h2>
+      
+      <div class="category-block">
+        <div class="category-title">第二章 电磁感应</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>电磁感应单棒模型</h4>
+            <a href="08-电磁感应/电磁感应单棒模型.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>双棒模型</h4>
+            <a href="08-电磁感应/双棒模型.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第三章 交变电流 传感器</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>交流电发电模型</h4>
+            <a href="09-交变电流/交流电发电模型.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 选择性必修第三册 -->
+    <div class="book-section" data-book="选择性必修第三册">
+      <h2 class="book-title">📖 选择性必修第三册</h2>
+      
+      <div class="category-block">
+        <div class="category-title">第一章 分子动理论</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>布朗运动</h4>
+            <a href="13-热学/布朗运动.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="category-block">
+        <div class="category-title">第四章 原子结构和波粒二象性</div>
+        <div class="chapter-grid">
+          <div class="resource-item has-link">
+            <h4>光电效应</h4>
+            <a href="14-原子物理/光电效应.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+          <div class="resource-item has-link">
+            <h4>玻尔能级</h4>
+            <a href="14-原子物理/玻尔能级.html" class="resource-link" target="_blank">📂 打开 ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="footer">
+    <p>📧 张兴刚工作室 · 物理教学资源平台</p>
+    <p style="margin-top: 5px; font-size: 0.8rem;">持续更新中 · 逐步完善</p>
+  </div>
+  
+  <script>
+    function filterResources() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const items = document.querySelectorAll('.resource-item');
+      const sections = document.querySelectorAll('.book-section');
+      
+      items.forEach(item => {
+        const title = item.querySelector('h4').textContent.toLowerCase();
+        if (title.includes(query)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+      
+      sections.forEach(section => {
+        const visible = section.querySelectorAll('.resource-item:not(.hidden)');
+        if (visible.length === 0) {
+          section.classList.add('hidden');
+        } else {
+          section.classList.remove('hidden');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
