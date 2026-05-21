@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光的衍射现象互动教学动画 | 燕赵名师张兴刚工作室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+            color: #f0f0f0;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4fc3f7, #e1bee7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #bbbbff;
+            margin-bottom: 5px;
+        }
+        
+        .studio-name {
+            font-size: 1.4rem;
+            color: #ffcc80;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .animation-area {
+            flex: 2;
+            min-width: 600px;
+            background: rgba(10, 10, 30, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            color: #80deea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(128, 222, 234, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #bbbbff;
+        }
+        
+        .value-display {
+            color: #ffcc80;
+            font-weight: bold;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(100, 100, 150, 0.5);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #4fc3f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #4fc3f7;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(60, 60, 100, 0.7);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            color: #ccccff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(80, 80, 140, 0.8);
+        }
+        
+        .mode-btn.active {
+            background: rgba(79, 195, 247, 0.2);
+            border-color: #4fc3f7;
+            color: #4fc3f7;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.4);
+        }
+        
+        .reset-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #ff6b6b, #ff8e53);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+        
+        .animation-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background: radial-gradient(ellipse at center, #0a0a1a 0%, #000000 100%);
+        }
+        
+        .laser-source {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #ff3333 0%, #cc0000 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 30px #ff3333;
+            z-index: 10;
+        }
+        
+        .laser-beam {
+            position: absolute;
+            left: 110px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            background: linear-gradient(to right, #ff3333, #ff9966);
+            box-shadow: 0 0 10px #ff3333;
+            z-index: 5;
+        }
+        
+        .diffraction-slit {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #222244;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            z-index: 20;
+            overflow: hidden;
+        }
+        
+        .slit-aperture {
+            background: #000000;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .screen {
+            position: absolute;
+            right: 50px;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(5, 5, 10, 0.9);
+            border-left: 2px solid #4a4a8a;
+            z-index: 15;
+            overflow: hidden;
+        }
+        
+        .diffraction-pattern {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .intensity-graph {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: rgba(5, 5, 10, 0.9);
+            border-top: 1px solid #4a4a8a;
+        }
+        
+        .wavelength-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .formula-box {
+            background: rgba(40, 40, 70, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #4fc3f7;
+        }
+        
+        .formula {
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 10px 0;
+            color: #ffcc80;
+        }
+        
+        .explanation {
+            font-size: 0.95rem;
+            color: #ccccff;
+            line-height: 1.5;
+        }
+        
+        .instruction {
+            background: rgba(30, 30, 60, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instruction h3 {
+            color: #80deea;
+            margin-bottom: 15px;
+        }
+        
+        .instruction ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .instruction li {
+            margin-bottom: 8px;
+        }
+        
+        .tip-box {
+            background: rgba(79, 195, 247, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #4fc3f7;
+        }
+        
+        .tip-box h4 {
+            color: #4fc3f7;
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaaacc;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 1100px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .animation-area, .control-panel {
+                min-width: 100%;
+            }
+            
+            .animation-container {
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .animation-container {
+                height: 300px;
+            }
+            
+            .screen {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-lightbulb"></i> 光的衍射现象互动教学动画</h1>
+            <p class="subtitle">探索光波通过狭缝或小孔时发生的衍射现象</p>
+            <p class="studio-name">燕赵名师张兴刚工作室 物理教学工具</p>
+        </header>
+        
+        <div class="content">
+            <div class="control-panel">
+                <h2 class="panel-title"><i class="fas fa-sliders-h"></i> 实验参数控制</h2>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>衍射模式：</span>
+                    </div>
+                    <div class="mode-selector">
+                        <button id="mode-single-slit" class="mode-btn active">
+                            <i class="fas fa-minus"></i> 单缝衍射
+                        </button>
+                        <button id="mode-circular-aperture" class="mode-btn">
+                            <i class="fas fa-circle"></i> 圆孔衍射
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>缝宽 / 孔径 (a):</span>
+                        <span id="slit-width-value" class="value-display">0.05 mm</span>
+                    </div>
+                    <input type="range" min="0.01" max="0.5" step="0.01" value="0.05" class="slider" id="slit-width">
+                    <div class="explanation">缝宽越小，衍射现象越明显（建议设置较小值）</div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>光波长 (λ):</span>
+                        <span id="wavelength-value" class="value-display">650 nm</span>
+                    </div>
+                    <input type="range" min="400" max="700" step="10" value="650" class="slider" id="wavelength">
+                    <div class="explanation">
+                        <span class="wavelength-color" style="background: #ff3333;"></span> 红光 ≈ 700 nm
+                        <span class="wavelength-color" style="background: #33ff33; margin-left: 15px;"></span> 绿光 ≈ 550 nm
+                        <span class="wavelength-color" style="background: #3333ff; margin-left: 15px;"></span> 蓝光 ≈ 450 nm
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>缝屏距离 (D):</span>
+                        <span id="distance-value" class="value-display">1.5 m</span>
+                    </div>
+                    <input type="range" min="0.5" max="3.0" step="0.1" value="1.5" class="slider" id="distance">
+                    <div class="explanation">距离越大，衍射图样越宽（建议设置较大值）</div>
+                </div>
+                
+                <div class="formula-box">
+                    <div class="formula" id="formula-text">单缝衍射暗纹条件: a·sinθ = kλ (k=±1,±2,...)</div>
+                    <div class="explanation" id="formula-explanation">
+                        单缝衍射中，当衍射角θ满足 a·sinθ = kλ 时，出现暗纹。
+                        其中a为缝宽，λ为波长，k为衍射级次。
+                    </div>
+                </div>
+                
+                <div class="tip-box">
+                    <h4><i class="fas fa-lightbulb"></i> 实验技巧</h4>
+                    <div class="explanation">
+                        要使衍射条纹更明显，请尝试：<br>
+                        1. 减小缝宽/孔径<br>
+                        2. 增大缝屏距离<br>
+                        3. 使用较长波长（红光）<br>
+                        4. 在较暗环境中观察
+                    </div>
+                </div>
+                
+                <button class="reset-btn" id="reset-btn">
+                    <i class="fas fa-redo"></i> 重置为默认参数
+                </button>
+            </div>
+            
+            <div class="animation-area">
+                <h2 class="panel-title"><i class="fas fa-play-circle"></i> 衍射实验模拟</h2>
+                
+                <div class="animation-container">
+                    <div class="laser-source"></div>
+                    <div class="laser-beam" id="laser-beam"></div>
+                    <div class="diffraction-slit" id="diffraction-slit">
+                        <div class="slit-aperture" id="slit-aperture"></div>
+                    </div>
+                    <div class="screen" id="screen">
+                        <canvas class="diffraction-pattern" id="diffraction-canvas"></canvas>
+                        <canvas class="intensity-graph" id="intensity-canvas"></canvas>
+                    </div>
+                </div>
+                
+                <div class="instruction">
+                    <h3><i class="fas fa-info-circle"></i> 实验说明</h3>
+                    <ul>
+                        <li><strong>衍射现象</strong>：光在传播过程中遇到障碍物或小孔时，偏离直线传播的现象。</li>
+                        <li><strong>单缝衍射</strong>：光通过单缝后，在屏幕上形成明暗相间的条纹，中央明纹最宽最亮。</li>
+                        <li><strong>圆孔衍射</strong>：光通过小圆孔后，在屏幕上形成明暗相间的同心圆环，中央亮斑称为艾里斑。</li>
+                        <li>调整参数观察衍射图样变化，理解各物理量对衍射现象的影响。</li>
+                    </ul>
+                    <p>本模拟展示了光的波动性质，验证了惠更斯-菲涅尔原理。</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 燕赵名师张兴刚工作室 | 物理光学教学工具 | 光的衍射互动模拟</p>
+            <p>本工具用于教学演示，帮助学生直观理解光的衍射现象</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const singleSlitBtn = document.getElementById('mode-single-slit');
+        const circularApertureBtn = document.getElementById('mode-circular-aperture');
+        const slitWidthSlider = document.getElementById('slit-width');
+        const wavelengthSlider = document.getElementById('wavelength');
+        const distanceSlider = document.getElementById('distance');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        const slitWidthValue = document.getElementById('slit-width-value');
+        const wavelengthValue = document.getElementById('wavelength-value');
+        const distanceValue = document.getElementById('distance-value');
+        
+        const laserBeam = document.getElementById('laser-beam');
+        const diffractionSlit = document.getElementById('diffraction-slit');
+        const slitAperture = document.getElementById('slit-aperture');
+        const screen = document.getElementById('screen');
+        
+        const formulaText = document.getElementById('formula-text');
+        const formulaExplanation = document.getElementById('formula-explanation');
+        
+        const diffractionCanvas = document.getElementById('diffraction-canvas');
+        const intensityCanvas = document.getElementById('intensity-canvas');
+        
+        const diffCtx = diffractionCanvas.getContext('2d');
+        const intCtx = intensityCanvas.getContext('2d');
+        
+        // 实验参数
+        let params = {
+            mode: 'single-slit', // 'single-slit' 或 'circular-aperture'
+            slitWidth: 0.05, // mm (减小默认值)
+            wavelength: 650, // nm
+            distance: 1.5, // m (增大默认值)
+            laserColor: '#ff3333',
+            contrast: 2.5, // 对比度增强因子
+            brightness: 1.2 // 亮度增强因子
+        };
+        
+        // 初始化
+        function init() {
+            // 设置Canvas尺寸
+            resizeCanvases();
+            window.addEventListener('resize', resizeCanvases);
+            
+            // 设置事件监听器
+            singleSlitBtn.addEventListener('click', () => setMode('single-slit'));
+            circularApertureBtn.addEventListener('click', () => setMode('circular-aperture'));
+            
+            slitWidthSlider.addEventListener('input', updateSlitWidth);
+            wavelengthSlider.addEventListener('input', updateWavelength);
+            distanceSlider.addEventListener('input', updateDistance);
+            
+            resetBtn.addEventListener('click', resetToDefaults);
+            
+            // 初始更新
+            updateSlitWidth();
+            updateWavelength();
+            updateDistance();
+            
+            // 开始动画循环
+            animate();
+        }
+        
+        // 设置Canvas尺寸
+        function resizeCanvases() {
+            const screenWidth = screen.clientWidth;
+            const screenHeight = screen.clientHeight;
+            
+            diffractionCanvas.width = screenWidth;
+            diffractionCanvas.height = screenHeight;
+            
+            intensityCanvas.width = screenWidth;
+            intensityCanvas.height = 150;
+            
+            // 设置高质量渲染
+            diffCtx.imageSmoothingEnabled = true;
+            diffCtx.imageSmoothingQuality = 'high';
+            intCtx.imageSmoothingEnabled = true;
+            intCtx.imageSmoothingQuality = 'high';
+        }
+        
+        // 设置衍射模式
+        function setMode(mode) {
+            params.mode = mode;
+            
+            // 更新按钮状态
+            singleSlitBtn.classList.toggle('active', mode === 'single-slit');
+            circularApertureBtn.classList.toggle('active', mode === 'circular-aperture');
+            
+            // 更新公式和说明
+            if (mode === 'single-slit') {
+                formulaText.textContent = '单缝衍射暗纹条件: a·sinθ = kλ (k=±1,±2,...)';
+                formulaExplanation.textContent = '单缝衍射中，当衍射角θ满足 a·sinθ = kλ 时，出现暗纹。其中a为缝宽，λ为波长，k为衍射级次。缝宽越小，波长越大，衍射条纹越明显。';
+            } else {
+                formulaText.textContent = '圆孔衍射艾里斑角半径: sinθ ≈ 1.22λ/D';
+                formulaExplanation.textContent = '圆孔衍射中，艾里斑（中央亮斑）的角半径满足 sinθ ≈ 1.22λ/D，其中D为孔径，λ为波长。孔径越小，波长越大，衍射环越明显。';
+            }
+            
+            // 更新狭缝/孔径显示
+            updateSlitVisual();
+        }
+        
+        // 更新缝宽
+        function updateSlitWidth() {
+            params.slitWidth = parseFloat(slitWidthSlider.value);
+            slitWidthValue.textContent = `${params.slitWidth.toFixed(2)} mm`;
+            updateSlitVisual();
+        }
+        
+        // 更新波长
+        function updateWavelength() {
+            params.wavelength = parseInt(wavelengthSlider.value);
+            wavelengthValue.textContent = `${params.wavelength} nm`;
+            
+            // 根据波长更新激光颜色
+            if (params.wavelength >= 620) {
+                params.laserColor = '#ff3333'; // 红色
+            } else if (params.wavelength >= 500) {
+                params.laserColor = '#33ff33'; // 绿色
+            } else {
+                params.laserColor = '#3333ff'; // 蓝色
+            }
+            
+            // 更新激光束颜色
+            laserBeam.style.background = `linear-gradient(to right, ${params.laserColor}, ${params.laserColor}99)`;
+            laserBeam.style.boxShadow = `0 0 15px ${params.laserColor}`;
+        }
+        
+        // 更新距离
+        function updateDistance() {
+            params.distance = parseFloat(distanceSlider.value);
+            distanceValue.textContent = `${params.distance.toFixed(1)} m`;
+        }
+        
+        // 重置为默认值
+        function resetToDefaults() {
+            slitWidthSlider.value = 0.05;
+            wavelengthSlider.value = 650;
+            distanceSlider.value = 1.5;
+            
+            setMode('single-slit');
+            updateSlitWidth();
+            updateWavelength();
+            updateDistance();
+        }
+        
+        // 更新狭缝/孔径视觉显示
+        function updateSlitVisual() {
+            const slitWidthPx = params.slitWidth * 150; // 增加放大系数
+            
+            if (params.mode === 'single-slit') {
+                // 单缝
+                const slitHeight = 200;
+                diffractionSlit.style.width = '20px';
+                diffractionSlit.style.height = `${slitHeight}px`;
+                diffractionSlit.style.borderRadius = '5px';
+                
+                slitAperture.style.width = `${Math.max(2, slitWidthPx)}px`;
+                slitAperture.style.height = '180px';
+                slitAperture.style.borderRadius = '0';
+            } else {
+                // 圆孔
+                const apertureSize = 150;
+                diffractionSlit.style.width = `${apertureSize}px`;
+                diffractionSlit.style.height = `${apertureSize}px`;
+                diffractionSlit.style.borderRadius = '50%';
+                
+                const aperturePx = Math.max(10, slitWidthPx * 5);
+                slitAperture.style.width = `${aperturePx}px`;
+                slitAperture.style.height = `${aperturePx}px`;
+                slitAperture.style.borderRadius = '50%';
+            }
+            
+            // 更新激光束长度
+            const slitLeft = diffractionSlit.offsetLeft;
+            const laserLeft = 110; // 激光源右侧位置
+            laserBeam.style.width = `${slitLeft - laserLeft}px`;
+        }
+        
+        // 计算单缝衍射光强分布（优化版）
+        function singleSlitIntensity(x, centerX) {
+            // 转换为相对于屏幕中心的位置
+            const relX = x - centerX;
+            
+            // 缝宽 (mm)
+            const a = params.slitWidth;
+            // 波长 (mm)
+            const lambda = params.wavelength * 1e-6;
+            // 距离 (mm)
+            const D = params.distance * 1000;
+            
+            // 计算角度
+            const theta = Math.atan(relX / D);
+            const beta = (Math.PI * a * Math.sin(theta)) / lambda;
+            
+            // 避免除以零
+            if (Math.abs(beta) < 1e-10) {
+                return 1.0; // 中央极大
+            }
+            
+            // 单缝衍射光强公式: I = I0 * (sin(beta)/beta)^2
+            let intensity = Math.pow(Math.sin(beta) / beta, 2);
+            
+            // 增强对比度
+            intensity = Math.pow(intensity, params.contrast) * params.brightness;
+            
+            return Math.min(1.0, Math.max(0, intensity));
+        }
+        
+        // 计算圆孔衍射光强分布（优化版）
+        function circularApertureIntensity(r, centerX, centerY) {
+            // 孔径 (mm)
+            const D = params.slitWidth;
+            // 波长 (mm)
+            const lambda = params.wavelength * 1e-6;
+            // 距离 (mm)
+            const L = params.distance * 1000;
+            
+            // 计算角度
+            const theta = Math.atan(r / L);
+            const u = (Math.PI * D * Math.sin(theta)) / lambda;
+            
+            // 避免除以零
+            if (Math.abs(u) < 1e-10) {
+                return 1.0; // 中央极大
+            }
+            
+            // 圆孔衍射光强公式: I = I0 * [2*J1(u)/u]^2
+            // J1是一阶贝塞尔函数，这里用近似公式
+            const J1 = approximateBesselJ1(u);
+            let intensity = Math.pow(2 * J1 / u, 2);
+            
+            // 增强对比度
+            intensity = Math.pow(intensity, params.contrast) * params.brightness;
+            
+            return Math.min(1.0, Math.max(0, intensity));
+        }
+        
+        // 近似计算一阶贝塞尔函数
+        function approximateBesselJ1(x) {
+            // 对于小x使用级数展开
+            if (Math.abs(x) < 3) {
+                const x2 = x * x;
+                const x4 = x2 * x2;
+                const x6 = x4 * x2;
+                return x/2 * (1 - x2/8 + x4/192 - x6/9216);
+            }
+            
+            // 对于大x使用渐近公式
+            return Math.sqrt(2/(Math.PI*Math.abs(x))) * Math.cos(Math.abs(x) - 3*Math.PI/4);
+        }
+        
+        // 绘制衍射图样
+        function drawDiffractionPattern() {
+            const width = diffractionCanvas.width;
+            const height = diffractionCanvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // 清空画布，使用黑色背景增强对比
+            diffCtx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+            diffCtx.fillRect(0, 0, width, height);
+            
+            // 根据模式绘制不同的衍射图样
+            if (params.mode === 'single-slit') {
+                drawSingleSlitPattern(width, height, centerX, centerY);
+            } else {
+                drawCircularAperturePattern(width, height, centerX, centerY);
+            }
+        }
+        
+        // 绘制单缝衍射图样（优化版）
+        function drawSingleSlitPattern(width, height, centerX, centerY) {
+            // 绘制背景网格（更淡）
+            diffCtx.strokeStyle = 'rgba(100, 100, 150, 0.1)';
+            diffCtx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x < width; x += 50) {
+                diffCtx.beginPath();
+                diffCtx.moveTo(x, 0);
+                diffCtx.lineTo(x, height);
+                diffCtx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y < height; y += 50) {
+                diffCtx.beginPath();
+                diffCtx.moveTo(0, y);
+                diffCtx.lineTo(width, y);
+                diffCtx.stroke();
+            }
+            
+            // 绘制中央参考线
+            diffCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            diffCtx.lineWidth = 2;
+            diffCtx.beginPath();
+            diffCtx.moveTo(centerX, 0);
+            diffCtx.lineTo(centerX, height);
+            diffCtx.stroke();
+            
+            // 创建图像数据以高效绘制
+            const imageData = diffCtx.createImageData(width, height);
+            const data = imageData.data;
+            
+            // 预计算颜色分量
+            const r = parseInt(params.laserColor.substr(1, 2), 16);
+            const g = parseInt(params.laserColor.substr(3, 2), 16);
+            const b = parseInt(params.laserColor.substr(5, 2), 16);
+            
+            // 逐像素计算光强
+            for (let x = 0; x < width; x++) {
+                const intensity = singleSlitIntensity(x, centerX);
+                const alpha = Math.min(255, Math.floor(intensity * 255));
+                
+                // 为每一列像素设置颜色
+                for (let y = 0; y < height; y++) {
+                    const index = (y * width + x) * 4;
+                    
+                    // 添加一些垂直方向的随机噪声，模拟真实衍射
+                    const noise = 0.95 + Math.random() * 0.1;
+                    const finalAlpha = Math.min(255, Math.floor(alpha * noise));
+                    
+                    data[index] = r;     // Red
+                    data[index + 1] = g; // Green
+                    data[index + 2] = b; // Blue
+                    data[index + 3] = finalAlpha; // Alpha
+                }
+            }
+            
+            // 将图像数据放回画布
+            diffCtx.putImageData(imageData, 0, 0);
+            
+            // 添加标签
+            diffCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            diffCtx.font = 'bold 16px Arial';
+            diffCtx.textAlign = 'center';
+            diffCtx.fillText('衍射条纹', centerX, 30);
+            
+            // 标记中央明纹和暗纹位置
+            diffCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            diffCtx.font = '14px Arial';
+            
+            // 计算并标记第一暗纹位置
+            const lambda = params.wavelength * 1e-6; // mm
+            const a = params.slitWidth; // mm
+            const D = params.distance * 1000; // mm
+            const firstDark = (lambda / a) * D; // 第一暗纹位置 (mm)
+            const firstDarkPx = firstDark * 0.1; // 转换为像素（近似）
+            
+            if (firstDarkPx < width/2) {
+                diffCtx.textAlign = 'right';
+                diffCtx.fillText('第一暗纹', centerX - firstDarkPx, 50);
+                diffCtx.textAlign = 'left';
+                diffCtx.fillText('第一暗纹', centerX + firstDarkPx, 50);
+            }
+        }
+        
+        // 绘制圆孔衍射图样（优化版）
+        function drawCircularAperturePattern(width, height, centerX, centerY) {
+            // 绘制黑色背景
+            diffCtx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+            diffCtx.fillRect(0, 0, width, height);
+            
+            // 创建径向渐变
+            const maxRadius = Math.min(width, height) / 2 - 20;
+            
+            // 使用图像数据绘制以获得更好的性能和质量
+            const imageData = diffCtx.createImageData(width, height);
+            const data = imageData.data;
+            
+            // 预计算颜色分量
+            const r = parseInt(params.laserColor.substr(1, 2), 16);
+            const g = parseInt(params.laserColor.substr(3, 2), 16);
+            const b = parseInt(params.laserColor.substr(5, 2), 16);
+            
+            // 逐像素计算光强
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    // 计算到中心的距离
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const distance = Math.sqrt(dx*dx + dy*dy);
+                    
+                    // 如果在圆内
+                    if (distance <= maxRadius) {
+                        const intensity = circularApertureIntensity(distance, centerX, centerY);
+                        const alpha = Math.min(255, Math.floor(intensity * 255));
+                        
+                        const index = (y * width + x) * 4;
+                        
+                        // 添加一些随机噪声，模拟真实衍射
+                        const noise = 0.95 + Math.random() * 0.1;
+                        const finalAlpha = Math.min(255, Math.floor(alpha * noise));
+                        
+                        data[index] = r;     // Red
+                        data[index + 1] = g; // Green
+                        data[index + 2] = b; // Blue
+                        data[index + 3] = finalAlpha; // Alpha
+                    }
+                }
+            }
+            
+            // 将图像数据放回画布
+            diffCtx.putImageData(imageData, 0, 0);
+            
+            // 添加标签
+            diffCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            diffCtx.font = 'bold 16px Arial';
+            diffCtx.textAlign = 'center';
+            diffCtx.fillText('艾里斑 (中央亮斑)', centerX, centerY);
+            
+            // 标记第一暗环位置
+            const lambda = params.wavelength * 1e-6; // mm
+            const D = params.slitWidth; // mm
+            const L = params.distance * 1000; // mm
+            const firstDarkRadius = 1.22 * (lambda / D) * L; // 第一暗环半径 (mm)
+            const firstDarkPx = firstDarkRadius * 0.1; // 转换为像素（近似）
+            
+            if (firstDarkPx < maxRadius) {
+                diffCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                diffCtx.lineWidth = 1;
+                diffCtx.beginPath();
+                diffCtx.arc(centerX, centerY, firstDarkPx, 0, Math.PI * 2);
+                diffCtx.stroke();
+                
+                diffCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                diffCtx.font = '14px Arial';
+                diffCtx.fillText('第一暗环', centerX + firstDarkPx, centerY + 20);
+            }
+        }
+        
+        // 绘制光强分布图
+        function drawIntensityGraph() {
+            const width = intensityCanvas.width;
+            const height = intensityCanvas.height;
+            const centerX = width / 2;
+            
+            // 清空画布
+            intCtx.clearRect(0, 0, width, height);
+            
+            // 绘制背景
+            intCtx.fillStyle = 'rgba(5, 5, 10, 0.95)';
+            intCtx.fillRect(0, 0, width, height);
+            
+            // 绘制坐标轴
+            intCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            intCtx.lineWidth = 2;
+            
+            // X轴
+            intCtx.beginPath();
+            intCtx.moveTo(0, height - 20);
+            intCtx.lineTo(width, height - 20);
+            intCtx.stroke();
+            
+            // Y轴
+            intCtx.beginPath();
+            intCtx.moveTo(centerX, 0);
+            intCtx.lineTo(centerX, height - 20);
+            intCtx.stroke();
+            
+            // 绘制光强曲线
+            intCtx.strokeStyle = params.laserColor;
+            intCtx.lineWidth = 3;
+            intCtx.beginPath();
+            
+            let firstPoint = true;
+            
+            // 采样点数量
+            const sampleCount = 200;
+            
+            for (let i = 0; i <= sampleCount; i++) {
+                const x = (i / sampleCount) * width;
+                let intensity;
+                
+                if (params.mode === 'single-slit') {
+                    intensity = singleSlitIntensity(x, centerX);
+                } else {
+                    // 对于圆孔衍射，我们显示水平切面的光强
+                    const r = Math.abs(x - centerX);
+                    intensity = circularApertureIntensity(r, centerX, 0);
+                }
+                
+                // 将强度映射到Y坐标
+                const y = height - 20 - intensity * (height - 40);
+                
+                if (firstPoint) {
+                    intCtx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    intCtx.lineTo(x, y);
+                }
+            }
+            
+            intCtx.stroke();
+            
+            // 填充曲线下方区域
+            intCtx.fillStyle = params.laserColor.replace(')', ', 0.2)').replace('rgb', 'rgba');
+            intCtx.lineTo(width, height - 20);
+            intCtx.lineTo(0, height - 20);
+            intCtx.closePath();
+            intCtx.fill();
+            
+            // 添加标签
+            intCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            intCtx.font = 'bold 14px Arial';
+            intCtx.textAlign = 'center';
+            intCtx.fillText('光强分布', width / 2, 20);
+            intCtx.fillText('位置', width / 2, height - 5);
+            
+            intCtx.textAlign = 'left';
+            intCtx.fillText('中央极大', centerX + 10, 30);
+        }
+        
+        // 动画循环
+        function animate() {
+            drawDiffractionPattern();
+            drawIntensityGraph();
+            
+            // 更新狭缝位置（如果有动画效果）
+            updateSlitVisual();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

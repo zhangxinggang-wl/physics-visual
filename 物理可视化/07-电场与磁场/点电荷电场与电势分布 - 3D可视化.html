@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)http://jingshengzdh.cn/show_3d_electric.html -->
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点电荷电场与电势分布 - 3D可视化</title>
+    <script src="./点电荷电场与电势分布 - 3D可视化_files/echarts.min.js.下载"></script>
+    <script src="./点电荷电场与电势分布 - 3D可视化_files/echarts-gl.min.js.下载"></script>
+    <script src="./点电荷电场与电势分布 - 3D可视化_files/jquery.min.js.下载"></script>
+    <style>
+        /* 基础样式与浅色模式 */
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5; /* 浅色背景 */
+            color: #333; /* 深色文字 */
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+        
+        /* 图表容器样式 */
+        .chart-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: calc(100vh - 220px);
+            margin-top: 20px;
+        }
+        
+        .chart-container {
+            flex: 1;
+            background-color: #fff; /* 图表容器白色背景 */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 300px;
+        }
+        
+        /* 控制面板样式 */
+        .controls {
+            margin-bottom: 10px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .control-section {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .control-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .control-section h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .slider-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            accent-color: #4285f4;
+        }
+        
+        .value-display {
+            display: inline-block;
+            width: 50px;
+            text-align: center;
+            color: #4285f4;
+            font-weight: bold;
+        }
+        
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        
+        /* 响应式设计 */
+        @media (min-width: 768px) {
+            .chart-wrapper {
+                flex-direction: row;
+                height: calc(100vh - 200px);
+            }
+            
+            .control-group {
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            body {
+                padding: 10px;
+            }
+            
+            .slider-item {
+                min-width: 100%;
+            }
+            
+            .chart-wrapper {
+                height: calc(100vh - 400px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h3>点电荷电场与电势分布模拟器</h3>
+        
+        <div class="control-section">
+            <h4>电荷参数</h4>
+            <div class="control-group">
+                <div class="slider-item">
+                    <label>
+                        电荷1电量 (kQ₁): 
+                        <span id="q1Value" class="value-display">10</span>
+                    </label>
+                    <input type="range" id="q1" min="-20" max="20" value="10" step="1">
+                </div>
+                <div class="slider-item">
+                    <label>
+                        电荷2电量 (kQ₂): 
+                        <span id="q2Value" class="value-display">-9</span>
+                    </label>
+                    <input type="range" id="q2" min="-20" max="20" value="10" step="1">
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-section">
+            <h4>场强图表样式</h4>
+            <div class="control-group">
+                <div class="slider-item">
+                    <label>
+                        粒子密度: 
+                        <span id="particleDensityValue" class="value-display">64</span>
+                    </label>
+                    <input type="range" id="particleDensity" min="10" max="200" value="64" step="10">
+                </div>
+                <div class="slider-item">
+                    <label>
+                        粒子大小: 
+                        <span id="particleSizeValue" class="value-display">3</span>
+                    </label>
+                    <input type="range" id="particleSize" min="1" max="10" value="3" step="0.5">
+                </div>
+                <div class="slider-item">
+                    <label>
+                        粒子速度: 
+                        <span id="particleSpeedValue" class="value-display">10</span>
+                    </label>
+                    <input type="range" id="particleSpeed" min="1" max="30" value="10" step="1">
+                </div>
+                <div class="slider-item">
+                    <label>
+                        粒子轨迹长度: 
+                        <span id="particleTrailValue" class="value-display">30</span>
+                    </label>
+                    <input type="range" id="particleTrail" min="5" max="100" value="30" step="5">
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-section">
+            <h4>电势图表样式</h4>
+            <div class="control-group">
+                <div class="slider-item">
+                    <label>
+                        网格精度: 
+                        <span id="gridPrecisionValue" class="value-display">0.3</span>
+                    </label>
+                    <input type="range" id="gridPrecision" min="0.1" max="1" value="0.3" step="0.1">
+                </div>
+                <div class="slider-item">
+                    <label>
+                        线框透明度: 
+                        <span id="wireframeOpacityValue" class="value-display">0.1</span>
+                    </label>
+                    <input type="range" id="wireframeOpacity" min="0" max="1" value="0.1" step="0.1">
+                </div>
+            </div>
+        </div>
+        
+        <p>说明：拖动滑块调整参数，鼠标可旋转/缩放视图，红色为正电荷，蓝色为负电荷</p>
+    </div>
+    
+    <div class="chart-wrapper">
+        <div id="potentialChart" class="chart-container" _echarts_instance_="ec_1763362554273" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;"><div style="position: relative; width: 922px; height: 712px; padding: 0px; margin: 0px; border-width: 0px; cursor: pointer;"><canvas width="922" height="712" style="width: 922px; height: 712px; position: absolute; left: 0px; top: 0px;"></canvas><canvas data-zr-dom-id="zr_0" width="922" height="712" style="position: absolute; left: 0px; top: 0px; width: 922px; height: 712px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas></div><div class="" style="position: absolute; display: block; border-style: solid; white-space: nowrap; z-index: 9999999; will-change: transform; box-shadow: rgba(0, 0, 0, 0.2) 1px 2px 10px; transition: opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1) 0s, visibility 0.2s cubic-bezier(0.23, 1, 0.32, 1) 0s, transform 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0s; background-color: rgb(255, 255, 255); border-width: 1px; border-radius: 4px; color: rgb(102, 102, 102); font: 14px / 21px &quot;Microsoft YaHei&quot;; padding: 10px; top: 0px; left: 0px; transform: translate3d(630px, 441px, 0px); border-color: rgb(231, 246, 235); pointer-events: none;">位置: (3.5, -1.9)<br>电势: -3.10</div></div>
+        <div id="fieldChart" class="chart-container" _echarts_instance_="ec_1763362554274" style="user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); position: relative;"><div style="position: relative; width: 921px; height: 712px; padding: 0px; margin: 0px; border-width: 0px; cursor: default;"><canvas data-zr-dom-id="zr_0" width="921" height="712" style="position: absolute; left: 0px; top: 0px; width: 921px; height: 712px; user-select: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); padding: 0px; margin: 0px; border-width: 0px;"></canvas><canvas width="921" height="712" style="width: 921px; height: 712px; position: absolute; left: 0px; top: 0px;"></canvas></div><div class="" style="position: absolute; display: block; border-style: solid; white-space: nowrap; z-index: 9999999; box-shadow: rgba(0, 0, 0, 0.2) 1px 2px 10px; transition: opacity 0.2s cubic-bezier(0.23, 1, 0.32, 1) 0s, visibility 0.2s cubic-bezier(0.23, 1, 0.32, 1) 0s, transform 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0s; background-color: rgb(255, 255, 255); border-width: 1px; border-radius: 4px; color: rgb(102, 102, 102); font: 14px / 21px &quot;Microsoft YaHei&quot;; padding: 10px; top: 0px; left: 0px; transform: translate3d(557px, 338px, 0px); border-color: rgb(165, 0, 38); pointer-events: none; visibility: hidden; opacity: 0;">位置: (2.0, 1.2)<br>场强大小: 0.16</div></div>
+    </div>
+
+    <script>
+        // 初始化图表（使用浅色主题）
+        const potentialChart = echarts.init(document.getElementById('potentialChart'), 'light');
+        const fieldChart = echarts.init(document.getElementById('fieldChart'), 'light');
+        
+        // 物理参数
+        let kQ1 = 10;  // 电荷1电量（包含静电力常量k）
+        let kQ2 = 10;  // 电荷2电量
+        const charge1Pos = [-3, 0];  // 电荷1位置 (x, y)
+        const charge2Pos = [3, 0];   // 电荷2位置
+        const minDistance = 0.5;     // 最小距离（避免除以零）
+        const coordinateRange = 10;  // 坐标范围
+        
+        // 图表样式参数
+        let chartStyle = {
+            particleDensity: 64,
+            particleSize: 3,
+            particleSpeed: 10,
+            particleTrail: 30,
+            gridPrecision: 0.3,
+            wireframeOpacity: 0.1
+        };
+        
+        // 初始视角参数
+        const defaultViewControl = {
+            alpha: 60,
+            beta: 45,
+            distance: 100
+        };
+        let currentViewControl = { ...defaultViewControl };
+        // 标记是否正在计算场强，避免重复计算
+        let isCalculatingField = false;
+        
+        // 更新电荷值显示和事件监听
+        document.getElementById('q1').addEventListener('input', function() {
+            kQ1 = parseInt(this.value);
+            document.getElementById('q1Value').textContent = kQ1;
+            updateCharts();
+        });
+        
+        document.getElementById('q2').addEventListener('input', function() {
+            kQ2 = parseInt(this.value);
+            document.getElementById('q2Value').textContent = kQ2;
+            updateCharts();
+        });
+        
+        // 场强图表样式控制
+        document.getElementById('particleDensity').addEventListener('input', function() {
+            chartStyle.particleDensity = parseInt(this.value);
+            document.getElementById('particleDensityValue').textContent = chartStyle.particleDensity;
+            updateFieldChart();
+        });
+        
+        document.getElementById('particleSize').addEventListener('input', function() {
+            chartStyle.particleSize = parseFloat(this.value);
+            document.getElementById('particleSizeValue').textContent = chartStyle.particleSize;
+            updateFieldChart();
+        });
+        
+        document.getElementById('particleSpeed').addEventListener('input', function() {
+            chartStyle.particleSpeed = parseInt(this.value);
+            document.getElementById('particleSpeedValue').textContent = chartStyle.particleSpeed;
+            updateFieldChart();
+        });
+        
+        document.getElementById('particleTrail').addEventListener('input', function() {
+            chartStyle.particleTrail = parseInt(this.value);
+            document.getElementById('particleTrailValue').textContent = chartStyle.particleTrail;
+            updateFieldChart();
+        });
+        
+        // 电势图表样式控制
+        document.getElementById('gridPrecision').addEventListener('input', function() {
+            chartStyle.gridPrecision = parseFloat(this.value);
+            document.getElementById('gridPrecisionValue').textContent = chartStyle.gridPrecision;
+            updatePotentialChart();
+        });
+        
+        document.getElementById('wireframeOpacity').addEventListener('input', function() {
+            chartStyle.wireframeOpacity = parseFloat(this.value);
+            document.getElementById('wireframeOpacityValue').textContent = chartStyle.wireframeOpacity;
+            updatePotentialChart();
+        });
+        
+        // 监听视角变化
+        potentialChart.on('georoam', function(params) {
+            if (params.mode === 'rotate' || params.mode === 'scale') {
+                const option = potentialChart.getOption();
+                if (option.grid3D && option.grid3D[0] && option.grid3D[0].viewControl) {
+                    currentViewControl = { ...option.grid3D[0].viewControl };
+                }
+            }
+        });
+        
+        // 电势计算函数
+        function calculatePotential(x, y) {
+            const r1 = Math.hypot(x - charge1Pos[0], y - charge1Pos[1]);
+            const r2 = Math.hypot(x - charge2Pos[0], y - charge2Pos[1]);
+            const safeR1 = Math.max(r1, minDistance);
+            const safeR2 = Math.max(r2, minDistance);
+            const potential = (kQ1 / safeR1) + (kQ2 / safeR2);
+            return Math.max(Math.min(potential, 30), -30);
+        }
+        
+        // 场强计算函数（返回x和y方向的分量）
+        function calculateField(x, y) {
+            // 计算电荷1产生的场强分量
+            const dx1 = x - charge1Pos[0];
+            const dy1 = y - charge1Pos[1];
+            const r1 = Math.hypot(dx1, dy1);
+            const safeR1 = Math.max(r1, minDistance);
+            const r1Cube = safeR1 * safeR1 * safeR1; // r^3用于场强计算
+            const E1x = kQ1 * dx1 / r1Cube;
+            const E1y = kQ1 * dy1 / r1Cube;
+            
+            // 计算电荷2产生的场强分量
+            const dx2 = x - charge2Pos[0];
+            const dy2 = y - charge2Pos[1];
+            const r2 = Math.hypot(dx2, dy2);
+            const safeR2 = Math.max(r2, minDistance);
+            const r2Cube = safeR2 * safeR2 * safeR2;
+            const E2x = kQ2 * dx2 / r2Cube;
+            const E2y = kQ2 * dy2 / r2Cube;
+            
+            // 场强叠加
+            const Ex = E1x + E2x;
+            const Ey = E1y + E2y;
+            const magnitude = Math.hypot(Ex, Ey);
+            
+            return { Ex, Ey, magnitude };
+        }
+        
+        // 生成场强数据
+        function generateFieldData() {
+            const data = [];
+            let maxMag = 0;
+            
+            // 生成网格点数据
+            for (let i = -coordinateRange; i <= coordinateRange; i += 0.8) {
+                for (let j = -coordinateRange; j <= coordinateRange; j += 0.8) {
+                    const { Ex, Ey, magnitude } = calculateField(i, j);
+                    maxMag = Math.max(maxMag, magnitude);
+                    data.push([i, j, Ex, Ey, magnitude]);
+                }
+            }
+            
+            // 归一化处理
+            return data.map(item => {
+                const [x, y, Ex, Ey, mag] = item;
+                const scale = mag > 0 ? 1.5 / maxMag : 0; // 缩放场强向量
+                return [x, y, Ex * scale, Ey * scale, mag];
+            });
+        }
+        
+        // 更新电势图表
+        function updatePotentialChart() {
+            const option = {
+                title: { 
+                    text: '电势分布 (V)',
+                    textStyle: { color: '#333' }
+                },
+                tooltip: {
+                    formatter: function(params) {
+                        return `位置: (${params.value[0].toFixed(1)}, ${params.value[1].toFixed(1)})<br>电势: ${params.value[2].toFixed(2)}`;
+                    }
+                },
+                visualMap: {
+                    show: true,
+                    dimension: 2,
+                    min: -20,
+                    max: 20,
+                    
+                    calculable: true,
+                    inRange: {
+                        color: [
+                            '#313695', '#4575b4', '#74add1', '#abd9e9', 
+                            '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', 
+                            '#f46d43', '#d73027', '#a50026'
+                        ]
+                    },
+                    text: ['高电势', '低电势'],
+                    textStyle: { color: '#333' },
+                    left: 20,
+                    bottom: 20
+                },
+                xAxis3D: {
+                    type: 'value',
+                    name: 'X轴',
+                    nameTextStyle: { color: '#333' },
+                    axisLine: { lineStyle: { color: '#333' } },
+                    min: -coordinateRange,
+                    max: coordinateRange
+                },
+                yAxis3D: {
+                    type: 'value',
+                    name: 'Y轴',
+                    nameTextStyle: { color: '#333' },
+                    axisLine: { lineStyle: { color: '#333' } },
+                    min: -coordinateRange,
+                    max: coordinateRange
+                },
+                zAxis3D: {
+                    type: 'value',
+                    name: '电势(V)',
+                    nameTextStyle: { color: '#333' },
+                    axisLine: { lineStyle: { color: '#333' } },
+                    min: -20,
+                    max: 20
+                },
+                grid3D: {
+                    viewControl: currentViewControl,
+                    backgroundColor: 'transparent'
+                },
+                series: [
+                    {
+                        type: 'surface',
+                        equation: {
+                            x: {
+                                min: -coordinateRange,
+                                max: coordinateRange,
+                                step: chartStyle.gridPrecision
+                            },
+                            y: {
+                                min: -coordinateRange,
+                                max: coordinateRange,
+                                step: chartStyle.gridPrecision
+                            },
+                            z: function(x, y) {
+                                return calculatePotential(x, y);
+                            }
+                        },
+                        wireframe: {
+                            show: true,
+                            lineStyle: {
+                                color: `rgba(0, 0, 0, ${chartStyle.wireframeOpacity})`
+                            }
+                        },
+                        shading: 'color'
+                    },
+                    {
+                        type: 'scatter3D',
+                        data: [
+                            { name: `Q1=${kQ1}`, value: [charge1Pos[0], charge1Pos[1], 0] },
+                            { name: `Q2=${kQ2}`, value: [charge2Pos[0], charge2Pos[1], 0] }
+                        ],
+                        symbolSize: 15,
+                        itemStyle: {
+                            color: function(params) {
+                                return params.dataIndex === 0 
+                                    ? (kQ1 >= 0 ? '#ff3333' : '#3366ff')
+                                    : (kQ2 >= 0 ? '#ff3333' : '#3366ff');
+                            }
+                        },
+                        label: { 
+                            show: true, 
+                            formatter: '{b}',
+                            color: '#333'
+                        }
+                    }
+                ]
+            };
+            
+            potentialChart.setOption(option);
+        }
+        
+        // 更新场强图表
+        function updateFieldChart() {
+            // 如果正在计算，直接返回
+            if (isCalculatingField) return;
+            
+            isCalculatingField = true;
+            // 显示加载状态
+            document.querySelector('#fieldChart .loading-indicator')?.remove();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-indicator';
+            loadingDiv.textContent = '计算中场强分布...';
+            document.getElementById('fieldChart').appendChild(loadingDiv);
+            
+            // 使用requestIdleCallback或setTimeout将计算放入后台
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                    performFieldCalculation();
+                });
+            } else {
+                setTimeout(() => {
+                    performFieldCalculation();
+                }, 50);
+            }
+        }
+        
+        // 实际执行场强计算的函数
+        function performFieldCalculation() {
+            try {
+                const fieldData = generateFieldData();
+                
+                const option = {
+/*                     visualMap: {
+        show: false,
+        min:-0.4,
+        max:0.4,
+        dimension: 4,
+        inRange: {
+          color: [
+            '#313695',
+            '#4575b4',
+            '#74add1',
+            '#abd9e9',
+            '#e0f3f8',
+            '#ffffbf',
+            '#fee090',
+            '#fdae61',
+            '#f46d43',
+            '#d73027',
+            '#a50026'
+          ]
+        }
+      }, */
+                    title: { 
+                        text: '电场强度分布',
+                        textStyle: { color: '#333' }
+                    },
+                    tooltip: {
+                        formatter: function(params) {
+                            const idx = params.dataIndex;
+                            const data = fieldData[idx];
+                            const mag = Math.hypot(data[2], data[3]).toFixed(2);
+                            return `位置: (${data[0].toFixed(1)}, ${data[1].toFixed(1)})<br>场强大小: ${mag}`;
+                        }
+                    },
+                    visualMap: {
+                        show: true,
+                        min: 0,
+                        max: 1.5,
+                        dimension: 4,
+                        calculable: true,
+                        inRange: {
+                            color: [
+                                '#313695', '#4575b4', '#74add1', '#abd9e9', 
+                                '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', 
+                                '#f46d43', '#d73027', '#a50026'
+                            ]
+                        },
+                        text: ['强', '弱'],
+                        textStyle: { color: '#333' },
+                        left: 20,
+                        bottom: 20
+                    },
+                    xAxis: {
+                        type: 'value',
+                        name: 'X轴',
+                        nameTextStyle: { color: '#333' },
+                        axisLine: { lineStyle: { color: '#333' } },
+                        splitLine: {
+                            show: false,
+                            lineStyle: { color: 'rgba(0,0,0,0.2)' }
+                        },
+                        min: -coordinateRange,
+                        max: coordinateRange
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: 'Y轴',
+                        nameTextStyle: { color: '#333' },
+                        axisLine: { lineStyle: { color: '#333' } },
+                        splitLine: {
+                            show: false,
+                            lineStyle: { color: 'rgba(0,0,0,0.2)' }
+                        },
+                        min: -coordinateRange,
+                        max: coordinateRange
+                    },
+                    series: [
+                        {
+                            type: 'flowGL',
+                            data: fieldData,
+                            particleDensity: chartStyle.particleDensity,
+                            particleType: 'point',
+                            particleTrail: chartStyle.particleTrail,
+                            particleSpeed: chartStyle.particleSpeed,
+                            particleSize: chartStyle.particleSize,
+                            itemStyle: {
+                                opacity: 0.5
+                            }
+                        },
+                        {
+                            type: 'custom',
+                            data: fieldData,
+                            encode: { x: 0, y: 1 },
+                            renderItem: function (params, api) {
+                                const x = api.value(0);
+                                const y = api.value(1);
+                                const dx = api.value(2);
+                                const dy = api.value(3);
+                                
+                                const start = api.coord([x - dx / 2, y - dy / 2]);
+                                const end = api.coord([x + dx / 2, y + dy / 2]);
+                                
+                                return {
+                                    type: 'line',
+                                    shape: {
+                                        x1: start[0],
+                                        y1: start[1],
+                                        x2: end[0],
+                                        y2: end[1]
+                                    },
+                                    style: {
+                                        lineWidth: 2,
+                                        stroke: '#555',
+                                        opacity: 0.2
+                                    }
+                                };
+                            }
+                        },
+                        {
+                            type: 'scatter',
+                            data: [
+                                [charge1Pos[0], charge1Pos[1]],
+                                [charge2Pos[0], charge2Pos[1]]
+                            ],
+                            symbolSize: 5,
+                            itemStyle: {
+                                color: function(params) {
+                                    return params.dataIndex === 0 
+                                        ? (kQ1 >= 0 ? '#ff3333' : '#3366ff')
+                                        : (kQ2 >= 0 ? '#ff3333' : '#3366ff');
+                                }
+                            },
+                            label: { 
+                                show: true, 
+                                formatter: function(params) {
+                                    return params.dataIndex === 0 ? `Q1=${kQ1}` : `Q2=${kQ2}`;
+                                },
+                                color: '#333'
+                            }
+                        }
+                    ]
+                };
+                
+                fieldChart.setOption(option);
+            } finally {
+                // 移除加载指示器
+                document.querySelector('#fieldChart .loading-indicator')?.remove();
+                isCalculatingField = false;
+            }
+        }
+        
+        // 更新所有图表 - 先更新电势图，延迟更新场强图
+        function updateCharts() {
+            // 立即更新电势图表
+            updatePotentialChart();
+            
+            // 延迟更新场强图表，避免阻塞UI
+            setTimeout(() => {
+                updateFieldChart();
+            }, 100);
+        }
+        
+        // 初始渲染 - 先显示电势图，再计算场强图
+        updatePotentialChart();
+        // 给电势图一点渲染时间，再开始计算场强
+        setTimeout(() => {
+            updateFieldChart();
+        }, 300);
+        
+        // 窗口大小变化时重绘
+        window.addEventListener('resize', function() {
+            potentialChart.resize();
+            fieldChart.resize();
+        });
+    </script>
+
+
+</body></html>

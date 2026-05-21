@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无阻尼弹簧小球动量守恒演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .creator {
+            position: absolute;
+            right: 0;
+            top: 0;
+            color: #a0d2ff;
+            font-size: 1rem;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0d2ff;
+            margin-bottom: 10px;
+        }
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .simulation-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .simulation-area {
+            display: flex;
+            gap: 20px;
+        }
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #0a1a35;
+            border: 2px solid #4facfe;
+        }
+        .graph-container {
+            flex: 1;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #0a1a35;
+            border: 2px solid #4facfe;
+        }
+        .controls-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        canvas {
+            display: block;
+            background: #0a1a35;
+        }
+        .graph-title {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #4facfe;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .graphs-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .graph-item {
+            flex: 1;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #0a1a35;
+            border: 2px solid #4facfe;
+        }
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        .slider-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4facfe;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #2c3e50;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4facfe;
+            cursor: pointer;
+        }
+        .value-display {
+            font-weight: bold;
+            color: #00f2fe;
+            margin-top: 5px;
+        }
+        button {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        .data-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .data-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        .data-label {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #a0d2ff;
+        }
+        .data-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00f2fe;
+        }
+        .physics-info {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .physics-info h3 {
+            color: #4facfe;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        .info-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .highlight {
+            color: #00f2fe;
+            font-weight: bold;
+        }
+        .note {
+            font-style: italic;
+            color: #a0d2ff;
+            margin-top: 10px;
+        }
+        .initial-condition {
+            background: rgba(255, 193, 7, 0.2);
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .time-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .time-label {
+            font-size: 0.9rem;
+            color: #a0d2ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>无阻尼弹簧小球动量守恒演示</h1>
+            <p class="subtitle">小球1初始位于左侧边缘，具有初速度</p>
+            <div class="creator">制作：张兴刚</div>
+        </header>
+        
+        <div class="main-content">
+            <div class="simulation-panel">
+                <div class="simulation-area">
+                    <div class="canvas-container">
+                        <canvas id="simulationCanvas" width="500" height="400"></canvas>
+                    </div>
+                    <div class="graph-container">
+                        <div class="graph-title">弹力随时间变化图像</div>
+                        <canvas id="forceGraphCanvas" width="500" height="400"></canvas>
+                        <div class="time-control">
+                            <span class="time-label">时间范围: 0 - <span id="forceTimeRange">10</span> 秒</span>
+                            <input type="range" id="forceTimeRangeSlider" min="5" max="30" value="10" step="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="graphs-row">
+                    <div class="graph-item">
+                        <div class="graph-title">小球速度随时间变化图像</div>
+                        <canvas id="velocityGraphCanvas" width="1000" height="400"></canvas>
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                                <span>小球1速度</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #4ecdc4;"></div>
+                                <span>小球2速度</span>
+                            </div>
+                        </div>
+                        <div class="time-control">
+                            <span class="time-label">时间范围: 0 - <span id="velocityTimeRange">10</span> 秒</span>
+                            <input type="range" id="velocityTimeRangeSlider" min="5" max="30" value="10" step="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-panel">
+                <div class="control-buttons">
+                    <h3>模拟控制</h3>
+                    <button id="startBtn">开始模拟</button>
+                    <button id="resetBtn">重置系统</button>
+                    <button id="pauseBtn">暂停/继续</button>
+                    <button id="clearGraphBtn">清除所有图表</button>
+                </div>
+                
+                <div class="slider-controls">
+                    <h3>参数设置</h3>
+                    <div class="control-group">
+                        <label for="mass1">小球1质量 (kg)</label>
+                        <input type="range" id="mass1" min="0.5" max="5" step="0.1" value="1">
+                        <div class="value-display" id="mass1Value">1.0 kg</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="mass2">小球2质量 (kg)</label>
+                        <input type="range" id="mass2" min="0.5" max="5" step="0.1" value="3">
+                        <div class="value-display" id="mass2Value">3.0 kg</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="springConstant">弹簧劲度系数</label>
+                        <input type="range" id="springConstant" min="0.1" max="2" step="0.1" value="0.5">
+                        <div class="value-display" id="springValue">0.5</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="initialVelocity">小球1初速度 (m/s)</label>
+                        <input type="range" id="initialVelocity" min="1" max="10" step="0.5" value="4">
+                        <div class="value-display" id="velocityValue">4.0 m/s</div>
+                    </div>
+                </div>
+                
+                <div class="data-display">
+                    <h3>实时数据</h3>
+                    <div class="data-item">
+                        <div class="data-label">小球1动量</div>
+                        <div id="momentum1" class="data-value">0.00 kg·m/s</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">小球2动量</div>
+                        <div id="momentum2" class="data-value">0.00 kg·m/s</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">系统总动量</div>
+                        <div id="totalMomentum" class="data-value">0.00 kg·m/s</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">弹簧弹力</div>
+                        <div id="springForce" class="data-value">0.00 N</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="physics-info">
+            <h3>物理原理</h3>
+            <div class="info-box">
+                <p><span class="highlight">动量守恒定律</span>：在一个不受外力作用的封闭系统中，系统的总动量保持不变。</p>
+                <p>公式：m₁v₁ + m₂v₂ = 常数</p>
+            </div>
+            <div class="info-box">
+                <p><span class="highlight">能量守恒定律</span>：在没有能量损失的情况下，系统的总能量保持不变。</p>
+                <p>总能量 = 动能₁ + 动能₂ + 弹簧势能</p>
+            </div>
+            <div class="info-box">
+                <p><span class="highlight">胡克定律</span>：弹簧力与形变成正比。</p>
+                <p>公式：F = -k·x</p>
+            </div>
+            <div class="initial-condition">
+                <p><strong>初始条件：</strong>小球1初始位置靠近左侧边缘，具有向右的初速度。小球2初始静止。</p>
+            </div>
+            <p class="note">注意：此模拟为理想情况，无任何能量损失（无阻尼），小球将永远运动下去。</p>
+            <p class="note">提示：使用时间范围滑块可以调整图表显示的时间范围，便于观察和对比不同时间段的数据。</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas和上下文
+        const simCanvas = document.getElementById('simulationCanvas');
+        const simCtx = simCanvas.getContext('2d');
+        const forceGraphCanvas = document.getElementById('forceGraphCanvas');
+        const forceGraphCtx = forceGraphCanvas.getContext('2d');
+        const velocityGraphCanvas = document.getElementById('velocityGraphCanvas');
+        const velocityGraphCtx = velocityGraphCanvas.getContext('2d');
+        
+        // 物理参数
+        let mass1 = 1.0;      // 小球1质量 (kg)
+        let mass2 = 3.0;      // 小球2质量 (kg)
+        let k = 0.5;          // 弹簧劲度系数
+        let initialVelocity = 4.0; // 小球1初速度
+        const restLength = 150; // 弹簧原长 (像素)
+        const damping = 1.0;   // 阻尼系数设为1，表示无能量损失
+        
+        // 时间轴控制
+        let forceTimeRange = 10; // 弹力图表显示的时间范围（秒）
+        let velocityTimeRange = 10; // 速度图表显示的时间范围（秒）
+        
+        // 小球状态
+        let ball1 = {
+            x: 0,
+            y: simCanvas.height / 2,
+            vx: 0,
+            radius: 0
+        };
+        
+        let ball2 = {
+            x: 0,
+            y: simCanvas.height / 2,
+            vx: 0,
+            radius: 0
+        };
+        
+        // 图表数据 - 不再限制数据点数量
+        let forceData = [];
+        let velocity1Data = [];
+        let velocity2Data = [];
+        let timeData = [];
+        let currentTime = 0;
+        
+        // 计算小球半径（基于质量）
+        function calculateRadii() {
+            // 半径与质量的立方根成正比
+            const baseRadius = 25;
+            ball1.radius = baseRadius * Math.cbrt(mass1);
+            ball2.radius = baseRadius * Math.cbrt(mass2);
+        }
+        
+        // 模拟状态
+        let isRunning = false;
+        let isPaused = false;
+        
+        // 初始化动量
+        let momentum1 = 0;
+        let momentum2 = 0;
+        let totalMomentum = 0;
+        let totalEnergy = 0;
+        let initialMomentum = 0;
+        let initialEnergy = 0;
+        let springForce = 0;
+        
+        // 控制元素
+        const mass1Slider = document.getElementById('mass1');
+        const mass2Slider = document.getElementById('mass2');
+        const springSlider = document.getElementById('springConstant');
+        const velocitySlider = document.getElementById('initialVelocity');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const clearGraphBtn = document.getElementById('clearGraphBtn');
+        const forceTimeRangeSlider = document.getElementById('forceTimeRangeSlider');
+        const velocityTimeRangeSlider = document.getElementById('velocityTimeRangeSlider');
+        
+        // 显示元素
+        const mass1Value = document.getElementById('mass1Value');
+        const mass2Value = document.getElementById('mass2Value');
+        const springValue = document.getElementById('springValue');
+        const velocityValue = document.getElementById('velocityValue');
+        const momentum1Display = document.getElementById('momentum1');
+        const momentum2Display = document.getElementById('momentum2');
+        const totalMomentumDisplay = document.getElementById('totalMomentum');
+        const springForceDisplay = document.getElementById('springForce');
+        const forceTimeRangeDisplay = document.getElementById('forceTimeRange');
+        const velocityTimeRangeDisplay = document.getElementById('velocityTimeRange');
+        
+        // 初始化系统
+        function initSystem() {
+            // 计算小球半径
+            calculateRadii();
+            
+            // 设置初始位置 - 小球1靠左边缘
+            ball1.x = ball1.radius + 10; // 距离左边缘10像素
+            ball2.x = ball1.x + restLength; // 小球2在小球1右侧，弹簧为原长
+            ball1.y = ball2.y = simCanvas.height / 2;
+            
+            // 设置初始速度
+            ball1.vx = initialVelocity;
+            ball2.vx = 0;
+            
+            // 重置时间和图表数据
+            currentTime = 0;
+            forceData = [];
+            velocity1Data = [];
+            velocity2Data = [];
+            timeData = [];
+            
+            // 计算初始动量和能量
+            momentum1 = mass1 * ball1.vx;
+            momentum2 = mass2 * ball2.vx;
+            totalMomentum = momentum1 + momentum2;
+            initialMomentum = totalMomentum;
+            
+            // 计算初始能量
+            const kineticEnergy1 = 0.5 * mass1 * ball1.vx * ball1.vx;
+            const kineticEnergy2 = 0.5 * mass2 * ball2.vx * ball2.vx;
+            initialEnergy = kineticEnergy1 + kineticEnergy2;
+            totalEnergy = initialEnergy;
+            
+            // 更新显示
+            updateDisplays();
+        }
+        
+        // 更新物理模拟
+        function updatePhysics() {
+            if (!isRunning || isPaused) return;
+            
+            // 计算弹簧长度和形变量
+            const dx = ball2.x - ball1.x;
+            const currentLength = Math.abs(dx);
+            const deformation = currentLength - restLength;
+            
+            // 计算弹簧力 (胡克定律)
+            springForce = k * deformation;
+            
+            // 应用力到两个小球
+            // 小球1
+            const a1 = springForce / mass1;
+            ball1.vx += a1 * 0.05; // 乘以时间步长
+            
+            // 小球2
+            const a2 = -springForce / mass2;
+            ball2.vx += a2 * 0.05;
+            
+            // 更新位置
+            ball1.x += ball1.vx;
+            ball2.x += ball2.vx;
+            
+            // 更新时间
+            currentTime += 0.05;
+            
+            // 记录弹力、速度和时间数据 - 不再限制数据点数量
+            forceData.push(springForce);
+            velocity1Data.push(ball1.vx);
+            velocity2Data.push(ball2.vx);
+            timeData.push(currentTime);
+            
+            // 计算动量和能量
+            momentum1 = mass1 * ball1.vx;
+            momentum2 = mass2 * ball2.vx;
+            totalMomentum = momentum1 + momentum2;
+            
+            // 动能 + 弹簧势能
+            const kineticEnergy1 = 0.5 * mass1 * ball1.vx * ball1.vx;
+            const kineticEnergy2 = 0.5 * mass2 * ball2.vx * ball2.vx;
+            const springEnergy = 0.5 * k * deformation * deformation;
+            totalEnergy = kineticEnergy1 + kineticEnergy2 + springEnergy;
+            
+            // 更新显示
+            updateDisplays();
+        }
+        
+        // 绘制模拟场景
+        function drawSimulation() {
+            // 清空画布
+            simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+            
+            // 绘制背景网格
+            drawGrid(simCtx, simCanvas);
+            
+            // 绘制弹簧
+            drawSpring(simCtx, ball1.x, ball1.y, ball2.x, ball2.y, 12);
+            
+            // 绘制小球1
+            drawBall(simCtx, ball1, '#ff6b6b', 'm₁');
+            
+            // 绘制小球2
+            drawBall(simCtx, ball2, '#4ecdc4', 'm₂');
+            
+            // 绘制速度矢量
+            drawVelocityVector(simCtx, ball1, '#ff6b6b');
+            drawVelocityVector(simCtx, ball2, '#4ecdc4');
+            
+            // 绘制数据标签
+            drawDataLabels(simCtx, simCanvas);
+            
+            // 绘制初始条件指示
+            if (isRunning && Math.abs(ball1.vx - initialVelocity) < 0.1) {
+                drawInitialConditionIndicator(simCtx, simCanvas);
+            }
+        }
+        
+        // 绘制弹力时间图像 - 固定时间轴
+        function drawForceGraph() {
+            // 清空画布
+            forceGraphCtx.clearRect(0, 0, forceGraphCanvas.width, forceGraphCanvas.height);
+            
+            // 绘制坐标轴
+            drawGraphAxes(forceGraphCtx, forceGraphCanvas, '时间 (s)', '弹力 (N)');
+            
+            // 如果没有数据，直接返回
+            if (forceData.length < 2) return;
+            
+            // 计算数据范围 - 使用固定的时间范围
+            const maxTime = Math.min(currentTime, forceTimeRange);
+            const minTime = Math.max(0, currentTime - forceTimeRange);
+            const maxForce = Math.max(5, Math.max(...forceData.map(Math.abs)));
+            
+            // 绘制网格
+            drawGraphGrid(forceGraphCtx, forceGraphCanvas, maxTime, maxForce, minTime);
+            
+            // 绘制弹力曲线
+            forceGraphCtx.strokeStyle = '#ff6b6b';
+            forceGraphCtx.lineWidth = 2;
+            forceGraphCtx.beginPath();
+            
+            for (let i = 0; i < forceData.length; i++) {
+                // 只绘制在时间范围内的数据点
+                if (timeData[i] >= minTime && timeData[i] <= currentTime) {
+                    const x = ((timeData[i] - minTime) / (maxTime - minTime)) * (forceGraphCanvas.width - 80) + 60;
+                    const y = forceGraphCanvas.height / 2 - (forceData[i] / maxForce) * (forceGraphCanvas.height / 2 - 40);
+                    
+                    if (i === 0 || timeData[i-1] < minTime) {
+                        forceGraphCtx.moveTo(x, y);
+                    } else {
+                        forceGraphCtx.lineTo(x, y);
+                    }
+                }
+            }
+            
+            forceGraphCtx.stroke();
+            
+            // 绘制当前点
+            if (forceData.length > 0) {
+                const lastIndex = forceData.length - 1;
+                if (timeData[lastIndex] >= minTime) {
+                    const x = ((timeData[lastIndex] - minTime) / (maxTime - minTime)) * (forceGraphCanvas.width - 80) + 60;
+                    const y = forceGraphCanvas.height / 2 - (forceData[lastIndex] / maxForce) * (forceGraphCanvas.height / 2 - 40);
+                    
+                    forceGraphCtx.fillStyle = '#ff6b6b';
+                    forceGraphCtx.beginPath();
+                    forceGraphCtx.arc(x, y, 4, 0, Math.PI * 2);
+                    forceGraphCtx.fill();
+                }
+            }
+        }
+        
+        // 绘制合并的速度时间图像 - 固定时间轴
+        function drawVelocityGraph() {
+            // 清空画布
+            velocityGraphCtx.clearRect(0, 0, velocityGraphCanvas.width, velocityGraphCanvas.height);
+            
+            // 绘制坐标轴
+            drawGraphAxes(velocityGraphCtx, velocityGraphCanvas, '时间 (s)', '速度 (m/s)');
+            
+            // 如果没有数据，直接返回
+            if (velocity1Data.length < 2 || velocity2Data.length < 2) return;
+            
+            // 计算数据范围 - 使用固定的时间范围
+            const maxTime = Math.min(currentTime, velocityTimeRange);
+            const minTime = Math.max(0, currentTime - velocityTimeRange);
+            const maxVelocity1 = Math.max(5, Math.max(...velocity1Data.map(Math.abs)));
+            const maxVelocity2 = Math.max(5, Math.max(...velocity2Data.map(Math.abs)));
+            const maxVelocity = Math.max(maxVelocity1, maxVelocity2);
+            
+            // 绘制网格
+            drawGraphGrid(velocityGraphCtx, velocityGraphCanvas, maxTime, maxVelocity, minTime);
+            
+            // 绘制小球1速度曲线
+            velocityGraphCtx.strokeStyle = '#ff6b6b';
+            velocityGraphCtx.lineWidth = 2;
+            velocityGraphCtx.beginPath();
+            
+            for (let i = 0; i < velocity1Data.length; i++) {
+                // 只绘制在时间范围内的数据点
+                if (timeData[i] >= minTime && timeData[i] <= currentTime) {
+                    const x = ((timeData[i] - minTime) / (maxTime - minTime)) * (velocityGraphCanvas.width - 80) + 60;
+                    const y = velocityGraphCanvas.height / 2 - (velocity1Data[i] / maxVelocity) * (velocityGraphCanvas.height / 2 - 40);
+                    
+                    if (i === 0 || timeData[i-1] < minTime) {
+                        velocityGraphCtx.moveTo(x, y);
+                    } else {
+                        velocityGraphCtx.lineTo(x, y);
+                    }
+                }
+            }
+            
+            velocityGraphCtx.stroke();
+            
+            // 绘制小球2速度曲线
+            velocityGraphCtx.strokeStyle = '#4ecdc4';
+            velocityGraphCtx.lineWidth = 2;
+            velocityGraphCtx.beginPath();
+            
+            for (let i = 0; i < velocity2Data.length; i++) {
+                // 只绘制在时间范围内的数据点
+                if (timeData[i] >= minTime && timeData[i] <= currentTime) {
+                    const x = ((timeData[i] - minTime) / (maxTime - minTime)) * (velocityGraphCanvas.width - 80) + 60;
+                    const y = velocityGraphCanvas.height / 2 - (velocity2Data[i] / maxVelocity) * (velocityGraphCanvas.height / 2 - 40);
+                    
+                    if (i === 0 || timeData[i-1] < minTime) {
+                        velocityGraphCtx.moveTo(x, y);
+                    } else {
+                        velocityGraphCtx.lineTo(x, y);
+                    }
+                }
+            }
+            
+            velocityGraphCtx.stroke();
+            
+            // 绘制当前点
+            if (velocity1Data.length > 0) {
+                const lastIndex = velocity1Data.length - 1;
+                if (timeData[lastIndex] >= minTime) {
+                    // 小球1当前点
+                    const x1 = ((timeData[lastIndex] - minTime) / (maxTime - minTime)) * (velocityGraphCanvas.width - 80) + 60;
+                    const y1 = velocityGraphCanvas.height / 2 - (velocity1Data[lastIndex] / maxVelocity) * (velocityGraphCanvas.height / 2 - 40);
+                    
+                    velocityGraphCtx.fillStyle = '#ff6b6b';
+                    velocityGraphCtx.beginPath();
+                    velocityGraphCtx.arc(x1, y1, 4, 0, Math.PI * 2);
+                    velocityGraphCtx.fill();
+                    
+                    // 小球2当前点
+                    const x2 = ((timeData[lastIndex] - minTime) / (maxTime - minTime)) * (velocityGraphCanvas.width - 80) + 60;
+                    const y2 = velocityGraphCanvas.height / 2 - (velocity2Data[lastIndex] / maxVelocity) * (velocityGraphCanvas.height / 2 - 40);
+                    
+                    velocityGraphCtx.fillStyle = '#4ecdc4';
+                    velocityGraphCtx.beginPath();
+                    velocityGraphCtx.arc(x2, y2, 4, 0, Math.PI * 2);
+                    velocityGraphCtx.fill();
+                }
+            }
+        }
+        
+        // 绘制坐标轴
+        function drawGraphAxes(ctx, canvas, xLabel, yLabel) {
+            ctx.strokeStyle = '#4facfe';
+            ctx.lineWidth = 2;
+            
+            // 绘制x轴
+            ctx.beginPath();
+            ctx.moveTo(60, canvas.height / 2);
+            ctx.lineTo(canvas.width - 20, canvas.height / 2);
+            ctx.stroke();
+            
+            // 绘制y轴
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(60, canvas.height - 20);
+            ctx.stroke();
+            
+            // 绘制箭头
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 20, canvas.height / 2);
+            ctx.lineTo(canvas.width - 30, canvas.height / 2 - 5);
+            ctx.lineTo(canvas.width - 30, canvas.height / 2 + 5);
+            ctx.closePath();
+            ctx.fillStyle = '#4facfe';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(60, 20);
+            ctx.lineTo(55, 30);
+            ctx.lineTo(65, 30);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 绘制标签
+            ctx.fillStyle = '#4facfe';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(xLabel, canvas.width / 2, canvas.height - 5);
+            
+            ctx.save();
+            ctx.translate(20, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(yLabel, 0, 0);
+            ctx.restore();
+        }
+        
+        // 绘制图表网格 - 修改为支持最小时间
+        function drawGraphGrid(ctx, canvas, maxTime, maxValue, minTime = 0) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线 (时间)
+            for (let i = 1; i <= 5; i++) {
+                const timeValue = minTime + (maxTime - minTime) * i / 5;
+                const x = 60 + (i / 5) * (canvas.width - 80);
+                ctx.beginPath();
+                ctx.moveTo(x, 20);
+                ctx.lineTo(x, canvas.height - 20);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#4facfe';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(timeValue.toFixed(1), x, canvas.height / 2 + 15);
+            }
+            
+            // 水平线 (值)
+            for (let i = -4; i <= 4; i++) {
+                if (i === 0) continue;
+                const y = canvas.height / 2 - (i / 4) * (canvas.height / 2 - 40);
+                ctx.beginPath();
+                ctx.moveTo(60, y);
+                ctx.lineTo(canvas.width - 20, y);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#4facfe';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'right';
+                ctx.fillText((maxValue * i / 4).toFixed(1), 55, y + 4);
+            }
+            
+            // 零点
+            ctx.fillStyle = '#4facfe';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('0', 55, canvas.height / 2 + 4);
+        }
+        
+        // 绘制背景网格
+        function drawGrid(ctx, canvas) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // 绘制小球
+        function drawBall(ctx, ball, color, label) {
+            // 绘制小球阴影
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 3;
+            ctx.shadowOffsetY = 3;
+            
+            // 绘制小球
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制小球边框
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 重置阴影
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // 绘制小球标签
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, ball.x, ball.y);
+        }
+        
+        // 绘制弹簧
+        function drawSpring(ctx, x1, y1, x2, y2, coils) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.save();
+            ctx.translate(x1, y1);
+            ctx.rotate(angle);
+            
+            ctx.strokeStyle = '#8c7ae6';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            
+            const segmentLength = distance / coils;
+            for (let i = 0; i < coils; i++) {
+                const x = (i + 0.5) * segmentLength;
+                const amplitude = (i % 2 === 0) ? 15 : -15;
+                ctx.lineTo(x, amplitude);
+            }
+            
+            ctx.lineTo(distance, 0);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // 绘制速度矢量
+        function drawVelocityVector(ctx, ball, color) {
+            const scale = 8; // 速度矢量缩放因子
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(ball.x + ball.vx * scale, ball.y);
+            ctx.stroke();
+            
+            // 绘制箭头
+            if (Math.abs(ball.vx) > 0.1) {
+                const arrowSize = 10;
+                const direction = ball.vx > 0 ? 1 : -1;
+                ctx.beginPath();
+                ctx.moveTo(ball.x + ball.vx * scale, ball.y);
+                ctx.lineTo(ball.x + ball.vx * scale - arrowSize * direction, ball.y - arrowSize);
+                ctx.lineTo(ball.x + ball.vx * scale - arrowSize * direction, ball.y + arrowSize);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+        
+        // 绘制数据标签
+        function drawDataLabels(ctx, canvas) {
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            
+            // 绘制小球1数据
+            ctx.fillText(`质量: ${mass1.toFixed(1)} kg`, 20, 20);
+            ctx.fillText(`速度: ${ball1.vx.toFixed(2)} m/s`, 20, 40);
+            ctx.fillText(`动量: ${momentum1.toFixed(2)} kg·m/s`, 20, 60);
+            
+            // 绘制小球2数据
+            ctx.fillText(`质量: ${mass2.toFixed(1)} kg`, canvas.width - 150, 20);
+            ctx.fillText(`速度: ${ball2.vx.toFixed(2)} m/s`, canvas.width - 150, 40);
+            ctx.fillText(`动量: ${momentum2.toFixed(2)} kg·m/s`, canvas.width - 150, 60);
+            
+            // 绘制系统数据
+            ctx.textAlign = 'center';
+            ctx.fillText(`系统总动量: ${totalMomentum.toFixed(2)} kg·m/s`, canvas.width / 2, 20);
+            ctx.fillText(`系统总能量: ${totalEnergy.toFixed(2)} J`, canvas.width / 2, 40);
+            ctx.fillText(`动量守恒误差: ${Math.abs((totalMomentum - initialMomentum) / initialMomentum * 100).toFixed(4)}%`, canvas.width / 2, 60);
+        }
+        
+        // 绘制初始条件指示
+        function drawInitialConditionIndicator(ctx, canvas) {
+            ctx.fillStyle = '#ffc107';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            
+            // 绘制初始条件文本
+            ctx.fillText(`初始条件: 小球1靠左边缘, 初速度 ${initialVelocity.toFixed(1)} m/s`, canvas.width / 2, canvas.height - 40);
+            
+            // 绘制小球1初始位置指示
+            ctx.strokeStyle = '#ffc107';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(ball1.radius + 10, canvas.height / 2 - 50);
+            ctx.lineTo(ball1.radius + 10, canvas.height / 2 + 50);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制小球1初速度箭头
+            ctx.strokeStyle = '#ffc107';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(ball1.x, ball1.y - 60);
+            ctx.lineTo(ball1.x + 40, ball1.y - 60);
+            ctx.stroke();
+            
+            // 绘制箭头头部
+            ctx.beginPath();
+            ctx.moveTo(ball1.x + 40, ball1.y - 60);
+            ctx.lineTo(ball1.x + 30, ball1.y - 65);
+            ctx.lineTo(ball1.x + 30, ball1.y - 55);
+            ctx.closePath();
+            ctx.fillStyle = '#ffc107';
+            ctx.fill();
+        }
+        
+        // 更新显示数据
+        function updateDisplays() {
+            mass1Value.textContent = mass1.toFixed(1) + " kg";
+            mass2Value.textContent = mass2.toFixed(1) + " kg";
+            springValue.textContent = k.toFixed(1);
+            velocityValue.textContent = initialVelocity.toFixed(1) + " m/s";
+            momentum1Display.textContent = momentum1.toFixed(2) + " kg·m/s";
+            momentum2Display.textContent = momentum2.toFixed(2) + " kg·m/s";
+            totalMomentumDisplay.textContent = totalMomentum.toFixed(2) + " kg·m/s";
+            springForceDisplay.textContent = springForce.toFixed(2) + " N";
+            forceTimeRangeDisplay.textContent = forceTimeRange;
+            velocityTimeRangeDisplay.textContent = velocityTimeRange;
+        }
+        
+        // 动画循环
+        function animate() {
+            updatePhysics();
+            drawSimulation();
+            drawForceGraph();
+            drawVelocityGraph();
+            requestAnimationFrame(animate);
+        }
+        
+        // 事件监听器
+        mass1Slider.addEventListener('input', function() {
+            mass1 = parseFloat(this.value);
+            calculateRadii();
+            updateDisplays();
+        });
+        
+        mass2Slider.addEventListener('input', function() {
+            mass2 = parseFloat(this.value);
+            calculateRadii();
+            updateDisplays();
+        });
+        
+        springSlider.addEventListener('input', function() {
+            k = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        velocitySlider.addEventListener('input', function() {
+            initialVelocity = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        startBtn.addEventListener('click', function() {
+            isRunning = true;
+            isPaused = false;
+            initSystem();
+        });
+        
+        resetBtn.addEventListener('click', function() {
+            isRunning = false;
+            isPaused = false;
+            initSystem();
+        });
+        
+        pauseBtn.addEventListener('click', function() {
+            if (isRunning) {
+                isPaused = !isPaused;
+            }
+        });
+        
+        clearGraphBtn.addEventListener('click', function() {
+            forceData = [];
+            velocity1Data = [];
+            velocity2Data = [];
+            timeData = [];
+            currentTime = 0;
+        });
+        
+        forceTimeRangeSlider.addEventListener('input', function() {
+            forceTimeRange = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        velocityTimeRangeSlider.addEventListener('input', function() {
+            velocityTimeRange = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        // 启动模拟
+        initSystem();
+        animate();
+    </script>
+</body>
+</html>

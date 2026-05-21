@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正多面体电荷分布场线演示</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: sans-serif; }
+        canvas { display: block; }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(20, 20, 20, 0.85);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #444;
+            max-width: 300px;
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+        .slider-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #2563eb; }
+    </style>
+</head>
+<body>
+
+<div class="controls">
+    <h2 class="text-xl font-bold mb-4">电学教学演示</h2>
+    
+    <div class="slider-group">
+        <label>选择正多面体</label>
+        <select id="polyType">
+            <option value="4">正四面体 (4个顶点)</option>
+            <option value="6" selected>正六面体 (8个顶点)</option>
+            <option value="8">正八面体 (6个顶点)</option>
+            <option value="12">正十二面体 (20个顶点)</option>
+            <option value="20">正二十面体 (12个顶点)</option>
+        </select>
+    </div>
+
+    <div class="slider-group">
+        <label id="chargeLabel">单位电荷 (Q): 1.0</label>
+        <input type="range" id="chargeRange" min="-5" max="5" step="0.5" value="1">
+    </div>
+
+    <div class="slider-group">
+        <label id="lineCountLabel">场线密度: 10</label>
+        <input type="range" id="lineCountRange" min="2" max="24" step="1" value="10">
+    </div>
+
+    <div class="flex items-center mb-3">
+        <input type="checkbox" id="showEquipotential" checked class="mr-2">
+        <label for="showEquipotential" class="mb-0">显示红色等势线 (切面)</label>
+    </div>
+
+    <div class="flex items-center mb-3">
+        <input type="checkbox" id="showMesh" checked class="mr-2">
+        <label for="showMesh" class="mb-0">显示多面体框架</label>
+    </div>
+
+    <button class="btn" onclick="resetView()">重置视角</button>
+</div>
+
+<div class="legend">
+    <div class="flex items-center mb-1"><span class="w-3 h-3 bg-pink-500 rounded-full mr-2"></span> 正电荷</div>
+    <div class="flex items-center mb-1"><span class="w-3 h-3 bg-cyan-500 rounded-full mr-2"></span> 负电荷</div>
+    <div class="flex items-center mb-1"><span class="w-3 h-0.5 bg-red-600 mr-2"></span> 等势线 (红色实线)</div>
+    <div class="flex items-center"><span class="w-3 h-0.5 bg-gray-500 mr-2"></span> 电场线 (白色)</div>
+</div>
+
+<script>
+    let scene, camera, renderer, controls;
+    let chargeNodes = [];
+    let fieldLinesGroup, equipotentialGroup, polyFrame;
+    
+    let config = {
+        polyType: 6,
+        charge: 1.0,
+        lineCount: 10,
+        showEquipotential: true,
+        showMesh: true
+    };
+
+    init();
+    animate();
+
+    function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 4, 6);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+
+        fieldLinesGroup = new THREE.Group();
+        equipotentialGroup = new THREE.Group();
+        scene.add(fieldLinesGroup);
+        scene.add(equipotentialGroup);
+
+        // UI Binding
+        document.getElementById('polyType').onchange = (e) => { config.polyType = parseInt(e.target.value); updateSimulation(); };
+        document.getElementById('chargeRange').oninput = (e) => { 
+            config.charge = parseFloat(e.target.value); 
+            document.getElementById('chargeLabel').innerText = `单位电荷 (Q): ${config.charge}`;
+            updateSimulation(); 
+        };
+        document.getElementById('lineCountRange').oninput = (e) => { 
+            config.lineCount = parseInt(e.target.value); 
+            document.getElementById('lineCountLabel').innerText = `场线密度: ${config.lineCount}`;
+            updateSimulation(); 
+        };
+        document.getElementById('showEquipotential').onchange = (e) => { config.showEquipotential = e.target.checked; updateSimulation(); };
+        document.getElementById('showMesh').onchange = (e) => { config.showMesh = e.target.checked; updateSimulation(); };
+
+        updateSimulation();
+        window.addEventListener('resize', onWindowResize);
+    }
+
+    function getGeometry(faces) {
+        let geo;
+        const size = 2.5;
+        // 使用 BufferGeometry 的默认生成，后面会进行手动去重
+        switch(faces) {
+            case 4: geo = new THREE.TetrahedronGeometry(size); break;
+            case 6: geo = new THREE.BoxGeometry(size, size, size); break;
+            case 8: geo = new THREE.OctahedronGeometry(size); break;
+            case 12: geo = new THREE.DodecahedronGeometry(size); break;
+            case 20: geo = new THREE.IcosahedronGeometry(size); break;
+        }
+        return geo;
+    }
+
+    function updateSimulation() {
+        // Cleanup
+        chargeNodes.forEach(c => scene.remove(c.mesh));
+        chargeNodes = [];
+        while(fieldLinesGroup.children.length) fieldLinesGroup.remove(fieldLinesGroup.children[0]);
+        while(equipotentialGroup.children.length) equipotentialGroup.remove(equipotentialGroup.children[0]);
+        if (polyFrame) scene.remove(polyFrame);
+
+        const geo = getGeometry(config.polyType);
+        const posAttr = geo.attributes.position;
+        const verts = [];
+        const seen = new Set();
+        
+        // 关键：严格去重，确保每个坐标点只有一个电荷
+        for (let i = 0; i < posAttr.count; i++) {
+            const v = new THREE.Vector3(
+                parseFloat(posAttr.getX(i).toFixed(4)), 
+                parseFloat(posAttr.getY(i).toFixed(4)), 
+                parseFloat(posAttr.getZ(i).toFixed(4))
+            );
+            const key = `${v.x},${v.y},${v.z}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                verts.push(v);
+            }
+        }
+
+        // 放置电荷
+        verts.forEach(v => {
+            const mat = new THREE.MeshPhongMaterial({ 
+                color: config.charge >= 0 ? 0xff3366 : 0x33ccff,
+                emissive: config.charge >= 0 ? 0x441111 : 0x111144
+            });
+            const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), mat);
+            mesh.position.copy(v);
+            scene.add(mesh);
+            chargeNodes.push({ pos: v.clone(), q: config.charge, mesh: mesh });
+        });
+
+        // 绘制框架
+        if (config.showMesh) {
+            const wireGeo = new THREE.WireframeGeometry(geo);
+            polyFrame = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.3 }));
+            scene.add(polyFrame);
+        }
+
+        if (Math.abs(config.charge) < 0.01) return;
+
+        // 绘制场线
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+        chargeNodes.forEach(c => {
+            const n = config.lineCount;
+            // 使用斐波那契球采样获得更均匀的起始方向
+            for(let i=0; i < n * n; i++) {
+                const phi = Math.acos(1 - 2 * (i + 0.5) / (n * n));
+                const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+                const dir = new THREE.Vector3(
+                    Math.sin(phi) * Math.cos(theta),
+                    Math.sin(phi) * Math.sin(theta),
+                    Math.cos(phi)
+                );
+                drawFieldLine(c.pos.clone().add(dir.multiplyScalar(0.22)), config.charge > 0, lineMat);
+            }
+        });
+
+        // 绘制等势线
+        if (config.showEquipotential) {
+            drawEquipotentialPlanes();
+        }
+    }
+
+    function getFieldAt(p) {
+        const f = new THREE.Vector3();
+        chargeNodes.forEach(c => {
+            const diff = new THREE.Vector3().subVectors(p, c.pos);
+            const distSq = diff.lengthSq();
+            if (distSq < 0.01) return;
+            f.add(diff.normalize().multiplyScalar(c.q / distSq));
+        });
+        return f;
+    }
+
+    function getPotentialAt(p) {
+        let v = 0;
+        chargeNodes.forEach(c => {
+            const d = p.distanceTo(c.pos);
+            v += c.q / Math.max(d, 0.1);
+        });
+        return v;
+    }
+
+    function drawFieldLine(start, forward, mat) {
+        const pts = [];
+        let curr = start.clone();
+        const step = 0.12;
+        const maxSteps = 120;
+        for(let i=0; i<maxSteps; i++) {
+            pts.push(curr.clone());
+            const field = getFieldAt(curr);
+            const strength = field.length();
+            if (strength < 0.005) break;
+            
+            curr.add(field.normalize().multiplyScalar(forward ? step : -step));
+            
+            if (curr.length() > 12) break;
+            let hit = false;
+            for(let c of chargeNodes) {
+                if(curr.distanceTo(c.pos) < 0.2) { hit=true; break; }
+            }
+            if(hit) break;
+        }
+        if(pts.length > 2) {
+            const g = new THREE.BufferGeometry().setFromPoints(pts);
+            fieldLinesGroup.add(new THREE.Line(g, mat));
+        }
+    }
+
+    function drawEquipotentialPlanes() {
+        const mat = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        const range = 6;
+        const res = 44; // 增加采样密度使线条更平滑
+        const step = (range * 2) / res;
+        
+        // 基于总电量动态计算观察的电位档位
+        const refV = Math.abs(config.charge) * chargeNodes.length * 0.25;
+        const levels = [refV * 0.4, refV * 0.8, refV * 1.5, refV * 3];
+
+        const planes = [
+            { u: 'x', v: 'y', c: 'z', val: 0 },
+            { u: 'y', v: 'z', c: 'x', val: 0 },
+            { u: 'x', v: 'z', c: 'y', val: 0 }
+        ];
+
+        planes.forEach(plane => {
+            levels.forEach(targetV => {
+                const finalTarget = config.charge > 0 ? targetV : -targetV;
+                const segments = [];
+                for(let i=0; i<res; i++) {
+                    for(let j=0; j<res; j++) {
+                        const x0 = -range + i * step;
+                        const y0 = -range + j * step;
+                        
+                        const getV = (uo, vo) => {
+                            const p = new THREE.Vector3();
+                            p[plane.u] = x0 + uo * step;
+                            p[plane.v] = y0 + vo * step;
+                            p[plane.c] = plane.val;
+                            return getPotentialAt(p);
+                        };
+
+                        const v00 = getV(0,0), v10 = getV(1,0), v01 = getV(0,1), v11 = getV(1,1);
+                        const check = (va, vb) => (va < finalTarget && vb > finalTarget) || (va > finalTarget && vb < finalTarget);
+
+                        const getP = (u, v) => {
+                            const pt = new THREE.Vector3();
+                            pt[plane.u] = x0 + u * step;
+                            pt[plane.v] = y0 + v * step;
+                            pt[plane.c] = plane.val;
+                            return pt;
+                        };
+
+                        // Marching Squares 边插值计算
+                        if(check(v00, v10)) segments.push(getP((finalTarget-v00)/(v10-v00), 0));
+                        if(check(v10, v11)) segments.push(getP(1, (finalTarget-v10)/(v11-v10)));
+                        if(check(v11, v01)) segments.push(getP((finalTarget-v01)/(v11-v01), 1));
+                        if(check(v01, v00)) segments.push(getP(0, (finalTarget-v00)/(v01-v00)));
+                    }
+                }
+                if(segments.length > 1) {
+                    const geometry = new THREE.BufferGeometry().setFromPoints(segments);
+                    const lines = new THREE.LineSegments(geometry, mat);
+                    equipotentialGroup.add(lines);
+                }
+            });
+        });
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function resetView() {
+        controls.reset();
+        camera.position.set(6, 4, 6);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

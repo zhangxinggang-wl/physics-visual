@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波的形成教学动画 - 燕赵名师张兴刚工作室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            color: #3498db;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        
+        .animation-section {
+            flex: 3;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .controls-section {
+            flex: 2;
+            min-width: 300px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+        
+        .canvas-container {
+            background-color: #1a1a2e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 300px;
+        }
+        
+        .wave-type-selector {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: #eef2f7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .wave-type {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .wave-type.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .control-group:last-child {
+            border-bottom: none;
+        }
+        
+        h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        
+        h3 i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .slider-label {
+            min-width: 100px;
+            font-weight: 600;
+        }
+        
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            margin-left: 10px;
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button i {
+            margin-right: 8px;
+        }
+        
+        .play-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .play-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .explanation {
+            background-color: #f0f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .explanation h3 {
+            margin-top: 0;
+        }
+        
+        .explanation p {
+            margin-bottom: 15px;
+        }
+        
+        .wave-properties {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .property {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .property h4 {
+            color: #3498db;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 30px;
+            border-top: 1px solid #34495e;
+        }
+        
+        .footer-text {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .animation-section, .controls-section {
+                width: 100%;
+            }
+        }
+        
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .particle-view {
+            margin-top: 25px;
+            background-color: #1a1a2e;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+        }
+        
+        .particle-view h4 {
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .particle-canvas-container {
+            height: 100px;
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        #particleCanvas {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-water"></i>
+                <div>
+                    <h1>波的形成教学动画</h1>
+                    <div class="subtitle">燕赵名师张兴刚工作室 · 物理教学演示</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="animation-section">
+                <div class="wave-type-selector">
+                    <div class="wave-type active" data-type="transverse">横波</div>
+                    <div class="wave-type" data-type="longitudinal">纵波</div>
+                    <div class="wave-type" data-type="combined">合成演示</div>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="waveCanvas"></canvas>
+                </div>
+                
+                <div class="particle-view">
+                    <h4><i class="fas fa-atom"></i> 单个质点振动视图</h4>
+                    <p>观察单个质点的振动情况，理解波传播过程中质点的运动规律</p>
+                    <div class="particle-canvas-container">
+                        <canvas id="particleCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="control-group">
+                    <h3><i class="fas fa-sliders-h"></i> 波参数控制</h3>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">振幅</div>
+                        <input type="range" id="amplitudeSlider" min="10" max="100" value="50">
+                        <div class="slider-value" id="amplitudeValue">50</div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">频率</div>
+                        <input type="range" id="frequencySlider" min="1" max="10" value="3">
+                        <div class="slider-value" id="frequencyValue">3</div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">波长</div>
+                        <input type="range" id="wavelengthSlider" min="50" max="300" value="150">
+                        <div class="slider-value" id="wavelengthValue">150</div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">波速</div>
+                        <input type="range" id="speedSlider" min="1" max="10" value="5">
+                        <div class="slider-value" id="speedValue">5</div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3><i class="fas fa-eye"></i> 视图选项</h3>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">粒子数量</div>
+                        <input type="range" id="particlesSlider" min="5" max="30" value="15">
+                        <div class="slider-value" id="particlesValue">15</div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">粒子大小</div>
+                        <input type="range" id="particleSizeSlider" min="3" max="10" value="6">
+                        <div class="slider-value" id="particleSizeValue">6</div>
+                    </div>
+                </div>
+                
+                <div class="buttons">
+                    <button class="play-btn" id="playPauseBtn">
+                        <i class="fas fa-pause"></i> 暂停动画
+                    </button>
+                    <button class="reset-btn" id="resetBtn">
+                        <i class="fas fa-redo"></i> 重置参数
+                    </button>
+                </div>
+                
+                <div class="explanation">
+                    <h3><i class="fas fa-lightbulb"></i> 波的形成原理</h3>
+                    <p><span class="highlight">横波</span>：振动方向与波的传播方向垂直。如电磁波、弦上的波。</p>
+                    <p><span class="highlight">纵波</span>：振动方向与波的传播方向平行。如声波、弹簧上的波。</p>
+                    <p>波在传播过程中，介质中的质点只在各自的平衡位置附近振动，并不随波迁移。</p>
+                    
+                    <div class="wave-properties">
+                        <div class="property">
+                            <h4>振幅</h4>
+                            <p>表示质点振动的最大位移，决定波的强度。</p>
+                        </div>
+                        <div class="property">
+                            <h4>频率</h4>
+                            <p>单位时间内质点振动的次数，决定波的高低音调。</p>
+                        </div>
+                        <div class="property">
+                            <h4>波长</h4>
+                            <p>相邻两个波峰（或波谷）之间的距离。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="footer-text">
+                <p>© 2023 燕赵名师张兴刚工作室 | 物理教学资源 | 本动画用于波的形成原理教学演示</p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">设计制作：物理教学动画开发组 | 技术支持：HTML5 Canvas & JavaScript</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const waveCanvas = document.getElementById('waveCanvas');
+        const particleCanvas = document.getElementById('particleCanvas');
+        const waveCtx = waveCanvas.getContext('2d');
+        const particleCtx = particleCanvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvases() {
+            const container = waveCanvas.parentElement;
+            waveCanvas.width = container.clientWidth;
+            waveCanvas.height = 300;
+            
+            particleCanvas.width = particleCanvas.parentElement.clientWidth;
+            particleCanvas.height = 100;
+        }
+        
+        // 初始调整Canvas尺寸
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+        
+        // 波参数
+        let waveParams = {
+            amplitude: 50,
+            frequency: 3,
+            wavelength: 150,
+            speed: 5,
+            particleCount: 15,
+            particleSize: 6,
+            waveType: 'transverse', // 'transverse', 'longitudinal', 'combined'
+            isPlaying: true,
+            time: 0,
+            selectedParticleIndex: 7
+        };
+        
+        // 更新滑块显示的值
+        document.getElementById('amplitudeSlider').value = waveParams.amplitude;
+        document.getElementById('frequencySlider').value = waveParams.frequency;
+        document.getElementById('wavelengthSlider').value = waveParams.wavelength;
+        document.getElementById('speedSlider').value = waveParams.speed;
+        document.getElementById('particlesSlider').value = waveParams.particleCount;
+        document.getElementById('particleSizeSlider').value = waveParams.particleSize;
+        
+        document.getElementById('amplitudeValue').textContent = waveParams.amplitude;
+        document.getElementById('frequencyValue').textContent = waveParams.frequency;
+        document.getElementById('wavelengthValue').textContent = waveParams.wavelength;
+        document.getElementById('speedValue').textContent = waveParams.speed;
+        document.getElementById('particlesValue').textContent = waveParams.particleCount;
+        document.getElementById('particleSizeValue').textContent = waveParams.particleSize;
+        
+        // 波类型选择
+        document.querySelectorAll('.wave-type').forEach(type => {
+            type.addEventListener('click', function() {
+                document.querySelectorAll('.wave-type').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                waveParams.waveType = this.dataset.type;
+            });
+        });
+        
+        // 滑块事件监听
+        document.getElementById('amplitudeSlider').addEventListener('input', function() {
+            waveParams.amplitude = parseInt(this.value);
+            document.getElementById('amplitudeValue').textContent = waveParams.amplitude;
+        });
+        
+        document.getElementById('frequencySlider').addEventListener('input', function() {
+            waveParams.frequency = parseInt(this.value);
+            document.getElementById('frequencyValue').textContent = waveParams.frequency;
+        });
+        
+        document.getElementById('wavelengthSlider').addEventListener('input', function() {
+            waveParams.wavelength = parseInt(this.value);
+            document.getElementById('wavelengthValue').textContent = waveParams.wavelength;
+        });
+        
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            waveParams.speed = parseInt(this.value);
+            document.getElementById('speedValue').textContent = waveParams.speed;
+        });
+        
+        document.getElementById('particlesSlider').addEventListener('input', function() {
+            waveParams.particleCount = parseInt(this.value);
+            document.getElementById('particlesValue').textContent = waveParams.particleCount;
+        });
+        
+        document.getElementById('particleSizeSlider').addEventListener('input', function() {
+            waveParams.particleSize = parseInt(this.value);
+            document.getElementById('particleSizeValue').textContent = waveParams.particleSize;
+        });
+        
+        // 按钮事件监听
+        document.getElementById('playPauseBtn').addEventListener('click', function() {
+            waveParams.isPlaying = !waveParams.isPlaying;
+            this.innerHTML = waveParams.isPlaying ? 
+                '<i class="fas fa-pause"></i> 暂停动画' : 
+                '<i class="fas fa-play"></i> 播放动画';
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            waveParams.amplitude = 50;
+            waveParams.frequency = 3;
+            waveParams.wavelength = 150;
+            waveParams.speed = 5;
+            waveParams.particleCount = 15;
+            waveParams.particleSize = 6;
+            waveParams.time = 0;
+            
+            document.getElementById('amplitudeSlider').value = waveParams.amplitude;
+            document.getElementById('frequencySlider').value = waveParams.frequency;
+            document.getElementById('wavelengthSlider').value = waveParams.wavelength;
+            document.getElementById('speedSlider').value = waveParams.speed;
+            document.getElementById('particlesSlider').value = waveParams.particleCount;
+            document.getElementById('particleSizeSlider').value = waveParams.particleSize;
+            
+            document.getElementById('amplitudeValue').textContent = waveParams.amplitude;
+            document.getElementById('frequencyValue').textContent = waveParams.frequency;
+            document.getElementById('wavelengthValue').textContent = waveParams.wavelength;
+            document.getElementById('speedValue').textContent = waveParams.speed;
+            document.getElementById('particlesValue').textContent = waveParams.particleCount;
+            document.getElementById('particleSizeValue').textContent = waveParams.particleSize;
+            
+            waveParams.isPlaying = true;
+            document.getElementById('playPauseBtn').innerHTML = '<i class="fas fa-pause"></i> 暂停动画';
+        });
+        
+        // 绘制波函数
+        function drawWave() {
+            const ctx = waveCtx;
+            const width = waveCanvas.width;
+            const height = waveCanvas.height;
+            const centerY = height / 2;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 水平网格线
+            for (let y = 0; y < height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // 垂直网格线
+            for (let x = 0; x < width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            
+            // 绘制中心线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+            
+            // 计算波参数
+            const amplitude = waveParams.amplitude;
+            const frequency = waveParams.frequency;
+            const wavelength = waveParams.wavelength;
+            const speed = waveParams.speed;
+            const particleCount = waveParams.particleCount;
+            
+            // 计算角频率和波数
+            const angularFrequency = 2 * Math.PI * frequency / 60;
+            const waveNumber = 2 * Math.PI / wavelength;
+            
+            // 更新时间
+            if (waveParams.isPlaying) {
+                waveParams.time += speed / 10;
+            }
+            
+            // 绘制粒子
+            const particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                const x = (i + 1) * (width / (particleCount + 1));
+                let y;
+                
+                // 根据波类型计算y坐标
+                if (waveParams.waveType === 'transverse') {
+                    // 横波：正弦波
+                    y = centerY + amplitude * Math.sin(waveNumber * x - angularFrequency * waveParams.time);
+                } else if (waveParams.waveType === 'longitudinal') {
+                    // 纵波：压缩波
+                    const compression = amplitude * Math.sin(waveNumber * x - angularFrequency * waveParams.time);
+                    y = centerY + compression;
+                } else {
+                    // 合成演示：横波和纵波的组合
+                    const transverse = amplitude * Math.sin(waveNumber * x - angularFrequency * waveParams.time);
+                    const longitudinal = amplitude * 0.7 * Math.sin(waveNumber * x - angularFrequency * waveParams.time + Math.PI/4);
+                    y = centerY + transverse + longitudinal;
+                }
+                
+                particles.push({x, y});
+                
+                // 绘制粒子
+                ctx.fillStyle = i === waveParams.selectedParticleIndex ? '#e74c3c' : '#3498db';
+                ctx.beginPath();
+                ctx.arc(x, y, waveParams.particleSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制粒子到中心线的连线
+                if (waveParams.waveType === 'transverse' || waveParams.waveType === 'combined') {
+                    ctx.strokeStyle = 'rgba(52, 152, 219, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, centerY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制波形
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let x = 0; x < width; x++) {
+                let y;
+                
+                // 根据波类型计算y坐标
+                if (waveParams.waveType === 'transverse') {
+                    // 横波：正弦波
+                    y = centerY + amplitude * Math.sin(waveNumber * x - angularFrequency * waveParams.time);
+                } else if (waveParams.waveType === 'longitudinal') {
+                    // 纵波：压缩波
+                    const compression = amplitude * Math.sin(waveNumber * x - angularFrequency * waveParams.time);
+                    y = centerY + compression;
+                } else {
+                    // 合成演示：横波和纵波的组合
+                    const transverse = amplitude * Math.sin(waveNumber * x - angularFrequency * waveParams.time);
+                    const longitudinal = amplitude * 0.7 * Math.sin(waveNumber * x - angularFrequency * waveParams.time + Math.PI/4);
+                    y = centerY + transverse + longitudinal;
+                }
+                
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制波传播方向指示器
+            ctx.fillStyle = '#f39c12';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('波传播方向 →', width - 150, 30);
+            
+            // 绘制箭头
+            ctx.beginPath();
+            ctx.moveTo(width - 50, 25);
+            ctx.lineTo(width - 20, 25);
+            ctx.lineTo(width - 30, 20);
+            ctx.moveTo(width - 20, 25);
+            ctx.lineTo(width - 30, 30);
+            ctx.strokeStyle = '#f39c12';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制波类型标题
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 20px Arial';
+            let waveTypeText = '';
+            if (waveParams.waveType === 'transverse') waveTypeText = '横波演示';
+            else if (waveParams.waveType === 'longitudinal') waveTypeText = '纵波演示';
+            else waveTypeText = '合成波演示';
+            ctx.fillText(waveTypeText, 20, 30);
+            
+            return particles;
+        }
+        
+        // 绘制单个质点振动视图
+        function drawParticleView(particles) {
+            const ctx = particleCtx;
+            const width = particleCanvas.width;
+            const height = particleCanvas.height;
+            const centerY = height / 2;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!particles || particles.length === 0) return;
+            
+            // 获取选中的粒子
+            const selectedParticle = particles[waveParams.selectedParticleIndex];
+            if (!selectedParticle) return;
+            
+            // 绘制背景
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制中心线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.stroke();
+            
+            // 绘制时间轴
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(50, 20);
+            ctx.lineTo(50, height - 20);
+            ctx.stroke();
+            
+            // 绘制时间刻度
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '12px Arial';
+            ctx.fillText('时间', 25, centerY);
+            
+            // 绘制位移轴
+            ctx.beginPath();
+            ctx.moveTo(50, centerY);
+            ctx.lineTo(width - 20, centerY);
+            ctx.stroke();
+            
+            // 绘制位移刻度
+            for (let i = -2; i <= 2; i++) {
+                const y = centerY - i * 20;
+                ctx.beginPath();
+                ctx.moveTo(45, y);
+                ctx.lineTo(55, y);
+                ctx.stroke();
+                
+                if (i !== 0) {
+                    ctx.fillText(i, 30, y + 4);
+                }
+            }
+            
+            ctx.fillText('位移', width - 15, centerY + 15);
+            
+            // 绘制质点运动轨迹
+            const historyLength = 100;
+            if (!window.particleHistory) window.particleHistory = [];
+            
+            // 添加当前位置到历史记录
+            const time = waveParams.time % (Math.PI * 2);
+            const displacement = (selectedParticle.y - waveCanvas.height / 2) / waveParams.amplitude * 20;
+            
+            window.particleHistory.push({time, displacement});
+            
+            // 保持历史记录长度
+            if (window.particleHistory.length > historyLength) {
+                window.particleHistory.shift();
+            }
+            
+            // 绘制轨迹
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < window.particleHistory.length; i++) {
+                const point = window.particleHistory[i];
+                const x = 50 + (i / historyLength) * (width - 70);
+                const y = centerY - point.displacement;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制当前质点位置
+            const currentX = 50 + (window.particleHistory.length - 1) / historyLength * (width - 70);
+            const currentY = centerY - displacement;
+            
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制说明文本
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.fillText(`质点 ${waveParams.selectedParticleIndex + 1} 的振动情况`, 10, 15);
+            
+            // 绘制振动方向指示
+            const direction = displacement > 0 ? '向下' : '向上';
+            ctx.fillText(`振动方向: ${direction}`, width - 120, 15);
+        }
+        
+        // 动画循环
+        function animate() {
+            const particles = drawWave();
+            drawParticleView(particles);
+            requestAnimationFrame(animate);
+        }
+        
+        // 开始动画
+        animate();
+        
+        // 点击Canvas选择粒子
+        waveCanvas.addEventListener('click', function(event) {
+            const rect = waveCanvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const particleCount = waveParams.particleCount;
+            const width = waveCanvas.width;
+            const particleSpacing = width / (particleCount + 1);
+            
+            // 找到最近的粒子
+            let minDistance = Infinity;
+            let selectedIndex = waveParams.selectedParticleIndex;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particleX = (i + 1) * particleSpacing;
+                const distance = Math.abs(x - particleX);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    selectedIndex = i;
+                }
+            }
+            
+            // 如果点击位置接近某个粒子，则选中它
+            if (minDistance < 30) {
+                waveParams.selectedParticleIndex = selectedIndex;
+            }
+        });
+    </script>
+</body>
+</html>

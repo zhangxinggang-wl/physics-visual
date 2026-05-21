@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光电效应教学仿真 - 燕赵名师张兴刚工作室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #1a237e, #283593);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header h1 {
+            font-size: 2.4rem;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .header h2 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        .studio-name {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        
+        .simulation-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .controls-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #1a237e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+        }
+        
+        .canvas-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        #simulationCanvas {
+            width: 100%;
+            height: 400px;
+            display: block;
+            background-color: #f5f7ff;
+            border-radius: 8px;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .control-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #283593;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .control-title i {
+            margin-right: 8px;
+            color: #3949ab;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .slider-label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+        
+        .slider-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #1a237e;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            margin: 0 15px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #e8eaf6, #3949ab);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #1a237e;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .wavelength-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .wavelength-btn {
+            flex: 1;
+            margin: 0 5px;
+            padding: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        
+        .wavelength-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .wavelength-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .formula-display {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #3949ab;
+        }
+        
+        .formula {
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Cambria Math', serif;
+        }
+        
+        .formula-explanation {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid #3949ab;
+        }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a237e;
+            margin: 10px 0;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .unit {
+            font-size: 1rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .footer {
+            background: #1a237e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .instructions {
+            background: #f1f8e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 5px solid #7cb342;
+        }
+        
+        .instructions h3 {
+            color: #33691e;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .studio-name {
+                position: relative;
+                top: auto;
+                right: auto;
+                display: inline-block;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-atom"></i> 光电效应教学仿真</h1>
+            <h2>探索光子能量、截止频率与光电子动能之间的关系</h2>
+            <div class="studio-name">
+                <i class="fas fa-user-graduate"></i> 燕赵名师张兴刚工作室
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="simulation-section">
+                <div class="section-title">
+                    <i class="fas fa-play-circle"></i> 光电效应仿真
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="simulationCanvas" width="800" height="400"></canvas>
+                </div>
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-lightbulb"></i> 实验说明</h3>
+                    <ul>
+                        <li>调整入射光频率和强度，观察光电效应的变化</li>
+                        <li>当光子能量大于金属逸出功时，电子会被击出</li>
+                        <li>光电子动能与入射光频率成正比，与光强无关</li>
+                        <li>截止频率是产生光电效应的最小频率</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="section-title">
+                    <i class="fas fa-sliders-h"></i> 实验参数控制
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title">
+                        <i class="fas fa-sun"></i> 入射光参数
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">频率 (×10¹⁴ Hz)</div>
+                        <input type="range" id="frequencySlider" min="1" max="15" step="0.1" value="8">
+                        <div class="slider-value" id="frequencyValue">8.0</div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">光强度</div>
+                        <input type="range" id="intensitySlider" min="1" max="10" step="1" value="5">
+                        <div class="slider-value" id="intensityValue">5</div>
+                    </div>
+                    
+                    <div class="wavelength-selector">
+                        <button class="wavelength-btn" style="background: #ff5252;" data-freq="4.3">红外光</button>
+                        <button class="wavelength-btn" style="background: #ffeb3b;" data-freq="5.2">红光</button>
+                        <button class="wavelength-btn active" style="background: #4caf50;" data-freq="8.0">绿光</button>
+                        <button class="wavelength-btn" style="background: #2196f3;" data-freq="10.0">蓝光</button>
+                        <button class="wavelength-btn" style="background: #673ab7;" data-freq="12.0">紫外光</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title">
+                        <i class="fas fa-metal"></i> 金属靶材参数
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">逸出功 (eV)</div>
+                        <input type="range" id="workFunctionSlider" min="1.0" max="5.0" step="0.1" value="2.3">
+                        <div class="slider-value" id="workFunctionValue">2.3</div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">截止频率 (×10¹⁴ Hz)</div>
+                        <input type="range" id="cutoffFrequencySlider" min="1" max="10" step="0.1" value="5.5">
+                        <div class="slider-value" id="cutoffFrequencyValue">5.5</div>
+                    </div>
+                </div>
+                
+                <div class="formula-display">
+                    <div class="control-title">
+                        <i class="fas fa-calculator"></i> 光电效应方程
+                    </div>
+                    <div class="formula">
+                        K = hν - W₀
+                    </div>
+                    <div class="formula-explanation">
+                        其中：K 是光电子最大动能，h 是普朗克常数，ν 是入射光频率，W₀ 是金属逸出功。
+                        当 hν < W₀ 时，不会发生光电效应。
+                    </div>
+                </div>
+                
+                <div class="results">
+                    <div class="result-card">
+                        <div class="result-label">光子能量</div>
+                        <div class="result-value" id="photonEnergy">3.32</div>
+                        <div class="unit">eV</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">光电子动能</div>
+                        <div class="result-value" id="electronEnergy">1.02</div>
+                        <div class="unit">eV</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">能否发生光电效应</div>
+                        <div class="result-value" id="effectStatus">是</div>
+                        <div class="unit" id="effectDetail">hν > W₀</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><i class="fas fa-graduation-cap"></i> 燕赵名师张兴刚工作室 - 物理教学创新实践</p>
+            <p>光电效应教学仿真工具 v1.0 | 本仿真仅用于教学目的</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const frequencySlider = document.getElementById('frequencySlider');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const intensitySlider = document.getElementById('intensitySlider');
+        const intensityValue = document.getElementById('intensityValue');
+        const workFunctionSlider = document.getElementById('workFunctionSlider');
+        const workFunctionValue = document.getElementById('workFunctionValue');
+        const cutoffFrequencySlider = document.getElementById('cutoffFrequencySlider');
+        const cutoffFrequencyValue = document.getElementById('cutoffFrequencyValue');
+        
+        const photonEnergyDisplay = document.getElementById('photonEnergy');
+        const electronEnergyDisplay = document.getElementById('electronEnergy');
+        const effectStatusDisplay = document.getElementById('effectStatus');
+        const effectDetailDisplay = document.getElementById('effectDetail');
+        
+        const wavelengthButtons = document.querySelectorAll('.wavelength-btn');
+        
+        // 物理常数
+        const PLANCK_CONSTANT = 4.135667662e-15; // eV·s
+        const SPEED_OF_LIGHT = 3.0e8; // m/s
+        
+        // 仿真参数
+        let frequency = parseFloat(frequencySlider.value); // ×10¹⁴ Hz
+        let intensity = parseInt(intensitySlider.value); // 1-10
+        let workFunction = parseFloat(workFunctionSlider.value); // eV
+        let cutoffFrequency = parseFloat(cutoffFrequencySlider.value); // ×10¹⁴ Hz
+        
+        // 初始化波长按钮状态
+        function initWavelengthButtons() {
+            wavelengthButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的active类
+                    wavelengthButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // 给当前按钮添加active类
+                    this.classList.add('active');
+                    
+                    // 更新频率
+                    const freq = parseFloat(this.getAttribute('data-freq'));
+                    frequencySlider.value = freq;
+                    frequency = freq;
+                    frequencyValue.textContent = freq.toFixed(1);
+                    
+                    // 更新仿真
+                    updateSimulation();
+                });
+            });
+        }
+        
+        // 更新滑块显示值
+        function updateSliderValues() {
+            frequencyValue.textContent = frequency.toFixed(1);
+            intensityValue.textContent = intensity;
+            workFunctionValue.textContent = workFunction.toFixed(1);
+            cutoffFrequencyValue.textContent = cutoffFrequency.toFixed(1);
+        }
+        
+        // 计算物理量
+        function calculatePhysics() {
+            // 实际频率 (Hz)
+            const actualFrequency = frequency * 1e14;
+            
+            // 光子能量 (eV)
+            const photonEnergy = PLANCK_CONSTANT * actualFrequency;
+            
+            // 是否发生光电效应
+            const canEmit = photonEnergy > workFunction;
+            
+            // 光电子动能 (eV)
+            const electronEnergy = canEmit ? photonEnergy - workFunction : 0;
+            
+            // 更新显示
+            photonEnergyDisplay.textContent = photonEnergy.toFixed(2);
+            electronEnergyDisplay.textContent = electronEnergy.toFixed(2);
+            
+            if (canEmit) {
+                effectStatusDisplay.textContent = "是";
+                effectStatusDisplay.style.color = "#4caf50";
+                effectDetailDisplay.textContent = `hν = ${photonEnergy.toFixed(2)} eV > W₀ = ${workFunction.toFixed(1)} eV`;
+            } else {
+                effectStatusDisplay.textContent = "否";
+                effectStatusDisplay.style.color = "#f44336";
+                effectDetailDisplay.textContent = `hν = ${photonEnergy.toFixed(2)} eV < W₀ = ${workFunction.toFixed(1)} eV`;
+            }
+            
+            return { photonEnergy, electronEnergy, canEmit };
+        }
+        
+        // 绘制仿真
+        function drawSimulation() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 计算物理量
+            const physics = calculatePhysics();
+            
+            // 绘制金属表面
+            ctx.fillStyle = "#795548";
+            ctx.fillRect(50, height - 100, width - 100, 80);
+            
+            // 绘制金属原子
+            ctx.fillStyle = "#8D6E63";
+            for (let i = 0; i < 12; i++) {
+                const x = 70 + i * 60;
+                const y = height - 140;
+                const radius = 15;
+                
+                // 原子核
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 电子轨道
+                ctx.strokeStyle = "#5D4037";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(x, y, radius + 25, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 电子
+                ctx.fillStyle = "#2196F3";
+                const electronAngle = (Date.now() / 1000 + i) % (Math.PI * 2);
+                const electronX = x + Math.cos(electronAngle) * (radius + 25);
+                const electronY = y + Math.sin(electronAngle) * (radius + 25);
+                ctx.beginPath();
+                ctx.arc(electronX, electronY, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 绘制入射光
+            const lightColor = getLightColor(frequency);
+            const lightWidth = intensity * 5;
+            
+            for (let i = 0; i < intensity * 2; i++) {
+                const x = 50 + i * 15;
+                const y = 50 + i * 5;
+                const length = height - 150;
+                
+                // 光波
+                ctx.strokeStyle = lightColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + length);
+                ctx.stroke();
+                
+                // 光子
+                if (i % 2 === 0) {
+                    ctx.fillStyle = lightColor;
+                    const photonSize = 6 + intensity / 2;
+                    const photonY = y + (Date.now() / 20 + i * 30) % length;
+                    
+                    // 绘制光子
+                    ctx.beginPath();
+                    ctx.arc(x, photonY, photonSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 如果光子能量足够，绘制被击出的电子
+                    if (physics.canEmit && photonY > height - 200) {
+                        // 找到最近的原子
+                        const atomIndex = Math.floor((x - 70) / 60);
+                        if (atomIndex >= 0 && atomIndex < 12) {
+                            const atomX = 70 + atomIndex * 60;
+                            const atomY = height - 140;
+                            
+                            // 绘制电子被击出
+                            ctx.fillStyle = "#FF9800";
+                            const electronRadius = 10;
+                            const electronX = atomX + (photonY % 100) / 100 * 50;
+                            const electronY = atomY - 50 - (photonY % 100) / 100 * 100;
+                            
+                            ctx.beginPath();
+                            ctx.arc(electronX, electronY, electronRadius, 0, Math.PI * 2);
+                            ctx.fill();
+                            
+                            // 电子运动轨迹
+                            ctx.strokeStyle = "rgba(255, 152, 0, 0.3)";
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(atomX, atomY);
+                            ctx.lineTo(electronX, electronY);
+                            ctx.stroke();
+                            
+                            // 电子能量标签
+                            ctx.fillStyle = "#FF9800";
+                            ctx.font = "12px Arial";
+                            ctx.fillText(`${physics.electronEnergy.toFixed(2)} eV`, electronX + 15, electronY - 10);
+                        }
+                    }
+                }
+            }
+            
+            // 绘制标签
+            ctx.fillStyle = "#1A237E";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText("入射光", 20, 80);
+            
+            ctx.fillStyle = "#795548";
+            ctx.font = "bold 16px Arial";
+            ctx.fillText("金属表面", width/2 - 40, height - 30);
+            
+            // 绘制光子能量标签
+            ctx.fillStyle = getLightColor(frequency);
+            ctx.font = "bold 14px Arial";
+            ctx.fillText(`光子能量: ${physics.photonEnergy.toFixed(2)} eV`, width - 200, 80);
+            
+            // 绘制逸出功标签
+            ctx.fillStyle = "#D32F2F";
+            ctx.font = "bold 14px Arial";
+            ctx.fillText(`逸出功: ${workFunction.toFixed(1)} eV`, width - 200, height - 80);
+            
+            // 绘制截止频率指示器
+            const cutoffX = 50 + (cutoffFrequency / 15) * (width - 100);
+            ctx.strokeStyle = "#D32F2F";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cutoffX, height - 100);
+            ctx.lineTo(cutoffX, height - 180);
+            ctx.stroke();
+            
+            ctx.fillStyle = "#D32F2F";
+            ctx.font = "bold 12px Arial";
+            ctx.fillText(`截止频率: ${cutoffFrequency.toFixed(1)}×10¹⁴ Hz`, cutoffX - 70, height - 190);
+        }
+        
+        // 根据频率获取光的颜色
+        function getLightColor(freq) {
+            if (freq < 4.5) return "#FF5252"; // 红外
+            if (freq < 6.0) return "#FFEB3B"; // 红色
+            if (freq < 9.0) return "#4CAF50"; // 绿色
+            if (freq < 11.0) return "#2196F3"; // 蓝色
+            return "#673AB7"; // 紫外
+        }
+        
+        // 更新仿真
+        function updateSimulation() {
+            updateSliderValues();
+            calculatePhysics();
+        }
+        
+        // 事件监听
+        frequencySlider.addEventListener('input', function() {
+            frequency = parseFloat(this.value);
+            updateSimulation();
+        });
+        
+        intensitySlider.addEventListener('input', function() {
+            intensity = parseInt(this.value);
+            updateSimulation();
+        });
+        
+        workFunctionSlider.addEventListener('input', function() {
+            workFunction = parseFloat(this.value);
+            updateSimulation();
+        });
+        
+        cutoffFrequencySlider.addEventListener('input', function() {
+            cutoffFrequency = parseFloat(this.value);
+            updateSimulation();
+        });
+        
+        // 初始化波长按钮
+        initWavelengthButtons();
+        
+        // 初始更新
+        updateSimulation();
+        
+        // 动画循环
+        function animate() {
+            drawSimulation();
+            requestAnimationFrame(animate);
+        }
+        
+        // 启动动画
+        animate();
+        
+        // 响应窗口大小变化
+        window.addEventListener('resize', function() {
+            // 调整canvas大小
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = 400;
+        });
+    </script>
+</body>
+</html>

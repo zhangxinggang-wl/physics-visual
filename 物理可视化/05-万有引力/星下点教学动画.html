@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>星下点教学动画 - 卫星轨道与星下点轨迹 | Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'Segoe UI', 'Roboto', 'Noto Sans', sans-serif;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border-left: 4px solid #00aaff;
+            pointer-events: auto;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(30,30,40,0.85);
+            backdrop-filter: blur(8px);
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 20;
+            font-size: 16px;
+            font-weight: 500;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.4);
+            pointer-events: auto;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 16px;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+        }
+        .control-group label {
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        input {
+            cursor: pointer;
+            width: 260px;
+            accent-color: #2c7da0;
+        }
+        .value-display {
+            background: #000000aa;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 1.1em;
+            min-width: 70px;
+            text-align: center;
+            border: 1px solid #2c7da0;
+        }
+        button {
+            background: #2c7da0;
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #1f5e7a;
+            transform: scale(1.02);
+        }
+        .note {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-left: 10px;
+        }
+        h3 {
+            margin: 0;
+            font-size: 1rem;
+            display: inline-block;
+        }
+        @media (max-width: 700px) {
+            .control-group { padding: 4px 10px; gap: 8px; }
+            input { width: 150px; }
+            .value-display { font-size: 0.9em; min-width: 55px; }
+            #info { font-size: 10px; top: 10px; left: 10px; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .status-badge {
+            background: #00aaff33;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <strong>🌍 星下点教学动画</strong> | 轨道倾角: 30° | 卫星轨道平面 (半透明蓝色圆盘) <br>
+        🔴 红色小球: 星下点 | 🛰️ 金色小球: 卫星 | 白色轨迹: 星下点路径 | 虚线: 星地连线
+    </div>
+    <div id="controls">
+        <div class="control-group">
+            <span>🔄 轨道周期调节: </span>
+            <input type="range" id="periodSlider" min="2.0" max="20.0" step="0.2" value="8.0">
+            <div class="value-display" id="periodValue">8.0 秒</div>
+            <button id="resetViewBtn">🎥 重置相机视角</button>
+        </div>
+        <div class="control-group">
+            <span class="status-badge">📡 实时星下点轨迹 | 轨道平面可视</span>
+            <span class="note">⚡ 鼠标拖拽旋转视角 / 右键平移 / 滚轮缩放</span>
+        </div>
+    </div>
+
+    <!-- 引入Three.js核心库以及扩展 -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // --- 初始化场景、相机、渲染器 ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050b1a); // 深邃星空色
+        scene.fog = new THREE.FogExp2(0x050b1a, 0.0008); // 轻微雾效增强景深
+
+        // 透视相机 (视角, 宽高比, 近平面, 远平面)
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(8, 5, 10);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // 开启阴影映射增强立体感
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // CSS2渲染文字标签
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+
+        // --- 轨道控制器 (允许用户交互) ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;      // 惯性效果
+        controls.dampingFactor = 0.05;
+        controls.rotateSpeed = 1.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.enableZoom = true;
+        controls.autoRotate = false;
+        controls.target.set(0, 0, 0);
+        
+        // 重置相机视角按钮
+        document.getElementById('resetViewBtn').addEventListener('click', () => {
+            camera.position.set(8, 5, 10);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        });
+
+        // --- 辅助元素: 星空粒子背景 (简单点缀) ---
+        const starGeometry = new THREE.BufferGeometry();
+        const starCount = 1500;
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i*3] = (Math.random() - 0.5) * 2000;
+            starPositions[i*3+1] = (Math.random() - 0.5) * 1000;
+            starPositions[i*3+2] = (Math.random() - 0.5) * 500 - 150;
+        }
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0.6 });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+        
+        // --- 地球参数 ---
+        const earthRadius = 2.0;
+        const orbitRadius = 4.2;     // 轨道半径 (略大于地球)
+        const inclination = 30 * Math.PI / 180; // 轨道倾角 30度
+        
+        // 1. 创建地球 (带高分辨率纹理)
+        const earthGeometry = new THREE.SphereGeometry(earthRadius, 128, 128);
+        // 加载地球纹理 (使用高质量的Three.js示例贴图，确保跨域和可用性)
+        const textureLoader = new THREE.TextureLoader();
+        const earthMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+        const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+        const earthNormalMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+        const cloudMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
+        
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            map: earthMap,
+            specularMap: earthSpecularMap,
+            specular: new THREE.Color('grey'),
+            shininess: 5,
+            normalMap: earthNormalMap,
+            normalScale: new THREE.Vector2(0.8, 0.8)
+        });
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        scene.add(earth);
+        
+        // 云层效果
+        const cloudGeometry = new THREE.SphereGeometry(earthRadius + 0.02, 128, 128);
+        const cloudMaterial = new THREE.MeshPhongMaterial({
+            map: cloudMap,
+            transparent: true,
+            opacity: 0.12,
+            blending: THREE.AdditiveBlending
+        });
+        const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+        scene.add(clouds);
+        
+        // 添加地球外围大气层光晕 (简单半透明)
+        const atmosGeometry = new THREE.SphereGeometry(earthRadius + 0.05, 64, 64);
+        const atmosMaterial = new THREE.MeshPhongMaterial({
+            color: 0x88bbff,
+            transparent: true,
+            opacity: 0.08,
+            side: THREE.BackSide
+        });
+        const atmosphere = new THREE.Mesh(atmosGeometry, atmosMaterial);
+        scene.add(atmosphere);
+        
+        // --- 2. 轨道平面可视化 (半透明圆盘 + 圆环线) ---
+        // 轨道圆环线 (LineLoop)
+        const orbitPoints = [];
+        const segments = 128;
+        for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const x = orbitRadius * Math.cos(angle);
+            const z = orbitRadius * Math.sin(angle);
+            orbitPoints.push(new THREE.Vector3(x, 0, z));
+        }
+        const orbitLineGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+        const orbitMaterialLine = new THREE.LineBasicMaterial({ color: 0x4aaaff, linewidth: 1 }); // linewidth not supported everywhere, but color works
+        const orbitCircle = new THREE.LineLoop(orbitLineGeo, orbitMaterialLine);
+        
+        // 半透明圆盘 (增强平面视觉效果)
+        const orbitDiscGeo = new THREE.CircleGeometry(orbitRadius, 64);
+        const orbitDiscMat = new THREE.MeshPhongMaterial({
+            color: 0x2c7da0,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.22,
+            depthWrite: false
+        });
+        const orbitDisc = new THREE.Mesh(orbitDiscGeo, orbitDiscMat);
+        
+        // 创建一个组，统一旋转 (倾角)
+        const orbitGroup = new THREE.Group();
+        orbitGroup.add(orbitCircle);
+        orbitGroup.add(orbitDisc);
+        orbitGroup.rotation.x = inclination;  // 绕X轴倾斜轨道平面
+        scene.add(orbitGroup);
+        
+        // 额外添加一个辅助轴线，显示轨道法线方向 (可选小箭头)
+        const arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(0, Math.sin(inclination), Math.cos(inclination)), new THREE.Vector3(0, 1.2, 0), 2.5, 0x44aaff, 0.8, 0.5);
+        scene.add(arrowHelper);
+        
+        // 添加赤道参考圆环 (白色线框, 辅助理解倾角)
+        const equatorPoints = [];
+        const equatorRadius = earthRadius + 0.02;
+        for (let i = 0; i <= 180; i++) {
+            const angle = (i / 180) * Math.PI * 2;
+            const x = equatorRadius * Math.cos(angle);
+            const z = equatorRadius * Math.sin(angle);
+            equatorPoints.push(new THREE.Vector3(x, 0, z));
+        }
+        const equatorLineGeo = new THREE.BufferGeometry().setFromPoints(equatorPoints);
+        const equatorMaterial = new THREE.LineBasicMaterial({ color: 0xffaa66, transparent: true, opacity: 0.35 });
+        const equatorRing = new THREE.LineLoop(equatorLineGeo, equatorMaterial);
+        scene.add(equatorRing);
+        
+        // --- 3. 卫星模型 (金色球体加光晕效果) ---
+        const satelliteGeo = new THREE.SphereGeometry(0.22, 32, 32);
+        const satelliteMat = new THREE.MeshStandardMaterial({
+            color: 0xffaa44,
+            metalness: 0.85,
+            roughness: 0.3,
+            emissive: 0x442200,
+            emissiveIntensity: 0.4
+        });
+        const satellite = new THREE.Mesh(satelliteGeo, satelliteMat);
+        satellite.castShadow = true;
+        satellite.receiveShadow = false;
+        scene.add(satellite);
+        
+        // 添加卫星周围的光晕 (点光源跟随)
+        const satelliteGlow = new THREE.PointLight(0xffaa66, 0.8, 12);
+        satellite.add(satelliteGlow);
+        
+        // --- 4. 星下点模型 (红色小球，加外发光感) ---
+        const subpointGeo = new THREE.SphereGeometry(0.13, 24, 24);
+        const subpointMat = new THREE.MeshStandardMaterial({
+            color: 0xff3333,
+            emissive: 0x441111,
+            emissiveIntensity: 0.5,
+            metalness: 0.1
+        });
+        const subpointMarker = new THREE.Mesh(subpointGeo, subpointMat);
+        scene.add(subpointMarker);
+        
+        // 星下点轨迹 (动态线条)
+        const maxTrailPoints = 800;
+        let trailPositions = []; // 存储Vector3
+        const trailGeometry = new THREE.BufferGeometry();
+        const trailMaterial = new THREE.LineBasicMaterial({ color: 0xff8866, linewidth: 2 }); // 实际linewidth兼容性一般，但颜色醒目
+        let trailLine = new THREE.Line(trailGeometry, trailMaterial);
+        scene.add(trailLine);
+        
+        // 辅助线: 卫星与星下点的连线 (虚线效果 - 使用带透明度实线模拟)
+        const dashMaterial = new THREE.LineBasicMaterial({ color: 0x88aaff, transparent: true, opacity: 0.6 });
+        const connectorLine = new THREE.Line(new THREE.BufferGeometry(), dashMaterial);
+        scene.add(connectorLine);
+        
+        // 从卫星指向地心的辅助线 (教学用途)
+        const centerLineMat = new THREE.LineBasicMaterial({ color: 0x44aaff, transparent: true, opacity: 0.3 });
+        const centerLine = new THREE.Line(new THREE.BufferGeometry(), centerLineMat);
+        scene.add(centerLine);
+        
+        // --- 5. CSS2D 文字标签 ---
+        function makeLabel(text, color, fontSize = '16px') {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = color;
+            div.style.fontSize = fontSize;
+            div.style.fontWeight = 'bold';
+            div.style.textShadow = '1px 1px 0px black';
+            div.style.background = 'rgba(0,0,0,0.55)';
+            div.style.padding = '2px 8px';
+            div.style.borderRadius = '20px';
+            div.style.borderLeft = `3px solid ${color}`;
+            div.style.fontFamily = 'monospace';
+            div.style.backdropFilter = 'blur(4px)';
+            div.style.whiteSpace = 'nowrap';
+            return new CSS2DObject(div);
+        }
+        
+        const satelliteLabel = makeLabel('🛰️ 卫星', '#ffaa66', '14px');
+        const subpointLabel = makeLabel('🔴 星下点', '#ff8866', '12px');
+        scene.add(satelliteLabel);
+        scene.add(subpointLabel);
+        
+        // 轨道倾角说明标签 (固定位置)
+        const infoLabelDiv = document.createElement('div');
+        infoLabelDiv.textContent = '📐 轨道倾角 30°';
+        infoLabelDiv.style.color = '#aaddff';
+        infoLabelDiv.style.fontSize = '12px';
+        infoLabelDiv.style.background = 'rgba(0,0,0,0.5)';
+        infoLabelDiv.style.padding = '2px 8px';
+        infoLabelDiv.style.borderRadius = '12px';
+        const angleLabel = new CSS2DObject(infoLabelDiv);
+        angleLabel.position.set(3.5, 2.8, 2);
+        scene.add(angleLabel);
+        
+        // --- 光照系统 (营造立体感和阴影) ---
+        // 环境光
+        const ambientLight = new THREE.AmbientLight(0x404060);
+        scene.add(ambientLight);
+        // 主光源方向光
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        dirLight.receiveShadow = false;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        scene.add(dirLight);
+        // 补光，从底部柔和照亮
+        const fillLight = new THREE.PointLight(0x4466cc, 0.35);
+        fillLight.position.set(0, -3, 0);
+        scene.add(fillLight);
+        // 背光暖色
+        const backLight = new THREE.PointLight(0xffaa66, 0.4);
+        backLight.position.set(-3, 1, -4);
+        scene.add(backLight);
+        
+        // 辅助: 简单的坐标轴辅助 (可选，方便观察平面)
+        const axesHelper = new THREE.AxesHelper(5);
+        axesHelper.material.transparent = true;
+        axesHelper.material.opacity = 0.12;
+        scene.add(axesHelper);
+        
+        // --- 动画控制变量 (周期可调) ---
+        let orbitalPeriod = 8.0;   // 单位: 秒/圈
+        let angularSpeed = (2 * Math.PI) / orbitalPeriod; // 弧度/秒
+        let currentAngle = 0.0;
+        let lastTimestamp = performance.now() / 1000;
+        
+        // 获取DOM元素
+        const periodSlider = document.getElementById('periodSlider');
+        const periodValueSpan = document.getElementById('periodValue');
+        
+        periodSlider.addEventListener('input', (e) => {
+            orbitalPeriod = parseFloat(e.target.value);
+            periodValueSpan.innerText = orbitalPeriod.toFixed(1) + " 秒";
+            angularSpeed = (2 * Math.PI) / orbitalPeriod;
+        });
+        
+        // 初始化一些辅助变量，星下点轨迹存储
+        function addTrailPoint(position) {
+            trailPositions.push(position.clone());
+            if (trailPositions.length > maxTrailPoints) {
+                trailPositions.shift();
+            }
+            updateTrailGeometry();
+        }
+        
+        function updateTrailGeometry() {
+            const points = trailPositions;
+            const vertices = [];
+            points.forEach(p => {
+                vertices.push(p.x, p.y, p.z);
+            });
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            trailLine.geometry.dispose(); // 避免内存泄漏
+            trailLine.geometry = geometry;
+        }
+        
+        // 更新连线 (卫星-星下点, 卫星-地心)
+        function updateConnectorLines(satPos, subPos, earthCenter = new THREE.Vector3(0,0,0)) {
+            // 卫星与星下点连线
+            const points1 = [satPos.clone(), subPos.clone()];
+            const geo1 = new THREE.BufferGeometry().setFromPoints(points1);
+            connectorLine.geometry.dispose();
+            connectorLine.geometry = geo1;
+            
+            // 卫星到地心连线
+            const points2 = [satPos.clone(), earthCenter.clone()];
+            const geo2 = new THREE.BufferGeometry().setFromPoints(points2);
+            centerLine.geometry.dispose();
+            centerLine.geometry = geo2;
+        }
+        
+        // 根据当前角度计算卫星位置 (考虑轨道倾角)
+        function getSatellitePosition(angleRad) {
+            // 局部轨道坐标系 (XZ平面圆)
+            const localX = orbitRadius * Math.cos(angleRad);
+            const localZ = orbitRadius * Math.sin(angleRad);
+            const localY = 0;
+            const localPos = new THREE.Vector3(localX, localY, localZ);
+            // 应用轨道倾角旋转 (绕X轴)
+            const quaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(inclination, 0, 0));
+            return localPos.applyQuaternion(quaternion);
+        }
+        
+        // 根据卫星位置计算星下点 (地心到卫星方向单位向量乘以地球半径)
+        function getSubpoint(satPos) {
+            const direction = satPos.clone().normalize();
+            return direction.multiplyScalar(earthRadius);
+        }
+        
+        // --- 初始化一些轨迹点 (预置几个点避免空白，不必须) ---
+        // 清空轨迹
+        trailPositions = [];
+        
+        // --- 辅助变量用于让云层缓慢自转，增加生动性 (不影响物理) ---
+        let cloudRotationSpeed = 0.0008;
+        
+        // --- 动画循环 & 时间驱动卫星运动 ---
+        let lastFrameTime = performance.now() / 1000;
+        
+        function animate() {
+            const now = performance.now() / 1000;
+            let delta = Math.min(0.033, now - lastFrameTime);
+            if (delta <= 0) {
+                delta = 0.016;
+            }
+            lastFrameTime = now;
+            
+            // 更新卫星角度 (周期可调实时生效)
+            currentAngle += angularSpeed * delta;
+            // 保持角度范围
+            if (currentAngle > Math.PI * 2) currentAngle -= Math.PI * 2;
+            
+            // 计算卫星位置
+            const satPos = getSatellitePosition(currentAngle);
+            satellite.position.copy(satPos);
+            
+            // 更新CSS2D标签位置 (跟随卫星和星下点)
+            satelliteLabel.position.copy(satPos);
+            
+            // 计算星下点位置
+            const subPos = getSubpoint(satPos);
+            subpointMarker.position.copy(subPos);
+            subpointLabel.position.copy(subPos.clone().multiplyScalar(1.02)); // 稍微外移避免遮挡
+            
+            // 添加当前星下点到轨迹 (每帧添加，形成连续轨迹)
+            addTrailPoint(subPos);
+            
+            // 更新辅助连线
+            updateConnectorLines(satPos, subPos);
+            
+            // 简单动画: 让云层缓慢漂移
+            clouds.rotation.y += 0.0015;
+            // 星空缓慢旋转增加沉浸感
+            stars.rotation.y += 0.0002;
+            stars.rotation.x += 0.0001;
+            
+            // 让卫星自身轻微旋转 (效果)
+            satellite.rotation.x += 0.02;
+            satellite.rotation.z += 0.01;
+            
+            // 星下点小球的脉动效果 (通过缩放)
+            const scale = 1 + Math.sin(Date.now() * 0.012) * 0.15;
+            subpointMarker.scale.set(scale, scale, scale);
+            
+            // 更新轨道控制器的目标点，保持交互舒适
+            controls.update();
+            
+            // 渲染场景
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 延迟启动，确保纹理加载完成后再开始动画 (给点时间)
+        setTimeout(() => {
+            // 初始化一些起始位置，让轨迹开始记录
+            const initAngle = 0;
+            const initSatPos = getSatellitePosition(initAngle);
+            const initSubPos = getSubpoint(initSatPos);
+            for(let i=0; i<5; i++) {
+                trailPositions.push(initSubPos.clone());
+            }
+            updateTrailGeometry();
+            lastFrameTime = performance.now() / 1000;
+            animate();
+        }, 500);
+        
+        // 窗口自适应
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // 控制台输出教学提示
+        console.log('星下点教学动画已启动 | 轨道周期可调 | 轨道倾角30° | 红色轨迹为星下点路径');
+        
+        // 添加一个简单的指示网格环 (辅助观察轨道平面与赤道的关系)
+        const gridHelper = new THREE.GridHelper(12, 20, 0x88aaff, 0x335588);
+        gridHelper.position.y = -2.1;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.2;
+        scene.add(gridHelper);
+        
+        // 增加地心到卫星连线辅助的光晕小点
+        const centerGlow = new THREE.PointLight(0x4488ff, 0.5, 6);
+        centerGlow.position.set(0, 0, 0);
+        scene.add(centerGlow);
+        
+        // 周期显示额外更新样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .css2d-object div {
+                transition: all 0.1s ease;
+                pointer-events: none;
+                white-space: nowrap;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 添加简短引导说明
+        const guideDiv = document.createElement('div');
+        guideDiv.style.position = 'absolute';
+        guideDiv.style.bottom = '80px';
+        guideDiv.style.right = '20px';
+        guideDiv.style.background = 'rgba(0,0,0,0.5)';
+        guideDiv.style.color = '#ccc';
+        guideDiv.style.padding = '6px 12px';
+        guideDiv.style.borderRadius = '8px';
+        guideDiv.style.fontSize = '11px';
+        guideDiv.style.fontFamily = 'monospace';
+        guideDiv.innerHTML = '✨ 半透明圆盘 = 轨道平面 | 星下点轨迹自动绘制';
+        document.body.appendChild(guideDiv);
+    </script>
+</body>
+</html>

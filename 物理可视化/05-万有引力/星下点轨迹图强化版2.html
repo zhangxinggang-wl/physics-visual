@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>星下点轨迹教学系统 | 手机横竖屏自适应</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1a, #030507);
+            color: #ccf7ff;
+            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, -apple-system, 'Roboto', monospace;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .mission-header {
+            width: 100%;
+            background: rgba(8, 12, 20, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 8px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            border: 1px solid rgba(0, 255, 200, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .title {
+            font-size: clamp(0.9rem, 5vw, 1.3rem);
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #00ffcc, #3a86ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            white-space: nowrap;
+        }
+
+        .telemetry {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: #000000aa;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: clamp(0.65rem, 3.5vw, 0.85rem);
+            border-left: 3px solid #0ff;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        /* 地图容器 - 保持2:1比例 */
+        .globe-container {
+            width: 100%;
+            background: #000000;
+            border-radius: 24px;
+            padding: 6px;
+            background: linear-gradient(145deg, #10161f, #03070e);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,255,200,0.2);
+            box-sizing: border-box;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 18px;
+            box-shadow: 0 0 12px rgba(0,255,200,0.2);
+            cursor: crosshair;
+            background: #03070e;
+        }
+
+        /* 控制面板 - 手机友好布局 */
+        .control-panel {
+            background: rgba(12, 18, 28, 0.9);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 16px 20px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            border: 1px solid #2a3a4a;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        .ctrl-group {
+            background: #0e1622cc;
+            border-radius: 28px;
+            padding: 8px 16px;
+            flex: 1 1 auto;
+            min-width: 140px;
+            transition: all 0.2s;
+            border-bottom: 2px solid #2c5f6e;
+            backdrop-filter: blur(4px);
+        }
+
+        .ctrl-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: clamp(0.7rem, 3.8vw, 0.85rem);
+            font-weight: 500;
+            color: #bbfffc;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: #1f2a36;
+            height: 6px;
+            border-radius: 10px;
+            -webkit-appearance: none;
+            margin: 8px 0;
+        }
+
+        input[type="range"]:focus {
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #0ff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px cyan;
+            border: none;
+        }
+
+        .value-indicator {
+            background: #000000aa;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            color: #0ff;
+            display: inline-block;
+        }
+
+        .badge {
+            background: #00aacc20;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.65rem;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        button {
+            background: #1e2a36;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: #0ff;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px black;
+            margin: 2px;
+            min-width: 70px;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            background: #2f4558;
+            color: white;
+            box-shadow: 0 0 8px cyan;
+            transform: scale(1.02);
+        }
+
+        .info-note {
+            font-size: clamp(0.6rem, 3vw, 0.7rem);
+            color: #7c9cb0;
+            text-align: center;
+            margin-top: 6px;
+            padding: 0 8px;
+            max-width: 100%;
+        }
+
+        /* 横屏时让控制组更紧凑 */
+        @media (orientation: landscape) and (max-height: 550px) {
+            .control-panel {
+                padding: 10px 16px;
+                gap: 8px;
+            }
+            .ctrl-group {
+                padding: 4px 12px;
+            }
+            .mission-header {
+                padding: 6px 16px;
+            }
+            button {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* 竖屏时让按钮组换行更友好 */
+        @media (orientation: portrait) {
+            .ctrl-group {
+                min-width: 100%;
+            }
+            .control-panel {
+                flex-direction: column;
+            }
+            .title {
+                white-space: normal;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="mission-header">
+        <div class="title">🛰️ 星下点轨迹 · 赤道线强化</div>
+        <div class="telemetry" id="statsPanel">⏱️ 0.0s | n=12 | i=45°</div>
+    </div>
+
+    <div class="globe-container">
+        <canvas id="worldCanvas"></canvas>
+    </div>
+
+    <div class="control-panel">
+        <div class="ctrl-group">
+            <label>🌀 周期比 n <span style="font-size:0.7rem;">(自转/轨道)</span></label>
+            <input type="range" id="nRatio" min="1" max="24" step="1" value="12">
+            <div><span id="nValue" class="value-indicator">12</span><span class="badge">整数→重复轨迹</span></div>
+        </div>
+
+        <div class="ctrl-group">
+            <label>📐 轨道倾角 i (0~90°)</label>
+            <input type="range" id="inclinationSlider" min="0" max="90" step="1" value="45">
+            <div><span id="incValue" class="value-indicator">45°</span></div>
+        </div>
+
+        <div class="ctrl-group">
+            <label>⚡ 仿真速率</label>
+            <input type="range" id="speedSlider" min="0.3" max="3.5" step="0.05" value="1.0">
+            <div><span id="speedValue" class="value-indicator">1.0x</span></div>
+        </div>
+
+        <div class="ctrl-group" style="display: flex; flex-direction: row; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button id="playPauseBtn">⏸️ 暂停</button>
+            <button id="clearTrailBtn">🗑️ 清除轨迹</button>
+            <button id="resetBtn">🔄 重置</button>
+        </div>
+    </div>
+    <div class="info-note">
+        💡 星下点轨迹 | 周期比 n 越大轨迹越密集 | 倾角决定纬度范围 | ✨ <strong style="color:#ff8888">赤道双重高亮</strong> (红+光晕)
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ---------- DOM 元素 ----------
+        const canvas = document.getElementById('worldCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 地球背景图片
+        const earthImage = new Image();
+        earthImage.crossOrigin = "Anonymous";
+        earthImage.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Earth_map_fixed.png/1024px-Earth_map_fixed.png";
+        let earthReady = false;
+        earthImage.onload = () => { earthReady = true; redraw(); };
+        earthImage.onerror = () => { console.warn("地图加载失败，使用纯色背景"); };
+        
+        // ---------- 仿真参数 ----------
+        let simTime = 0;
+        const orbitalPeriodMs = 5000;
+        let n = 12;
+        let inclinationDeg = 45;
+        let speedFactor = 1.0;
+        let isPlaying = true;
+        
+        // 轨迹存储 (存经纬度 + 实时像素坐标)
+        let trailPoints = [];   // 每个元素 {lon, lat, x, y}
+        const MAX_TRAIL = 2600;
+        
+        // UI 绑定
+        const nSlider = document.getElementById('nRatio');
+        const nSpan = document.getElementById('nValue');
+        const incSlider = document.getElementById('inclinationSlider');
+        const incSpan = document.getElementById('incValue');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedSpan = document.getElementById('speedValue');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const clearTrailBtn = document.getElementById('clearTrailBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statsPanel = document.getElementById('statsPanel');
+        
+        // 动态画布尺寸
+        let canvasWidth = 0, canvasHeight = 0;
+        
+        // ---------- 辅助函数: 经纬度 -> 画布坐标 (基于当前canvas尺寸) ----------
+        function lonLatToCanvas(lon, lat) {
+            let x = (lon + 180) / 360 * canvasWidth;
+            let y = (90 - lat) / 180 * canvasHeight;
+            x = Math.min(canvasWidth, Math.max(0, x));
+            y = Math.min(canvasHeight, Math.max(0, y));
+            return { x, y };
+        }
+        
+        // 归一化经度
+        function normalizeLon(angleDeg) {
+            let lon = angleDeg % 360;
+            if (lon > 180) lon -= 360;
+            if (lon < -180) lon += 360;
+            return lon;
+        }
+        
+        // 星下点计算 (基于当前仿真时间)
+        function computeSubpoint(timeMs) {
+            let thetaRad = (timeMs / orbitalPeriodMs) * Math.PI * 2;
+            let thetaDeg = thetaRad * 180 / Math.PI;
+            let earthRotationDeg = thetaDeg / n;
+            let lat = inclinationDeg * Math.sin(thetaRad);
+            lat = Math.min(90, Math.max(-90, lat));
+            let inertialLon = thetaDeg;
+            let lon = inertialLon - earthRotationDeg;
+            lon = normalizeLon(lon);
+            return { lat, lon };
+        }
+        
+        // ---------- 重映射所有轨迹点的像素坐标 (canvas尺寸变化时调用) ----------
+        function remapTrailPoints() {
+            if (!canvasWidth || !canvasHeight) return;
+            for (let p of trailPoints) {
+                const { x, y } = lonLatToCanvas(p.lon, p.lat);
+                p.x = x;
+                p.y = y;
+            }
+        }
+        
+        // ---------- 添加当前星下点到轨迹 ----------
+        function addCurrentTrailPoint() {
+            const { lat, lon } = computeSubpoint(simTime);
+            const { x, y } = lonLatToCanvas(lon, lat);
+            if (trailPoints.length > 0) {
+                const last = trailPoints[trailPoints.length - 1];
+                const distPixel = Math.hypot(last.x - x, last.y - y);
+                if (distPixel < 1.2 && Math.abs(last.lon - lon) < 0.08) return;
+            }
+            trailPoints.push({ lon, lat, x, y, time: simTime });
+            if (trailPoints.length > MAX_TRAIL) trailPoints.shift();
+        }
+        
+        // ---------- 绘制经纬网格 + 强化赤道线 (基于动态canvas尺寸) ----------
+        function drawGrid() {
+            if (!canvasWidth || !canvasHeight) return;
+            ctx.save();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = "rgba(150, 220, 255, 0.5)";
+            ctx.lineWidth = 0.8;
+            ctx.font = `clamp(9px, 3vw, 12px) "Segoe UI"`;
+            ctx.fillStyle = "#aafff0";
+            
+            // 经线 (每30度)
+            for (let lon = -180; lon <= 180; lon += 30) {
+                const start = lonLatToCanvas(lon, -89);
+                const end = lonLatToCanvas(lon, 89);
+                ctx.beginPath();
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+                ctx.stroke();
+                if (Math.abs(lon) % 90 === 0 || lon === 0) {
+                    const labelPos = lonLatToCanvas(lon, -8);
+                    ctx.fillStyle = "#8bcbff";
+                    ctx.fillText(lon + "°", labelPos.x - 12, labelPos.y - 2);
+                }
+            }
+            
+            // 纬线 (除了赤道单独绘制)
+            for (let lat = -75; lat <= 75; lat += 30) {
+                if (lat === 0) continue;
+                const left = lonLatToCanvas(-180, lat);
+                const right = lonLatToCanvas(180, lat);
+                ctx.beginPath();
+                ctx.moveTo(left.x, left.y);
+                ctx.lineTo(right.x, right.y);
+                ctx.strokeStyle = "rgba(100, 200, 220, 0.55)";
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+                const mark = lonLatToCanvas(170, lat);
+                ctx.fillStyle = "#7fc9ff";
+                ctx.fillText(Math.abs(lat) + (lat>0?"°N":"°S"), mark.x-22, mark.y-2);
+            }
+            
+            // ========== 赤道线双重高亮 (动态适应宽高) ==========
+            const eqLeft = lonLatToCanvas(-180, 0);
+            const eqRight = lonLatToCanvas(180, 0);
+            // 第一层: 亮红粗线
+            ctx.beginPath();
+            ctx.moveTo(eqLeft.x, eqLeft.y);
+            ctx.lineTo(eqRight.x, eqRight.y);
+            ctx.strokeStyle = "#ff6688";
+            ctx.lineWidth = 3.2;
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = "#ff3366";
+            ctx.stroke();
+            // 第二层: 半透明白色光晕
+            ctx.beginPath();
+            ctx.moveTo(eqLeft.x, eqLeft.y);
+            ctx.lineTo(eqRight.x, eqRight.y);
+            ctx.strokeStyle = "rgba(255, 220, 180, 0.85)";
+            ctx.lineWidth = 6;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ffaa88";
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // 赤道标注
+            const eqLabel = lonLatToCanvas(0, 3);
+            ctx.font = `bold clamp(11px, 4vw, 15px) "Segoe UI"`;
+            ctx.fillStyle = "#ffbb99";
+            ctx.fillText("🌐 赤道", eqLabel.x - 48, eqLabel.y + 8);
+            ctx.fillStyle = "#ff8888";
+            ctx.font = `bold clamp(9px, 3.5vw, 12px) monospace`;
+            ctx.fillText("0°", eqLabel.x + 20, eqLabel.y + 6);
+            
+            // 回归线 (23.5°)
+            ctx.beginPath();
+            const tropicLat = 23.5;
+            const tLeft = lonLatToCanvas(-180, tropicLat);
+            const tRight = lonLatToCanvas(180, tropicLat);
+            ctx.strokeStyle = "#ffaa66";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 6]);
+            ctx.moveTo(tLeft.x, tLeft.y);
+            ctx.lineTo(tRight.x, tRight.y);
+            ctx.stroke();
+            const tLeftS = lonLatToCanvas(-180, -tropicLat);
+            const tRightS = lonLatToCanvas(180, -tropicLat);
+            ctx.moveTo(tLeftS.x, tLeftS.y);
+            ctx.lineTo(tRightS.x, tRightS.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = "#ffbc80";
+            ctx.font = `clamp(8px, 3vw, 11px) sans-serif`;
+            ctx.fillText("回归线", tLeft.x+5, tLeft.y-4);
+            ctx.fillText("回归线", tLeftS.x+5, tLeftS.y+12);
+            ctx.restore();
+        }
+        
+        // 绘制地球背景
+        function drawEarthBackground() {
+            if (earthReady && earthImage.complete && earthImage.naturalWidth > 0) {
+                ctx.drawImage(earthImage, 0, 0, canvasWidth, canvasHeight);
+            } else {
+                ctx.fillStyle = "#0a1a2f";
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                ctx.fillStyle = "#88aacc";
+                ctx.font = "14px monospace";
+                ctx.fillText("加载地球影像...", canvasWidth/2-80, canvasHeight/2);
+            }
+        }
+        
+        // 绘制所有轨迹连线 (基于动态坐标，自动避开经度跳变)
+        function drawTrail() {
+            if (trailPoints.length < 2) return;
+            ctx.save();
+            ctx.shadowBlur = 3;
+            ctx.shadowColor = "#00ccaa";
+            ctx.lineWidth = 2.2;
+            ctx.lineCap = "round";
+            for (let i = 1; i < trailPoints.length; i++) {
+                const p1 = trailPoints[i-1];
+                const p2 = trailPoints[i];
+                let lonDelta = Math.abs(p2.lon - p1.lon);
+                if (lonDelta < 180) {
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = `rgba(0, 210, 200, 0.9)`;
+                    ctx.stroke();
+                }
+            }
+            // 轨迹点光晕
+            for (let i = 0; i < trailPoints.length; i += 3) {
+                ctx.beginPath();
+                ctx.arc(trailPoints[i].x, trailPoints[i].y, 1.4, 0, Math.PI*2);
+                ctx.fillStyle = "#80ffe5";
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+        
+        // 绘制卫星图标
+        function drawSatellite(lat, lon) {
+            const { x: satX, y: satY } = lonLatToCanvas(lon, lat);
+            ctx.save();
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = "#0ff";
+            ctx.beginPath();
+            ctx.arc(satX, satY, 9, 0, Math.PI*2);
+            ctx.fillStyle = "#ffffffcc";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(satX, satY, 5, 0, Math.PI*2);
+            ctx.fillStyle = "#00ffff";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(satX, satY, 2.8, 0, Math.PI*2);
+            ctx.fillStyle = "white";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(satX, satY, 13, 0, Math.PI*2);
+            ctx.strokeStyle = "#0ff";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            // 十字准星
+            ctx.beginPath();
+            ctx.moveTo(satX-12, satY);
+            ctx.lineTo(satX-5, satY);
+            ctx.moveTo(satX+5, satY);
+            ctx.lineTo(satX+12, satY);
+            ctx.moveTo(satX, satY-12);
+            ctx.lineTo(satX, satY-5);
+            ctx.moveTo(satX, satY+5);
+            ctx.lineTo(satX, satY+12);
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+            ctx.font = `bold clamp(9px, 3.2vw, 12px) monospace`;
+            ctx.fillStyle = "#e0fffa";
+            ctx.fillText(`🛸 ${lat.toFixed(1)}° ${lat>=0?'N':'S'} ${Math.abs(lon).toFixed(1)}° ${lon>=0?'E':'W'}`, satX+12, satY-6);
+            ctx.restore();
+        }
+        
+        // 更新UI面板信息
+        function updateUI() {
+            const timeSec = (simTime / 1000).toFixed(1);
+            statsPanel.innerHTML = `⏱️ ${timeSec}s | n=${n} | i=${inclinationDeg}° | ${speedFactor.toFixed(1)}x | 轨迹:${trailPoints.length}`;
+        }
+        
+        // 主渲染函数
+        function renderFull() {
+            if (!canvasWidth || !canvasHeight) return;
+            drawEarthBackground();
+            drawGrid();
+            drawTrail();
+            const { lat, lon } = computeSubpoint(simTime);
+            drawSatellite(lat, lon);
+            updateUI();
+        }
+        
+        // 刷新画布尺寸 (保持2:1比例)
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth - 12; // 留出padding
+            const desiredWidth = Math.min(containerWidth, window.innerWidth - 30);
+            // 强制 2:1 比例
+            const newWidth = desiredWidth;
+            const newHeight = newWidth / 2;
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            canvas.style.width = `${newWidth}px`;
+            canvas.style.height = `${newHeight}px`;
+            canvasWidth = newWidth;
+            canvasHeight = newHeight;
+            // 重映射所有轨迹点的像素坐标
+            remapTrailPoints();
+            renderFull();
+        }
+        
+        // ---------- 动画循环 (时间推进) ----------
+        let lastFrameTime = 0;
+        function animationLoop(nowMs) {
+            requestAnimationFrame(animationLoop);
+            if (!lastFrameTime) {
+                lastFrameTime = performance.now();
+                return;
+            }
+            let delta = Math.min(100, performance.now() - lastFrameTime);
+            if (delta > 0 && isPlaying) {
+                simTime += delta * speedFactor;
+            }
+            lastFrameTime = performance.now();
+            // 添加当前点 (每帧)
+            addCurrentTrailPoint();
+            renderFull();
+        }
+        
+        // ---------- 交互控制 ----------
+        function fullReset() {
+            simTime = 0;
+            trailPoints = [];
+            n = parseInt(nSlider.value);
+            inclinationDeg = parseInt(incSlider.value);
+            speedFactor = parseFloat(speedSlider.value);
+            nSpan.innerText = n;
+            incSpan.innerText = inclinationDeg + "°";
+            speedSpan.innerText = speedFactor.toFixed(2) + "x";
+            if (!isPlaying) {
+                isPlaying = true;
+                playPauseBtn.innerHTML = "⏸️ 暂停";
+            }
+            addCurrentTrailPoint();
+            remapTrailPoints();
+            renderFull();
+        }
+        
+        function clearTrail() {
+            trailPoints = [];
+            addCurrentTrailPoint(); // 保留当前点
+            remapTrailPoints();
+            renderFull();
+        }
+        
+        function onParamChange() {
+            n = parseInt(nSlider.value);
+            inclinationDeg = parseInt(incSlider.value);
+            nSpan.innerText = n;
+            incSpan.innerText = inclinationDeg + "°";
+            // 参数改变重置仿真时间和轨迹，保证轨迹与卫星匹配
+            simTime = 0;
+            trailPoints = [];
+            addCurrentTrailPoint();
+            remapTrailPoints();
+            renderFull();
+        }
+        
+        function onSpeedChange() {
+            speedFactor = parseFloat(speedSlider.value);
+            speedSpan.innerText = speedFactor.toFixed(2) + "x";
+        }
+        
+        // 监听resize防抖
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                resizeCanvas();
+            }, 150);
+        });
+        
+        // 初始化
+        function init() {
+            resizeCanvas();
+            // 绑定事件
+            nSlider.addEventListener('input', onParamChange);
+            incSlider.addEventListener('input', onParamChange);
+            speedSlider.addEventListener('input', onSpeedChange);
+            resetBtn.addEventListener('click', fullReset);
+            clearTrailBtn.addEventListener('click', clearTrail);
+            playPauseBtn.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                playPauseBtn.innerHTML = isPlaying ? "⏸️ 暂停" : "▶️ 启动";
+            });
+            // 初始轨迹点
+            addCurrentTrailPoint();
+            remapTrailPoints();
+            lastFrameTime = performance.now();
+            requestAnimationFrame(animationLoop);
+        }
+        
+        init();
+    })();
+</script>
+</body>
+</html>

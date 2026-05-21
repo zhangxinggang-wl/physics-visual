@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>牛顿月地检验：圆周轨道模型与平方反比定律 | 物理教学演示</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none; /* 避免拖动干扰，不影响文字选择 */
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #f5f7fc 0%, #e9eef4 100%);
+            font-family: 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, -apple-system, 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        /* 主卡片容器 */
+        .demo-container {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(2px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        /* 头部说明区 */
+        .hero {
+            background: #1a2a3f;
+            color: white;
+            padding: 1.2rem 2rem;
+            text-align: center;
+        }
+        .hero h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.3px;
+        }
+        .hero h1 span {
+            font-weight: 300;
+            color: #ffd966;
+        }
+        .hero p {
+            margin: 0.5rem 0 0;
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        /* 两栏布局: 左侧画布+轨道模型, 右侧控制面板与数据 */
+        .main-dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 1.5rem 2rem 2rem 2rem;
+            gap: 2rem;
+        }
+
+        /* 左侧: 圆周轨道动画区 */
+        .canvas-area {
+            flex: 2;
+            min-width: 280px;
+            background: #ffffffcc;
+            border-radius: 2rem;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            padding: 1rem;
+        }
+        .canvas-wrapper {
+            background: #0b1a2b;
+            border-radius: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.1);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: radial-gradient(circle at 30% 20%, #101f2e, #030c16);
+            border-radius: 1.2rem;
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+        .canvas-caption {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #2c3e4e;
+            margin-top: 0.6rem;
+            font-weight: 500;
+        }
+
+        /* 右侧数据与交互区 */
+        .info-panel {
+            flex: 1.2;
+            min-width: 260px;
+            background: #ffffffdd;
+            backdrop-filter: blur(8px);
+            border-radius: 1.8rem;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        /* 牛顿箴言 */
+        .newton-quote {
+            background: #eef3fc;
+            padding: 0.8rem 1rem;
+            border-radius: 1.2rem;
+            font-style: italic;
+            font-size: 0.85rem;
+            border-left: 5px solid #f7b32b;
+            margin-bottom: 1.5rem;
+            color: #1e4663;
+        }
+
+        /* 参数卡片 */
+        .param-card {
+            background: #f8fafd;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .param-title {
+            font-weight: 700;
+            color: #1e4663;
+            border-bottom: 2px solid #ffcd7e;
+            display: inline-block;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+        }
+        .value-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+            font-family: 'Courier New', monospace;
+        }
+        .value-highlight {
+            font-weight: 800;
+            color: #c4450c;
+            background: #fff0e0;
+            padding: 0.1rem 0.4rem;
+            border-radius: 20px;
+        }
+        .slider-container {
+            margin: 0.8rem 0;
+        }
+        input {
+            width: 100%;
+            cursor: pointer;
+            accent-color: #3a7ca5;
+        }
+        .ratio-badge {
+            background: #1e4663;
+            color: white;
+            border-radius: 28px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .verify-status {
+            background: #e9f4e8;
+            border-radius: 1rem;
+            padding: 0.6rem;
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .success {
+            background: #c8e6d9;
+            color: #00663b;
+            border-left: 4px solid #2e7d32;
+        }
+        .formula {
+            font-family: monospace;
+            background: #eef2f7;
+            padding: 2px 5px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 1rem 2rem;
+            border-top: 1px solid #cddfe7;
+            color: #4a627a;
+            background: #f5f9fe;
+        }
+        button {
+            background: none;
+            border: none;
+        }
+        @media (max-width: 800px) {
+            .main-dashboard { flex-direction: column; }
+            .hero h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="demo-container">
+    <div class="hero">
+        <h1>🌙 月地检验 · 牛顿的 <span>平方反比定律</span> 验证</h1>
+        <p>圆周轨道模型 | 比较月球向心加速度与地表重力加速度之比 | 引力与距离平方成反比</p>
+    </div>
+
+    <div class="main-dashboard">
+        <!-- 左侧动画区 -->
+        <div class="canvas-area">
+            <div class="canvas-wrapper">
+                <canvas id="orbitCanvas" width="700" height="550" style="width:100%; height:auto; max-width:700px; aspect-ratio:700/550"></canvas>
+            </div>
+            <div class="canvas-caption">
+                ⚪ 地球(蓝色) | 🌙 月球绕地圆周运动 (示意图，非真实比例) —— 轨道半径随距离倍数n变化
+            </div>
+        </div>
+
+        <!-- 右侧: 交互及检验数据 -->
+        <div class="info-panel">
+            <div class="newton-quote">
+                “我推导出使行星保持在它们轨道上的力必定与它们到转动中心的距离的平方成反比。” —— 牛顿
+            </div>
+
+            <!-- 距离倍数调节核心 -->
+            <div class="param-card">
+                <div class="param-title">📐 地月距离调节 (月地检验核心)</div>
+                <div class="value-row">
+                    <span>🌍 距离倍数 n = r / R<sub>⊕</sub></span>
+                    <span class="value-highlight" id="nValueDisplay">60.0</span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="distanceSlider" min="30" max="90" step="0.5" value="60">
+                </div>
+                <div class="value-row">
+                    <span>📏 地月实际距离 r</span>
+                    <span id="actualDistance">≈ 3.84×10⁵ km</span>
+                </div>
+                <div class="value-row">
+                    <span>🕒 月球公转周期 T (固定)</span>
+                    <span><strong>27.3 天</strong> (2.36×10⁶ s)</span>
+                </div>
+                <div class="value-row">
+                    <span>🌐 地球半径 R<sub>⊕</sub></span>
+                    <span>6371 km</span>
+                </div>
+            </div>
+
+            <!-- 加速度计算与平方反比检验 -->
+            <div class="param-card">
+                <div class="param-title">⚡ 加速度对比 & 平方反比验证</div>
+                <div class="value-row">
+                    <span>🌕 实际向心加速度 a<sub>m</sub> = 4π²r/T²</span>
+                    <span id="actualAcc">— m/s²</span>
+                </div>
+                <div class="value-row">
+                    <span>📉 平方反比预期 a<sub>预</sub> = g·(R/r)²</span>
+                    <span id="predictedAcc">— m/s²</span>
+                </div>
+                <div class="value-row">
+                    <span>📊 比值 (a<sub>实际</sub> / g)</span>
+                    <span id="ratioActual">—</span>
+                </div>
+                <div class="value-row">
+                    <span>🧪 理论比值 (1/n²)</span>
+                    <span id="ratioTheory">—</span>
+                </div>
+                <div class="verify-status" id="verifyBox">
+                    🔍 验证中...
+                </div>
+                <div class="value-row" style="margin-top:8px;">
+                    <span>🎯 相对误差</span>
+                    <span id="errorPercent" class="value-highlight">—</span>
+                </div>
+            </div>
+
+            <!-- 补充说明 -->
+            <div style="font-size:0.75rem; color:#3e5a6f; text-align:center; margin-top:6px;">
+                <span class="formula">a = v²/r = 4π²r/T²</span> &nbsp;|&nbsp; 
+                <span class="formula">F ∝ 1/r² → a ∝ 1/r²</span><br>
+                💡 当 n = 60 时，<strong>a<sub>m</sub> ≈ g/3600</strong>，完美验证平方反比定律！
+            </div>
+        </div>
+    </div>
+    <footer>
+        🌟 月地检验历史意义: 牛顿证明使月球绕地运动的力与地球引力同源，遵守平方反比规律 | 滑动上方滑块改变地月距离倍数，观察在n=60附近时实际加速度与平方反比预测完美吻合
+    </footer>
+</div>
+
+<script>
+    (function(){
+        // ---------- 物理常数 (真实国际单位制) ----------
+        const G_CONST = 6.67430e-11;      // 仅用于参考展示，不参与加速度直接计算
+        const R_EARTH_M = 6371e3;          // 地球半径 6371 km → 米
+        const g_SURFACE = 9.80665;         // 地表重力加速度 m/s²
+        const T_MOON_SEC = 27.3 * 24 * 3600; // 月球公转周期 27.3天 → 秒
+        const PI = Math.PI;
+
+        // 辅助DOM元素
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        const distanceSlider = document.getElementById('distanceSlider');
+        const nValueDisplay = document.getElementById('nValueDisplay');
+        const actualDistanceSpan = document.getElementById('actualDistance');
+        const actualAccSpan = document.getElementById('actualAcc');
+        const predictedAccSpan = document.getElementById('predictedAcc');
+        const ratioActualSpan = document.getElementById('ratioActual');
+        const ratioTheorySpan = document.getElementById('ratioTheory');
+        const verifyBox = document.getElementById('verifyBox');
+        const errorPercentSpan = document.getElementById('errorPercent');
+
+        // 动画参数
+        let angle = 0;               // 月球轨道角度 (弧度)
+        let animationId = null;
+        let lastTimestamp = 0;
+        const ANGULAR_SPEED = 0.012;  // 每帧增量，视觉转动速度舒适 (大约8~10秒一圈)
+        
+        // 当前距离倍数 n (滑块值)
+        let currentN = 60.0;          // 默认 60
+        
+        // 视觉映射: 地球中心坐标 (固定)
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const earthRadiusVisual = 32;   // 地球视觉半径 (px)
+        // 月球视觉半径
+        const moonRadiusVisual = 12;
+        
+        // 根据 n 计算视觉轨道半径 (n范围30~90，视觉半径范围 150px ~ 380px，确保不超出边界且美观)
+        function getVisualOrbitRadius(n) {
+            // n_min=30 -> radiusMin=150, n_max=90 -> radiusMax=380
+            const minN = 30, maxN = 90;
+            const minR = 150, maxR = 380;
+            let t = (n - minN) / (maxN - minN);
+            t = Math.min(1, Math.max(0, t));
+            return minR + t * (maxR - minR);
+        }
+        
+        // 根据 n 获取真实地月距离 (米)
+        function getRealDistanceMeters(n) {
+            return n * R_EARTH_M;
+        }
+        
+        // 实际向心加速度 a_actual = 4π² r / T²
+        function computeActualAcceleration(r_meters) {
+            return (4 * PI * PI * r_meters) / (T_MOON_SEC * T_MOON_SEC);
+        }
+        
+        // 平方反比预期加速度 a_pred = g * (R_earth / r)^2
+        function computePredictedAcceleration(r_meters) {
+            const ratio = R_EARTH_M / r_meters;
+            return g_SURFACE * ratio * ratio;
+        }
+        
+        // 更新所有数据UI以及验证状态
+        function updatePhysicsDisplay() {
+            const r_m = getRealDistanceMeters(currentN);
+            const r_km = r_m / 1000;
+            // 实际向心加速度
+            const a_act = computeActualAcceleration(r_m);
+            // 预期加速度
+            const a_pred = computePredictedAcceleration(r_m);
+            
+            // 比值 a_act / g
+            const ratioAct = a_act / g_SURFACE;
+            const ratioTheoryVal = 1 / (currentN * currentN);
+            
+            // 相对误差 (基于实际与预期)
+            let errorPercent = Math.abs((a_act - a_pred) / a_pred) * 100;
+            if (!isFinite(errorPercent)) errorPercent = 0;
+            
+            // 更新DOM
+            actualDistanceSpan.innerText = `≈ ${r_km.toFixed(0)} km  ( ${currentN.toFixed(1)} × R⊕ )`;
+            actualAccSpan.innerText = a_act.toExponential(4) + " m/s²";
+            predictedAccSpan.innerText = a_pred.toExponential(4) + " m/s²";
+            ratioActualSpan.innerText = ratioAct.toExponential(4);
+            ratioTheorySpan.innerText = ratioTheoryVal.toExponential(4);
+            errorPercentSpan.innerText = errorPercent.toFixed(4) + " %";
+            
+            // 验证状态风格与牛顿结论
+            const isNearPerfect = (Math.abs(ratioAct - ratioTheoryVal) / ratioTheoryVal) < 0.005; // 相对差异<0.5%
+            const isClassicN = Math.abs(currentN - 60) < 0.1;
+            if (isNearPerfect || (isClassicN && errorPercent < 1.0)) {
+                verifyBox.innerHTML = "✅ 验证成功！实际向心加速度 ≈ 平方反比预期值<br> 牛顿定律成立：引力与距离平方成反比 ✨";
+                verifyBox.className = "verify-status success";
+                verifyBox.style.borderLeft = "4px solid #2e7d32";
+            } else {
+                verifyBox.innerHTML = `⚠️ 当前n = ${currentN.toFixed(1)}，实际加速度与平方反比预测偏差较大。<br> 
+                拖动滑块至 <strong>n ≈ 60</strong> (地月真实比例)，将完美验证 a ∝ 1/r²！`;
+                verifyBox.className = "verify-status";
+                verifyBox.style.borderLeft = "4px solid #ffb74d";
+            }
+            
+            // 如果误差极小则额外强调
+            if(errorPercent < 0.2 && Math.abs(currentN-60)<1){
+                verifyBox.innerHTML = "🎉 完美验证！实际加速度 = " + a_act.toExponential(4) + 
+                                    "，预期加速度 = " + a_pred.toExponential(4) + 
+                                    "<br> 牛顿月地检验结论：使月球绕地运动的力与重力同源，遵守 F ∝ 1/r²";
+                verifyBox.className = "verify-status success";
+            }
+        }
+        
+        // 滑块事件处理
+        function handleSliderChange() {
+            currentN = parseFloat(distanceSlider.value);
+            nValueDisplay.innerText = currentN.toFixed(1);
+            // 更新物理显示
+            updatePhysicsDisplay();
+            // 注意: 视觉轨道半径在每一帧动画中读取currentN重新计算，无需额外调用重绘，动画循环会刷新
+        }
+        
+        // 动画绘制 (圆周轨道模型)
+        function drawOrbit() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 获取当前视觉轨道半径 (基于当前距离倍数n)
+            const orbitRadius = getVisualOrbitRadius(currentN);
+            
+            // 1. 绘制轨道线 (半透明白色圆)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, orbitRadius, 0, 2 * PI);
+            ctx.strokeStyle = "rgba(210, 230, 255, 0.55)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 8]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 2. 绘制辅助刻度线/中心发光
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, earthRadiusVisual + 2, 0, 2 * PI);
+            ctx.fillStyle = "rgba(30, 80, 120, 0.2)";
+            ctx.fill();
+            
+            // 3. 绘制地球 (带光晕效果)
+            ctx.shadowColor = "rgba(0,120,200,0.5)";
+            ctx.shadowBlur = 14;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, earthRadiusVisual, 0, 2 * PI);
+            ctx.fillStyle = "#3a86ff";
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, earthRadiusVisual-2, 0, 2 * PI);
+            ctx.fillStyle = "#2c6e9e";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(centerX-4, centerY-4, 6, 0, 2*PI);
+            ctx.fillStyle = "#9ac2e0";
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.font = `bold ${Math.floor(earthRadiusVisual * 0.5)}px "Segoe UI"`;
+            ctx.shadowBlur = 0;
+            ctx.fillText("🌍", centerX-12, centerY+8);
+            
+            // 4. 计算月球位置
+            const moonX = centerX + orbitRadius * Math.cos(angle);
+            const moonY = centerY + orbitRadius * Math.sin(angle);
+            
+            // 绘制月球 (带阴影)
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, moonRadiusVisual, 0, 2 * PI);
+            ctx.fillStyle = "#d9d2b0";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(moonX-2, moonY-2, 3, 0, 2 * PI);
+            ctx.fillStyle = "#f5eacb";
+            ctx.fill();
+            ctx.fillStyle = "#8b7a4b";
+            ctx.font = `${moonRadiusVisual}px "Segoe UI"`;
+            ctx.fillText("🌙", moonX-7, moonY+5);
+            ctx.shadowBlur = 0;
+            
+            // 绘制地月连线 (细线，展示引力方向)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(moonX, moonY);
+            ctx.strokeStyle = "rgba(255,215,130,0.65)";
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([5, 6]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 额外显示当前距离倍数标签在轨道旁
+            ctx.font = "500 13px 'Segoe UI'";
+            ctx.fillStyle = "#eef4ff";
+            ctx.shadowBlur = 0;
+            ctx.fillText(`n = ${currentN.toFixed(1)}  ·  r = ${(getRealDistanceMeters(currentN)/1000).toFixed(0)} km`, centerX + orbitRadius*0.7, centerY - orbitRadius - 8);
+            
+            // 标注平方反比指示
+            ctx.font = "italic 11px monospace";
+            ctx.fillStyle = "#c0e0ff";
+            ctx.fillText("引力 F ∝ 1/r²", centerX + 20, centerY - earthRadiusVisual - 10);
+        }
+        
+        // 动画更新角度 (视觉自转)
+        function animate() {
+            angle += ANGULAR_SPEED;
+            if (angle > 2 * PI) angle -= 2 * PI;
+            drawOrbit();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 监听滑块变化，重新刷新显示及画布视觉参数 (drawOrbit会在下一帧读取currentN)
+        function bindEvents() {
+            distanceSlider.addEventListener('input', (e) => {
+                currentN = parseFloat(e.target.value);
+                nValueDisplay.innerText = currentN.toFixed(1);
+                updatePhysicsDisplay();
+                // 画布会在下一帧动画自动重绘 (获取新视觉半径)
+                // 同时强制重绘一次让视觉立即更新
+                drawOrbit();
+            });
+            // 窗口自适应重新绘制canvas清晰度? canvas尺寸已固定, 但以防缩放
+            window.addEventListener('resize', () => {
+                drawOrbit();
+            });
+        }
+        
+        // 初始更新所有数值及默认显示
+        function init() {
+            // 设置初始滑块值
+            distanceSlider.value = "60";
+            currentN = 60;
+            nValueDisplay.innerText = "60.0";
+            updatePhysicsDisplay();
+            bindEvents();
+            // 启动动画
+            animate();
+            // 额外添加初始绘制验证视觉比例
+            drawOrbit();
+        }
+        
+        // 确保canvas尺寸物理像素比适配 (已固定宽高属性，无需额外)
+        init();
+    })();
+</script>
+</body>
+</html>

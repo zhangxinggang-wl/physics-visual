@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三维电场线立体模型教学演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .canvas-container {
+            flex: 3;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            height: 700px;
+            position: relative;
+        }
+        
+        #threeCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: block;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 700px;
+            overflow-y: auto;
+        }
+        
+        .model-selector {
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+        }
+        
+        .model-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-align: left;
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        button.active {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-group {
+            margin-bottom: 10px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .description {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        
+        .field-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            width: 100%;
+        }
+        
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .info-box h3 {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+        
+        .info-box p {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .view-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .view-controls button {
+            flex: 1;
+            text-align: center;
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .controls {
+                min-width: 100%;
+                max-height: 400px;
+            }
+            
+            .canvas-container {
+                height: 500px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>三维电场线立体模型教学演示</h1>
+        <p class="subtitle">交互式展示各种典型电场的三维电场线分布</p>
+    </header>
+    
+    <div class="container">
+        <div class="canvas-container">
+            <div id="threeCanvas"></div>
+            <div class="info-panel">
+                <div class="info-box">
+                    <h3>当前模型</h3>
+                    <p id="currentModel">点电荷电场</p>
+                </div>
+                <div class="info-box">
+                    <h3>电场线数量</h3>
+                    <p id="lineCount">16</p>
+                </div>
+                <div class="info-box">
+                    <h3>显示模式</h3>
+                    <p id="displayMode">电场线</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="model-selector">
+                <h2>电场模型</h2>
+                <div class="model-buttons">
+                    <button id="pointCharge" class="active">点电荷电场</button>
+                    <button id="dipole">电偶极子</button>
+                    <button id="parallelPlates">平行板电容器</button>
+                    <button id="lineCharge">无限长带电直线</button>
+                    <button id="chargedSphere">均匀带电球体</button>
+                    <button id="chargedCylinder">无限长带电圆柱</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>显示控制</h2>
+                <div class="slider-container">
+                    <label for="lineDensity">电场线密度: <span id="lineDensityValue">16</span></label>
+                    <input type="range" id="lineDensity" min="8" max="32" value="16" step="4">
+                </div>
+                <div class="slider-container">
+                    <label for="fieldStrength">电场强度: <span id="fieldStrengthValue">1.0</span></label>
+                    <input type="range" id="fieldStrength" min="0.5" max="2" value="1" step="0.1">
+                </div>
+                <div class="view-controls">
+                    <button id="viewLines" class="active">电场线</button>
+                    <button id="viewEquipotential">等势面</button>
+                    <button id="viewBoth">两者都显示</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>视角控制</h2>
+                <div class="view-controls">
+                    <button id="topView">顶视图</button>
+                    <button id="frontView">前视图</button>
+                    <button id="sideView">侧视图</button>
+                    <button id="resetView">重置视角</button>
+                </div>
+            </div>
+            
+            <div class="description">
+                <h2>模型说明</h2>
+                <p id="modelDescription">点电荷电场：电场线从正电荷发出，呈放射状分布，电场强度随距离平方衰减。电场线密度表示电场强度大小。</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>三维电场线立体模型教学演示 | 物理教学工具 | 使用Three.js实现</p>
+    </footer>
+
+    <script>
+        // 获取DOM元素
+        const currentModelEl = document.getElementById('currentModel');
+        const modelDescriptionEl = document.getElementById('modelDescription');
+        const lineCountEl = document.getElementById('lineCount');
+        const displayModeEl = document.getElementById('displayMode');
+        
+        // 模型按钮
+        const pointChargeBtn = document.getElementById('pointCharge');
+        const dipoleBtn = document.getElementById('dipole');
+        const parallelPlatesBtn = document.getElementById('parallelPlates');
+        const lineChargeBtn = document.getElementById('lineCharge');
+        const chargedSphereBtn = document.getElementById('chargedSphere');
+        const chargedCylinderBtn = document.getElementById('chargedCylinder');
+        
+        // 控制滑块
+        const lineDensitySlider = document.getElementById('lineDensity');
+        const fieldStrengthSlider = document.getElementById('fieldStrength');
+        const lineDensityValue = document.getElementById('lineDensityValue');
+        const fieldStrengthValue = document.getElementById('fieldStrengthValue');
+        
+        // 视图按钮
+        const viewLinesBtn = document.getElementById('viewLines');
+        const viewEquipotentialBtn = document.getElementById('viewEquipotential');
+        const viewBothBtn = document.getElementById('viewBoth');
+        const topViewBtn = document.getElementById('topView');
+        const frontViewBtn = document.getElementById('frontView');
+        const sideViewBtn = document.getElementById('sideView');
+        const resetViewBtn = document.getElementById('resetView');
+        
+        // 初始化变量
+        let currentModel = 'pointCharge';
+        let lineDensity = 16;
+        let fieldStrength = 1.0;
+        let displayMode = 'lines';
+        
+        // Three.js变量
+        let scene, camera, renderer, controls;
+        let fieldLines = [], charges = [], equipotentialSurfaces = [];
+        
+        // 模型描述
+        const modelDescriptions = {
+            pointCharge: "点电荷电场：电场线从正电荷发出，呈放射状分布，电场强度随距离平方衰减。电场线密度表示电场强度大小。",
+            dipole: "电偶极子：由两个等量异号点电荷组成，电场线从正电荷发出，终止于负电荷。在远处，电场近似与距离的三次方成反比。",
+            parallelPlates: "平行板电容器：忽略边缘效应时，两板之间的电场是均匀的，电场线是平行等距的直线。",
+            lineCharge: "无限长带电直线：电场线垂直于带电直线呈放射状分布，电场强度与距离成反比。",
+            chargedSphere: "均匀带电球体：球体外电场与点电荷电场相同，球体内电场与半径成正比。",
+            chargedCylinder: "无限长带电圆柱：圆柱外电场与无限长带电直线相同，圆柱内电场与半径成正比。"
+        };
+        
+        // 初始化Three.js场景
+        function initThreeJS() {
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0c0c2b);
+            
+            // 创建相机
+            const canvasContainer = document.querySelector('.canvas-container');
+            camera = new THREE.PerspectiveCamera(60, 
+                canvasContainer.offsetWidth / canvasContainer.offsetHeight, 
+                0.1, 1000);
+            camera.position.set(0, 5, 10);
+            
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(canvasContainer.offsetWidth, canvasContainer.offsetHeight);
+            document.getElementById('threeCanvas').appendChild(renderer.domElement);
+            
+            // 添加轨道控制
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // 添加环境光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            // 添加方向光
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 15);
+            scene.add(directionalLight);
+            
+            // 添加坐标轴
+            const axesHelper = new THREE.AxesHelper(5);
+            scene.add(axesHelper);
+            
+            // 添加网格地面
+            const gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+            scene.add(gridHelper);
+            
+            // 初始绘制
+            createFieldModel();
+            
+            // 动画循环
+            animate();
+        }
+        
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // 创建电场模型
+        function createFieldModel() {
+            // 清除现有模型
+            clearFieldModel();
+            
+            // 根据当前模型创建电场
+            switch(currentModel) {
+                case 'pointCharge':
+                    createPointChargeField();
+                    break;
+                case 'dipole':
+                    createDipoleField();
+                    break;
+                case 'parallelPlates':
+                    createParallelPlatesField();
+                    break;
+                case 'lineCharge':
+                    createLineChargeField();
+                    break;
+                case 'chargedSphere':
+                    createChargedSphereField();
+                    break;
+                case 'chargedCylinder':
+                    createChargedCylinderField();
+                    break;
+            }
+            
+            // 根据显示模式设置可见性
+            updateDisplayMode();
+        }
+        
+        // 清除电场模型
+        function clearFieldModel() {
+            // 移除所有电场线
+            fieldLines.forEach(line => {
+                scene.remove(line);
+            });
+            fieldLines = [];
+            
+            // 移除所有电荷
+            charges.forEach(charge => {
+                scene.remove(charge);
+            });
+            charges = [];
+            
+            // 移除所有等势面
+            equipotentialSurfaces.forEach(surface => {
+                scene.remove(surface);
+            });
+            equipotentialSurfaces = [];
+        }
+        
+        // 创建点电荷电场
+        function createPointChargeField() {
+            // 创建正电荷
+            const chargeGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const chargeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff5252,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.3
+            });
+            const positiveCharge = new THREE.Mesh(chargeGeometry, chargeMaterial);
+            positiveCharge.position.set(0, 0, 0);
+            scene.add(positiveCharge);
+            charges.push(positiveCharge);
+            
+            // 创建电场线
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x64c8ff
+            });
+            
+            for (let i = 0; i < lineDensity; i++) {
+                for (let j = 0; j < lineDensity/2; j++) {
+                    const theta = (i / lineDensity) * Math.PI * 2;
+                    const phi = (j / (lineDensity/2)) * Math.PI;
+                    
+                    const points = [];
+                    for (let r = 1; r <= 8; r += 0.5) {
+                        const x = r * Math.sin(phi) * Math.cos(theta);
+                        const y = r * Math.sin(phi) * Math.sin(theta);
+                        const z = r * Math.cos(phi);
+                        points.push(new THREE.Vector3(x, y, z));
+                    }
+                    
+                    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(lineGeometry, lineMaterial);
+                    scene.add(line);
+                    fieldLines.push(line);
+                }
+            }
+        }
+        
+        // 创建电偶极子电场
+        function createDipoleField() {
+            const separation = 3;
+            
+            // 创建正电荷
+            const chargeGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+            const positiveMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff5252,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.3
+            });
+            const positiveCharge = new THREE.Mesh(chargeGeometry, positiveMaterial);
+            positiveCharge.position.set(-separation/2, 0, 0);
+            scene.add(positiveCharge);
+            charges.push(positiveCharge);
+            
+            // 创建负电荷
+            const negativeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x42a5f5,
+                emissive: 0x0066ff,
+                emissiveIntensity: 0.3
+            });
+            const negativeCharge = new THREE.Mesh(chargeGeometry, negativeMaterial);
+            negativeCharge.position.set(separation/2, 0, 0);
+            scene.add(negativeCharge);
+            charges.push(negativeCharge);
+            
+            // 创建电场线
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x64c8ff
+            });
+            
+            // 从正电荷出发的电场线
+            for (let i = 0; i < lineDensity; i++) {
+                const theta = (i / lineDensity) * Math.PI * 2;
+                
+                const points = [];
+                let x = -separation/2 + 0.5 * Math.cos(theta);
+                let y = 0.5 * Math.sin(theta);
+                let z = 0;
+                
+                points.push(new THREE.Vector3(x, y, z));
+                
+                // 模拟电场线轨迹
+                for (let step = 0; step < 50; step++) {
+                    // 简化的电场计算
+                    const dx1 = x + separation/2;
+                    const dy1 = y;
+                    const dz1 = z;
+                    const dist1 = Math.sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1);
+                    
+                    const dx2 = x - separation/2;
+                    const dy2 = y;
+                    const dz2 = z;
+                    const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2 + dz2*dz2);
+                    
+                    // 电场方向
+                    const ex = dx1/(dist1*dist1) - dx2/(dist2*dist2);
+                    const ey = dy1/(dist1*dist1) - dy2/(dist2*dist2);
+                    const ez = dz1/(dist1*dist1) - dz2/(dist2*dist2);
+                    
+                    const length = Math.sqrt(ex*ex + ey*ey + ez*ez);
+                    if (length === 0) break;
+                    
+                    x += ex/length * 0.3;
+                    y += ey/length * 0.3;
+                    z += ez/length * 0.3;
+                    
+                    points.push(new THREE.Vector3(x, y, z));
+                    
+                    // 如果接近负电荷，停止绘制
+                    if (Math.sqrt((x-separation/2)*(x-separation/2) + y*y + z*z) < 0.6) break;
+                    
+                    // 如果超出范围，停止绘制
+                    if (Math.abs(x) > 10 || Math.abs(y) > 10 || Math.abs(z) > 10) break;
+                }
+                
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                scene.add(line);
+                fieldLines.push(line);
+            }
+        }
+        
+        // 创建平行板电容器电场
+        function createParallelPlatesField() {
+            const plateWidth = 4;
+            const plateHeight = 0.2;
+            const plateDepth = 4;
+            const plateSeparation = 3;
+            
+            // 创建正极板
+            const plateGeometry = new THREE.BoxGeometry(plateWidth, plateHeight, plateDepth);
+            const positiveMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff5252,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.2
+            });
+            const positivePlate = new THREE.Mesh(plateGeometry, positiveMaterial);
+            positivePlate.position.set(0, plateSeparation/2, 0);
+            scene.add(positivePlate);
+            charges.push(positivePlate);
+            
+            // 创建负极板
+            const negativeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x42a5f5,
+                emissive: 0x0066ff,
+                emissiveIntensity: 0.2
+            });
+            const negativePlate = new THREE.Mesh(plateGeometry, negativeMaterial);
+            negativePlate.position.set(0, -plateSeparation/2, 0);
+            scene.add(negativePlate);
+            charges.push(negativePlate);
+            
+            // 创建电场线
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x64c8ff
+            });
+            
+            const numLinesX = Math.floor(lineDensity / 2);
+            const numLinesZ = Math.floor(lineDensity / 2);
+            
+            for (let i = 0; i < numLinesX; i++) {
+                for (let j = 0; j < numLinesZ; j++) {
+                    const x = -plateWidth/2 + (i / (numLinesX-1)) * plateWidth;
+                    const z = -plateDepth/2 + (j / (numLinesZ-1)) * plateDepth;
+                    
+                    const points = [];
+                    for (let y = -plateSeparation/2 + plateHeight; y <= plateSeparation/2 - plateHeight; y += 0.2) {
+                        points.push(new THREE.Vector3(x, y, z));
+                    }
+                    
+                    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(lineGeometry, lineMaterial);
+                    scene.add(line);
+                    fieldLines.push(line);
+                }
+            }
+        }
+        
+        // 创建无限长带电直线电场
+        function createLineChargeField() {
+            const lineLength = 10;
+            
+            // 创建带电直线
+            const lineGeometry = new THREE.CylinderGeometry(0.1, 0.1, lineLength, 16);
+            const lineMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff9800,
+                emissive: 0xff6600,
+                emissiveIntensity: 0.3
+            });
+            const chargedLine = new THREE.Mesh(lineGeometry, lineMaterial);
+            scene.add(chargedLine);
+            charges.push(chargedLine);
+            
+            // 创建电场线（圆柱形）
+            const fieldLineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x64c8ff
+            });
+            
+            const numCircles = Math.floor(lineDensity / 2);
+            const minRadius = 1;
+            
+            for (let i = 1; i <= numCircles; i++) {
+                const radius = minRadius + i * 0.8;
+                
+                // 创建圆形电场线
+                const points = [];
+                for (let angle = 0; angle <= Math.PI * 2; angle += 0.1) {
+                    const x = radius * Math.cos(angle);
+                    const z = radius * Math.sin(angle);
+                    points.push(new THREE.Vector3(x, 0, z));
+                }
+                points.push(points[0]); // 闭合圆形
+                
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(lineGeometry, fieldLineMaterial);
+                scene.add(line);
+                fieldLines.push(line);
+                
+                // 创建上方的圆形
+                const pointsTop = points.map(p => new THREE.Vector3(p.x, lineLength/2 - 0.5, p.z));
+                const lineTop = new THREE.Line(lineGeometry.clone(), fieldLineMaterial);
+                lineTop.position.y = lineLength/2 - 0.5;
+                scene.add(lineTop);
+                fieldLines.push(lineTop);
+                
+                // 创建下方的圆形
+                const lineBottom = new THREE.Line(lineGeometry.clone(), fieldLineMaterial);
+                lineBottom.position.y = -lineLength/2 + 0.5;
+                scene.add(lineBottom);
+                fieldLines.push(lineBottom);
+            }
+        }
+        
+        // 创建均匀带电球体电场
+        function createChargedSphereField() {
+            const sphereRadius = 1.5;
+            
+            // 创建带电球体
+            const sphereGeometry = new THREE.SphereGeometry(sphereRadius, 32, 32);
+            const sphereMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff5252,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.2,
+                transparent: true,
+                opacity: 0.7
+            });
+            const chargedSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            scene.add(chargedSphere);
+            charges.push(chargedSphere);
+            
+            // 创建电场线
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x64c8ff
+            });
+            
+            for (let i = 0; i < lineDensity; i++) {
+                for (let j = 0; j < lineDensity/2; j++) {
+                    const theta = (i / lineDensity) * Math.PI * 2;
+                    const phi = (j / (lineDensity/2)) * Math.PI;
+                    
+                    const points = [];
+                    for (let r = sphereRadius + 0.2; r <= 8; r += 0.5) {
+                        const x = r * Math.sin(phi) * Math.cos(theta);
+                        const y = r * Math.sin(phi) * Math.sin(theta);
+                        const z = r * Math.cos(phi);
+                        points.push(new THREE.Vector3(x, y, z));
+                    }
+                    
+                    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(lineGeometry, lineMaterial);
+                    scene.add(line);
+                    fieldLines.push(line);
+                }
+            }
+        }
+        
+        // 创建无限长带电圆柱电场
+        function createChargedCylinderField() {
+            const cylinderRadius = 1;
+            const cylinderHeight = 8;
+            
+            // 创建带电圆柱
+            const cylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 32);
+            const cylinderMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff9800,
+                emissive: 0xff6600,
+                emissiveIntensity: 0.2,
+                transparent: true,
+                opacity: 0.7
+            });
+            const chargedCylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+            scene.add(chargedCylinder);
+            charges.push(chargedCylinder);
+            
+            // 创建电场线
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x64c8ff
+            });
+            
+            const numCircles = Math.floor(lineDensity / 2);
+            const minRadius = cylinderRadius + 0.5;
+            
+            for (let i = 1; i <= numCircles; i++) {
+                const radius = minRadius + i * 0.8;
+                
+                // 创建圆形电场线
+                const points = [];
+                for (let angle = 0; angle <= Math.PI * 2; angle += 0.1) {
+                    const x = radius * Math.cos(angle);
+                    const z = radius * Math.sin(angle);
+                    points.push(new THREE.Vector3(x, 0, z));
+                }
+                points.push(points[0]); // 闭合圆形
+                
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                scene.add(line);
+                fieldLines.push(line);
+                
+                // 创建上方的圆形
+                const lineTop = new THREE.Line(lineGeometry.clone(), lineMaterial);
+                lineTop.position.y = cylinderHeight/2 - 0.5;
+                scene.add(lineTop);
+                fieldLines.push(lineTop);
+                
+                // 创建下方的圆形
+                const lineBottom = new THREE.Line(lineGeometry.clone(), lineMaterial);
+                lineBottom.position.y = -cylinderHeight/2 + 0.5;
+                scene.add(lineBottom);
+                fieldLines.push(lineBottom);
+            }
+        }
+        
+        // 更新显示模式
+        function updateDisplayMode() {
+            // 设置电场线可见性
+            fieldLines.forEach(line => {
+                line.visible = (displayMode === 'lines' || displayMode === 'both');
+            });
+            
+            // 设置等势面可见性
+            equipotentialSurfaces.forEach(surface => {
+                surface.visible = (displayMode === 'equipotential' || displayMode === 'both');
+            });
+            
+            // 更新显示模式文本
+            if (displayMode === 'lines') {
+                displayModeEl.textContent = '电场线';
+            } else if (displayMode === 'equipotential') {
+                displayModeEl.textContent = '等势面';
+            } else {
+                displayModeEl.textContent = '两者都显示';
+            }
+        }
+        
+        // 切换模型
+        function switchModel(model) {
+            currentModel = model;
+            currentModelEl.textContent = document.getElementById(model).textContent;
+            modelDescriptionEl.textContent = modelDescriptions[model];
+            
+            // 更新按钮状态
+            pointChargeBtn.classList.remove('active');
+            dipoleBtn.classList.remove('active');
+            parallelPlatesBtn.classList.remove('active');
+            lineChargeBtn.classList.remove('active');
+            chargedSphereBtn.classList.remove('active');
+            chargedCylinderBtn.classList.remove('active');
+            
+            document.getElementById(model).classList.add('active');
+            
+            // 重新创建模型
+            createFieldModel();
+        }
+        
+        // 初始化
+        function init() {
+            initThreeJS();
+            
+            // 添加事件监听器
+            window.addEventListener('resize', onWindowResize);
+            
+            // 模型按钮事件
+            pointChargeBtn.addEventListener('click', () => switchModel('pointCharge'));
+            dipoleBtn.addEventListener('click', () => switchModel('dipole'));
+            parallelPlatesBtn.addEventListener('click', () => switchModel('parallelPlates'));
+            lineChargeBtn.addEventListener('click', () => switchModel('lineCharge'));
+            chargedSphereBtn.addEventListener('click', () => switchModel('chargedSphere'));
+            chargedCylinderBtn.addEventListener('click', () => switchModel('chargedCylinder'));
+            
+            // 控制滑块事件
+            lineDensitySlider.addEventListener('input', (e) => {
+                lineDensity = parseInt(e.target.value);
+                lineDensityValue.textContent = lineDensity;
+                lineCountEl.textContent = lineDensity;
+                createFieldModel();
+            });
+            
+            fieldStrengthSlider.addEventListener('input', (e) => {
+                fieldStrength = parseFloat(e.target.value);
+                fieldStrengthValue.textContent = fieldStrength.toFixed(1);
+                // 这里可以添加电场强度变化的逻辑
+            });
+            
+            // 显示模式按钮事件
+            viewLinesBtn.addEventListener('click', () => {
+                displayMode = 'lines';
+                updateDisplayMode();
+                setActiveViewButton(viewLinesBtn);
+            });
+            
+            viewEquipotentialBtn.addEventListener('click', () => {
+                displayMode = 'equipotential';
+                updateDisplayMode();
+                setActiveViewButton(viewEquipotentialBtn);
+            });
+            
+            viewBothBtn.addEventListener('click', () => {
+                displayMode = 'both';
+                updateDisplayMode();
+                setActiveViewButton(viewBothBtn);
+            });
+            
+            // 视角控制按钮事件
+            topViewBtn.addEventListener('click', () => {
+                camera.position.set(0, 10, 0.1);
+                camera.lookAt(0, 0, 0);
+            });
+            
+            frontViewBtn.addEventListener('click', () => {
+                camera.position.set(0, 0, 10);
+                camera.lookAt(0, 0, 0);
+            });
+            
+            sideViewBtn.addEventListener('click', () => {
+                camera.position.set(10, 0, 0);
+                camera.lookAt(0, 0, 0);
+            });
+            
+            resetViewBtn.addEventListener('click', () => {
+                camera.position.set(0, 5, 10);
+                camera.lookAt(0, 0, 0);
+            });
+            
+            // 设置初始活动视图按钮
+            setActiveViewButton(viewLinesBtn);
+        }
+        
+        // 设置活动视图按钮
+        function setActiveViewButton(activeButton) {
+            viewLinesBtn.classList.remove('active');
+            viewEquipotentialBtn.classList.remove('active');
+            viewBothBtn.classList.remove('active');
+            activeButton.classList.add('active');
+        }
+        
+        // 窗口大小调整
+        function onWindowResize() {
+            const canvasContainer = document.querySelector('.canvas-container');
+            camera.aspect = canvasContainer.offsetWidth / canvasContainer.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvasContainer.offsetWidth, canvasContainer.offsetHeight);
+        }
+        
+        // 启动应用
+        init();
+    </script>
+</body>
+</html>

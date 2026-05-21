@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多点电荷电场线与等势线</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      color: #e0e0ff;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 1.6em;
+      margin-bottom: 12px;
+      color: #aac4ff;
+      letter-spacing: 2px;
+    }
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 16px;
+      background: #111130;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid #2a2a5a;
+    }
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85em;
+    }
+    .ctrl-group label { color: #8899cc; }
+    input[type=range] {
+      width: 90px;
+      accent-color: #5577ff;
+    }
+    input[type=number] {
+      width: 52px;
+      background: #1a1a3a;
+      border: 1px solid #3a3a7a;
+      color: #ddeeff;
+      border-radius: 5px;
+      padding: 3px 6px;
+      font-size: 0.85em;
+    }
+    .btn {
+      padding: 6px 14px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.84em;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-add-pos { background: #3366dd; color: #fff; }
+    .btn-add-neg { background: #cc3344; color: #fff; }
+    .btn-clear   { background: #443355; color: #ddd; }
+    .btn-reset   { background: #225533; color: #aef; }
+    #legend {
+      display: flex; gap: 18px; font-size: 0.8em; margin-bottom: 10px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    #canvas-wrap {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 40px #1133aa55;
+      border: 1.5px solid #2a2a6a;
+      cursor: crosshair;
+    }
+    canvas { display: block; }
+    #info {
+      margin-top: 10px;
+      font-size: 0.78em;
+      color: #6677aa;
+      text-align: center;
+    }
+    #charge-list {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 750px;
+      justify-content: center;
+    }
+    .charge-tag {
+      display: flex; align-items: center; gap: 5px;
+      background: #151530;
+      border: 1px solid #2a2a5a;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78em;
+    }
+    .charge-tag .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .charge-tag .del {
+      margin-left: 4px; cursor: pointer; color: #aa4466;
+      font-weight: bold; font-size: 0.95em;
+    }
+    .charge-tag .del:hover { color: #ff4466; }
+  </style>
+</head>
+<body>
+<h1>⚡ 多点电荷 · 电场线与等势线</h1>
+
+<div id="controls">
+  <div class="ctrl-group">
+    <label>添加电荷:</label>
+    <input type="number" id="q-value" value="1" step="0.5" style="width:60px">
+    <span style="font-size:0.8em;color:#7788bb">C</span>
+  </div>
+  <button class="btn btn-add-pos" onclick="setMode('place-pos')">➕ 正电荷</button>
+  <button class="btn btn-add-neg" onclick="setMode('place-neg')">➖ 负电荷</button>
+  <div class="ctrl-group">
+    <label>场线数:</label>
+    <input type="range" id="field-lines" min="6" max="36" value="16" oninput="updateSlider(this,'fl-val')">
+    <span id="fl-val">16</span>
+  </div>
+  <div class="ctrl-group">
+    <label>等势线:</label>
+    <input type="range" id="equipot-lines" min="3" max="30" value="12" oninput="updateSlider(this,'ep-val')">
+    <span id="ep-val">12</span>
+  </div>
+  <div class="ctrl-group">
+    <label>步长:</label>
+    <input type="range" id="step-size" min="1" max="10" value="3" oninput="updateSlider(this,'ss-val')">
+    <span id="ss-val">3</span>
+  </div>
+  <button class="btn btn-reset" onclick="resetDefault()">🔄 默认示例</button>
+  <button class="btn btn-clear" onclick="clearAll()">🗑 清空</button>
+</div>
+
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#ff5566"></div>正电荷</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#44aaff"></div>负电荷</div>
+  <div class="legend-item"><div style="width:28px;height:2px;background:#ffdd44;border-radius:2px"></div>电场线</div>
+  <div class="legend-item"><div style="width:28px;height:2px;background:#44ffcc;border-radius:2px;border:1px dashed #44ffcc"></div>等势线</div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="canvas" width="750" height="560"></canvas>
+</div>
+
+<div id="charge-list"></div>
+
+<div id="info">
+  💡 点击画布放置电荷（先选择正/负电荷按钮）·  拖动电荷可移动位置  ·  右键单击删除电荷
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+let charges = [];
+let mode = null; // 'place-pos' | 'place-neg' | null
+let dragging = null;
+let dragOffX = 0, dragOffY = 0;
+
+function setMode(m) {
+  mode = m;
+  canvas.style.cursor = 'crosshair';
+}
+
+function updateSlider(el, spanId) {
+  document.getElementById(spanId).textContent = el.value;
+  draw();
+}
+
+// ---- Electric potential ----
+function potential(x, y) {
+  let v = 0;
+  for (const c of charges) {
+    const dx = x - c.x, dy = y - c.y;
+    const r = Math.sqrt(dx*dx + dy*dy);
+    if (r < 5) return Infinity * Math.sign(c.q);
+    v += c.q / r;
+  }
+  return v;
+}
+
+// ---- Electric field ----
+function efield(x, y) {
+  let ex = 0, ey = 0;
+  for (const c of charges) {
+    const dx = x - c.x, dy = y - c.y;
+    const r2 = dx*dx + dy*dy;
+    if (r2 < 25) continue;
+    const r3 = r2 * Math.sqrt(r2);
+    ex += c.q * dx / r3;
+    ey += c.q * dy / r3;
+  }
+  return [ex, ey];
+}
+
+// ---- Draw field lines ----
+function traceFieldLine(x0, y0, towardsNegative, maxSteps, step) {
+  const pts = [[x0, y0]];
+  let x = x0, y = y0;
+  for (let i = 0; i < maxSteps; i++) {
+    const [ex, ey] = efield(x, y);
+    const mag = Math.sqrt(ex*ex + ey*ey);
+    if (mag < 1e-10) break;
+    const nx = ex / mag, ny = ey / mag;
+    // towardsNegative: for negative charges, trace INTO them (reverse direction)
+    x += (towardsNegative ? -1 : 1) * nx * step;
+    y += (towardsNegative ? -1 : 1) * ny * step;
+    if (x < -10 || x > W+10 || y < -10 || y > H+10) break;
+    // stop near a charge
+    let nearCharge = null;
+    for (const c of charges) {
+      const dx = x-c.x, dy = y-c.y;
+      if (dx*dx+dy*dy < 144) { nearCharge = c; break; }
+    }
+    pts.push([x, y]);
+    if (nearCharge) break;
+  }
+  return pts;
+}
+
+// ---- Draw equipotential lines via marching squares (simple contour) ----
+function drawEquipotentialLines(levels) {
+  const gw = 100, gh = 80;
+  const cw = W / gw, ch = H / gh;
+  // precompute grid
+  const grid = new Float32Array((gw+1)*(gh+1));
+  for (let j = 0; j <= gh; j++) {
+    for (let i = 0; i <= gw; i++) {
+      const v = potential(i*cw, j*ch);
+      grid[j*(gw+1)+i] = isFinite(v) ? Math.max(-200, Math.min(200, v)) : 0;
+    }
+  }
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(68,255,204,0.55)';
+  ctx.setLineDash([4, 4]);
+
+  for (const level of levels) {
+    ctx.beginPath();
+    // march
+    for (let j = 0; j < gh; j++) {
+      for (let i = 0; i < gw; i++) {
+        const v00 = grid[ j   *(gw+1)+ i   ];
+        const v10 = grid[ j   *(gw+1)+(i+1)];
+        const v01 = grid[(j+1)*(gw+1)+ i   ];
+        const v11 = grid[(j+1)*(gw+1)+(i+1)];
+        // interpolate edges
+        function interp(va, vb, xa, ya, xb, yb) {
+          if ((va-level)*(vb-level) > 0) return null;
+          if (Math.abs(vb-va) < 1e-9) return [(xa+xb)/2, (ya+yb)/2];
+          const t = (level - va) / (vb - va);
+          return [xa + t*(xb-xa), ya + t*(yb-ya)];
+        }
+        const x0 = i*cw, y0 = j*ch, x1 = (i+1)*cw, y1 = (j+1)*ch;
+        const edgeT = interp(v00,v10, x0,y0, x1,y0);
+        const edgeR = interp(v10,v11, x1,y0, x1,y1);
+        const edgeB = interp(v11,v01, x1,y1, x0,y1);
+        const edgeL = interp(v01,v00, x0,y1, x0,y0);
+        const pts = [edgeT,edgeR,edgeB,edgeL].filter(Boolean);
+        if (pts.length === 2) {
+          ctx.moveTo(pts[0][0], pts[0][1]);
+          ctx.lineTo(pts[1][0], pts[1][1]);
+        }
+      }
+    }
+    ctx.stroke();
+    ctx.beginPath(); // reset path for next level
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+// ---- Compute dynamic potential range ----
+function getPotentialRange() {
+  let vals = [];
+  const N = 30;
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      const x = (i + 0.5) * W / N;
+      const y = (j + 0.5) * H / N;
+      const v = potential(x, y);
+      if (isFinite(v)) vals.push(v);
+    }
+  }
+  if (!vals.length) return [-10, 10];
+  vals.sort((a, b) => a - b);
+  const lo = vals[Math.floor(vals.length * 0.05)];
+  const hi = vals[Math.floor(vals.length * 0.95)];
+  return [lo, hi];
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background gradient
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
+  bg.addColorStop(0, '#0d0d2a');
+  bg.addColorStop(1, '#050510');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  if (charges.length === 0) {
+    ctx.fillStyle = '#3344aa';
+    ctx.font = '16px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('请添加电荷（点击上方按钮，再点击画布）', W/2, H/2);
+    return;
+  }
+
+  // ---- Equipotential lines ----
+  const nEquipot = parseInt(document.getElementById('equipot-lines').value);
+  const [vlo, vhi] = getPotentialRange();
+  const levels = [];
+  for (let k = 0; k <= nEquipot; k++) {
+    levels.push(vlo + (vhi - vlo) * k / nEquipot);
+  }
+  drawEquipotentialLines(levels);
+
+  // ---- Field lines ----
+  const nLines = parseInt(document.getElementById('field-lines').value);
+  const step = parseFloat(document.getElementById('step-size').value) * 1.5;
+  const maxSteps = 4000;
+
+  ctx.lineWidth = 1.2;
+
+  for (const c of charges) {
+    if (c.q === 0) continue;
+    const isPositive = c.q > 0;
+    
+    if (isPositive) {
+      // 正电荷：从电荷处向外辐射
+      for (let i = 0; i < nLines; i++) {
+        const angle = (2 * Math.PI * i) / nLines;
+        const startR = 14;
+        const sx = c.x + startR * Math.cos(angle);
+        const sy = c.y + startR * Math.sin(angle);
+        const pts = traceFieldLine(sx, sy, false, maxSteps, step);
+        if (pts.length < 2) continue;
+        drawFieldLine(pts);
+      }
+    } else {
+      // 负电荷：从画布边缘向电荷追踪（被吸入）
+      // 在电荷周围均匀分布起点，向内追踪
+      for (let i = 0; i < nLines; i++) {
+        const angle = (2 * Math.PI * i) / nLines;
+        const startR = 120; // 从较远距离开始
+        const sx = c.x + startR * Math.cos(angle);
+        const sy = c.y + startR * Math.sin(angle);
+        // 确保起点在画布内
+        if (sx < 0 || sx > W || sy < 0 || sy > H) continue;
+        const pts = traceFieldLine(sx, sy, true, maxSteps, step);
+        if (pts.length < 2) continue;
+        // 反转顺序，使从电荷处开始绘制
+        drawFieldLine(pts.reverse());
+      }
+    }
+  }
+
+  function drawFieldLine(pts) {
+    // Draw with gradient along line
+    for (let k = 0; k < pts.length - 1; k++) {
+      const t = k / pts.length;
+      const alpha = 0.5 + 0.5 * (1 - t);
+      ctx.strokeStyle = `rgba(255,220,60,${alpha * 0.75})`;
+      ctx.beginPath();
+      ctx.moveTo(pts[k][0], pts[k][1]);
+      ctx.lineTo(pts[k+1][0], pts[k+1][1]);
+      ctx.stroke();
+    }
+    // Arrowhead at end (pointing in field direction)
+    if (pts.length > 3) {
+      const mi = Math.floor(pts.length * 0.7);
+      const [ax, ay] = pts[Math.min(mi, pts.length-1)];
+      const [bx, by] = pts[Math.min(mi+1, pts.length-1)];
+      const ang = Math.atan2(by - ay, bx - ax);
+      const arrowSize = 6;
+      ctx.fillStyle = 'rgba(255,220,60,0.8)';
+      ctx.beginPath();
+      ctx.moveTo(ax + arrowSize*Math.cos(ang), ay + arrowSize*Math.sin(ang));
+      ctx.lineTo(ax + arrowSize*Math.cos(ang+2.5), ay + arrowSize*Math.sin(ang+2.5));
+      ctx.lineTo(ax + arrowSize*Math.cos(ang-2.5), ay + arrowSize*Math.sin(ang-2.5));
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  // ---- Draw charges ----
+  for (const c of charges) {
+    const r = 10 + Math.min(8, Math.abs(c.q) * 2);
+    const isPos = c.q > 0;
+    const col = isPos ? '#ff5566' : '#44aaff';
+    const glow = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r * 2);
+    glow.addColorStop(0, isPos ? 'rgba(255,80,100,0.6)' : 'rgba(60,160,255,0.6)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, r * 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.min(14, 10 + Math.abs(c.q))}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(isPos ? '+' : '−', c.x, c.y);
+
+    // Label
+    ctx.fillStyle = isPos ? '#ffaabb' : '#aaddff';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(`${c.q > 0 ? '+' : ''}${c.q}C`, c.x, c.y + r + 12);
+  }
+
+  updateChargeList();
+}
+
+function updateChargeList() {
+  const el = document.getElementById('charge-list');
+  el.innerHTML = '';
+  charges.forEach((c, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'charge-tag';
+    tag.innerHTML = `<div class="dot" style="background:${c.q>0?'#ff5566':'#44aaff'}"></div>
+      <span>${c.q > 0 ? '+' : ''}${c.q}C @ (${Math.round(c.x)}, ${Math.round(c.y)})</span>
+      <span class="del" onclick="removeCharge(${i})">✕</span>`;
+    el.appendChild(tag);
+  });
+}
+
+function removeCharge(i) {
+  charges.splice(i, 1);
+  draw();
+}
+
+function clearAll() {
+  charges = [];
+  mode = null;
+  draw();
+}
+
+function resetDefault() {
+  charges = [
+    { x: W*0.35, y: H*0.5,  q: +2 },
+    { x: W*0.65, y: H*0.5,  q: -2 },
+  ];
+  draw();
+}
+
+// ---- Mouse events ----
+canvas.addEventListener('click', e => {
+  if (!mode) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const qVal = parseFloat(document.getElementById('q-value').value) || 1;
+  const q = mode === 'place-pos' ? Math.abs(qVal) : -Math.abs(qVal);
+  charges.push({ x: mx, y: my, q });
+  mode = null;
+  canvas.style.cursor = 'crosshair';
+  draw();
+});
+
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  for (let i = charges.length - 1; i >= 0; i--) {
+    const dx = mx - charges[i].x, dy = my - charges[i].y;
+    if (dx*dx + dy*dy < 300) {
+      charges.splice(i, 1);
+      draw();
+      return;
+    }
+  }
+});
+
+canvas.addEventListener('mousedown', e => {
+  if (mode) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  for (let i = charges.length - 1; i >= 0; i--) {
+    const dx = mx - charges[i].x, dy = my - charges[i].y;
+    if (dx*dx + dy*dy < 300) {
+      dragging = i;
+      dragOffX = dx; dragOffY = dy;
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+  }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (dragging === null) return;
+  const rect = canvas.getBoundingClientRect();
+  charges[dragging].x = e.clientX - rect.left - dragOffX;
+  charges[dragging].y = e.clientY - rect.top  - dragOffY;
+  draw();
+});
+
+canvas.addEventListener('mouseup', () => {
+  dragging = null;
+  canvas.style.cursor = mode ? 'crosshair' : 'default';
+});
+
+// Redraw when sliders change
+['field-lines','equipot-lines','step-size'].forEach(id => {
+  document.getElementById(id).addEventListener('input', draw);
+});
+
+// ---- Init ----
+resetDefault();
+</script>
+</body>
+</html>

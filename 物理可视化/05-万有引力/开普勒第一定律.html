@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开普勒第一定律教学仿真 - 燕赵名师张兴刚工作室</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #0a0e17;
+            color: #e0e0ff;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2a3c5c;
+        }
+        
+        h1 {
+            color: #4dabf7;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #74c0fc;
+            font-size: 1.2rem;
+        }
+        
+        .studio-name {
+            color: #ffa94d;
+            font-weight: bold;
+            font-size: 1.4rem;
+            margin-top: 10px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .simulation-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(16, 24, 39, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a3c5c;
+        }
+        
+        .simulation-title {
+            color: #5c7cfa;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .simulation-title i {
+            font-size: 1.5rem;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #0f1525;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid #2a3c5c;
+        }
+        
+        #orbitCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .control-group h3 {
+            color: #69db7c;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .slider-label span {
+            color: #a5d8ff;
+            font-size: 0.95rem;
+        }
+        
+        .slider-value {
+            color: #ffd43b;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #2a3c5c;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4dabf7;
+            cursor: pointer;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 15px;
+            background: linear-gradient(to right, #3b5bdb, #4dabf7);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #364fc7, #339af0);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 91, 219, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.reset {
+            background: linear-gradient(to right, #e67700, #ffa94d);
+        }
+        
+        button.reset:hover {
+            background: linear-gradient(to right, #d9480f, #ff922b);
+        }
+        
+        .info-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(16, 24, 39, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2a3c5c;
+        }
+        
+        .info-title {
+            color: #5c7cfa;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+        
+        .law-statement {
+            background: rgba(41, 57, 86, 0.6);
+            border-left: 5px solid #ffa94d;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 25px;
+        }
+        
+        .law-statement h3 {
+            color: #ffd43b;
+            margin-bottom: 10px;
+        }
+        
+        .step-container {
+            margin-bottom: 25px;
+        }
+        
+        .step-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #69db7c;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .step-number {
+            background-color: #3b5bdb;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(41, 57, 86, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 4px solid #4dabf7;
+        }
+        
+        .feature-card h4 {
+            color: #a5d8ff;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 2px solid #2a3c5c;
+            margin-top: 20px;
+            color: #74c0fc;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        /* 椭圆参数显示 */
+        .params-display {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            background: rgba(41, 57, 86, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .param-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #2a3c5c;
+        }
+        
+        .param-name {
+            color: #a5d8ff;
+        }
+        
+        .param-value {
+            color: #ffd43b;
+            font-weight: bold;
+        }
+        
+        .focus-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ff6b6b;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+        
+        .sun-color {
+            background-color: #ffd43b;
+        }
+        
+        .planet-color {
+            background-color: #4dabf7;
+        }
+        
+        .focus-color {
+            background-color: #ff6b6b;
+        }
+        
+        .orbit-color {
+            background-color: #69db7c;
+        }
+        
+        .distance-line {
+            stroke-dasharray: 5, 5;
+            stroke-width: 1;
+        }
+        
+        .sun-left-notice {
+            background: rgba(255, 169, 77, 0.1);
+            border: 1px solid #ffa94d;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: center;
+            color: #ffd43b;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>开普勒第一定律教学仿真</h1>
+            <p class="subtitle">行星运动定律 · 椭圆轨道可视化 · 太阳在左侧焦点</p>
+            <p class="studio-name">燕赵名师张兴刚工作室</p>
+        </header>
+        
+        <div class="main-content">
+            <section class="simulation-section">
+                <h2 class="simulation-title">
+                    <i class="fas fa-globe-americas"></i> 椭圆轨道仿真
+                </h2>
+                
+                <div class="sun-left-notice">
+                    <i class="fas fa-sun"></i> 太阳位于椭圆左侧焦点（常规表示方式）
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="orbitCanvas"></canvas>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color sun-color"></div>
+                        <span>太阳 (位于椭圆左侧焦点)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color planet-color"></div>
+                        <span>行星</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color focus-color"></div>
+                        <span>椭圆右侧焦点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color orbit-color"></div>
+                        <span>椭圆轨道</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <h3>轨道参数控制</h3>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>椭圆偏心率</span>
+                                <span class="slider-value" id="eccentricityValue">0.5</span>
+                            </div>
+                            <input type="range" id="eccentricitySlider" min="0.1" max="0.9" step="0.05" value="0.5">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>轨道大小</span>
+                                <span class="slider-value" id="sizeValue">300</span>
+                            </div>
+                            <input type="range" id="sizeSlider" min="150" max="450" step="10" value="300">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>行星速度</span>
+                                <span class="slider-value" id="speedValue">1.0x</span>
+                            </div>
+                            <input type="range" id="speedSlider" min="0.1" max="3" step="0.1" value="1.0">
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <h3>显示控制</h3>
+                        <div class="buttons">
+                            <button id="toggleOrbitBtn">
+                                <i class="fas fa-circle"></i> 显示/隐藏轨道
+                            </button>
+                            <button id="toggleGridBtn">
+                                <i class="fas fa-th"></i> 显示/隐藏网格
+                            </button>
+                        </div>
+                        
+                        <div class="buttons">
+                            <button id="pauseBtn">
+                                <i class="fas fa-pause"></i> 暂停/继续
+                            </button>
+                            <button class="reset" id="resetBtn">
+                                <i class="fas fa-redo"></i> 重置仿真
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="params-display">
+                    <div class="param-item">
+                        <span class="param-name">半长轴 (a):</span>
+                        <span class="param-value" id="semiMajorAxis">300</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-name">半短轴 (b):</span>
+                        <span class="param-value" id="semiMinorAxis">260</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-name">焦距 (c):</span>
+                        <span class="param-value" id="focalDistance">150</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-name">离心率 (e):</span>
+                        <span class="param-value" id="eccentricityDisplay">0.50</span>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="info-section">
+                <h2 class="info-title">
+                    <i class="fas fa-book-open"></i> 开普勒第一定律
+                </h2>
+                
+                <div class="law-statement">
+                    <h3>定律内容</h3>
+                    <p>所有行星绕太阳运动的轨道都是椭圆，太阳处在椭圆的一个焦点上。</p>
+                    <p>在本仿真中，太阳位于椭圆左侧焦点，这是天文学中常用的表示方式。行星在轨道上运行时，距离太阳最近的点称为近日点，最远的点称为远日点。</p>
+                </div>
+                
+                <div class="step-container">
+                    <div class="step-title">
+                        <div class="step-number">1</div>
+                        <h3>椭圆几何与焦点位置</h3>
+                    </div>
+                    <p>椭圆有两个焦点，太阳位于其中一个焦点上。在本仿真中：</p>
+                    <ul>
+                        <li><strong>太阳位于左侧焦点</strong>：这是天文学中常用的表示方式</li>
+                        <li><strong>近日点</strong>：行星轨道上离太阳最近的点（椭圆最左端）</li>
+                        <li><strong>远日点</strong>：行星轨道上离太阳最远的点（椭圆最右端）</li>
+                        <li><strong>偏心率(e)</strong>：表示椭圆扁平程度的参数，e=0时为圆形，e越大椭圆越扁</li>
+                    </ul>
+                </div>
+                
+                <div class="step-container">
+                    <div class="step-title">
+                        <div class="step-number">2</div>
+                        <h3>焦点位置的意义</h3>
+                    </div>
+                    <p>太阳位于椭圆的一个焦点上，这意味着：</p>
+                    <ul>
+                        <li>行星到太阳的距离在不断变化</li>
+                        <li>行星在近日点时速度最快，在远日点时速度最慢（开普勒第二定律）</li>
+                        <li>从行星到两个焦点的距离之和始终等于椭圆长轴的长度（2a）</li>
+                        <li>当偏心率e=0时，两个焦点重合，椭圆变为圆形，太阳位于圆心</li>
+                    </ul>
+                </div>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <h4><i class="fas fa-sun"></i> 太阳位置</h4>
+                        <p>太阳位于椭圆左侧焦点，行星绕太阳沿椭圆轨道运行。调整偏心率可观察太阳位置相对于椭圆中心的变化。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-running"></i> 行星速度变化</h4>
+                        <p>行星在近日点（靠近太阳）时速度最快，在远日点（远离太阳）时速度最慢，符合开普勒第二定律。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-ruler-combined"></i> 距离关系</h4>
+                        <p>虚线表示行星到两个焦点的距离，其和恒等于椭圆长轴长度2a。这是椭圆的基本几何性质。</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h4><i class="fas fa-sliders-h"></i> 交互控制</h4>
+                        <p>通过调整偏心率、轨道大小和行星速度，可以观察不同参数下椭圆轨道和行星运动的变化。</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>开普勒第一定律教学仿真 &copy; 2023 燕赵名师张兴刚工作室</p>
+            <p>太阳位于椭圆左侧焦点 - 常规天文学表示方式</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        // 初始变量
+        let animationId = null;
+        let isPaused = false;
+        let showOrbit = true;
+        let showGrid = false;
+        
+        // 椭圆参数
+        let a = 300; // 半长轴
+        let b = 260; // 半短轴
+        let e = 0.5; // 偏心率
+        let c = e * a; // 焦距
+        
+        // 行星位置
+        let angle = Math.PI; // 从远日点开始（椭圆最右端）
+        let speed = 0.02;
+        
+        // 中心点（Canvas中心）
+        let centerX, centerY;
+        
+        // 获取DOM元素
+        const eccentricitySlider = document.getElementById('eccentricitySlider');
+        const eccentricityValue = document.getElementById('eccentricityValue');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeValue = document.getElementById('sizeValue');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        
+        const toggleOrbitBtn = document.getElementById('toggleOrbitBtn');
+        const toggleGridBtn = document.getElementById('toggleGridBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // 参数显示元素
+        const semiMajorAxisEl = document.getElementById('semiMajorAxis');
+        const semiMinorAxisEl = document.getElementById('semiMinorAxis');
+        const focalDistanceEl = document.getElementById('focalDistance');
+        const eccentricityDisplayEl = document.getElementById('eccentricityDisplay');
+        
+        // 初始化
+        function init() {
+            resizeCanvas();
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            
+            // 更新参数显示
+            updateParameterDisplay();
+            
+            // 开始动画
+            if (!animationId) {
+                animate();
+            }
+            
+            // 添加窗口大小调整监听
+            window.addEventListener('resize', resizeCanvas);
+        }
+        
+        // 更新参数显示
+        function updateParameterDisplay() {
+            semiMajorAxisEl.textContent = a.toFixed(0);
+            semiMinorAxisEl.textContent = b.toFixed(0);
+            focalDistanceEl.textContent = c.toFixed(0);
+            eccentricityDisplayEl.textContent = e.toFixed(2);
+        }
+        
+        // 绘制网格
+        function drawGrid() {
+            if (!showGrid) return;
+            
+            ctx.strokeStyle = 'rgba(100, 120, 150, 0.2)';
+            ctx.lineWidth = 1;
+            
+            // 绘制垂直线
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 绘制水平线
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制中心十字
+            ctx.strokeStyle = 'rgba(100, 120, 150, 0.5)';
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+        }
+        
+        // 绘制椭圆轨道
+        function drawOrbit() {
+            if (!showOrbit) return;
+            
+            ctx.strokeStyle = '#69db7c';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            ctx.beginPath();
+            
+            // 绘制椭圆
+            for (let i = 0; i <= Math.PI * 2; i += 0.01) {
+                const x = centerX + a * Math.cos(i);
+                const y = centerY + b * Math.sin(i);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.closePath();
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // 绘制太阳（位于左侧焦点）
+        function drawSun() {
+            // 太阳位于左侧焦点
+            const sunX = centerX - c;
+            const sunY = centerY;
+            
+            // 绘制太阳光晕
+            const gradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 30);
+            gradient.addColorStop(0, '#ffd43b');
+            gradient.addColorStop(0.7, '#ffa94d');
+            gradient.addColorStop(1, 'rgba(255, 169, 77, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制太阳核心
+            ctx.fillStyle = '#ffd43b';
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制太阳标签
+            ctx.fillStyle = '#ffd43b';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('太阳', sunX, sunY - 40);
+            
+            // 标记近日点和远日点
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '12px Arial';
+            
+            // 近日点（椭圆最左端）
+            const perihelionX = centerX - a;
+            const perihelionY = centerY;
+            ctx.beginPath();
+            ctx.arc(perihelionX, perihelionY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillText('近日点', perihelionX, perihelionY - 15);
+            
+            // 远日点（椭圆最右端）
+            const aphelionX = centerX + a;
+            const aphelionY = centerY;
+            ctx.beginPath();
+            ctx.arc(aphelionX, aphelionY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillText('远日点', aphelionX, aphelionY - 15);
+        }
+        
+        // 绘制第二个焦点（右侧焦点）
+        function drawSecondFocus() {
+            const focusX = centerX + c;
+            const focusY = centerY;
+            
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(focusX, focusY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制焦点标签
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('焦点2', focusX, focusY - 25);
+        }
+        
+        // 绘制行星
+        function drawPlanet() {
+            // 计算行星位置（使用参数方程）
+            const planetX = centerX + a * Math.cos(angle);
+            const planetY = centerY + b * Math.sin(angle);
+            
+            // 太阳位置（左侧焦点）
+            const sunX = centerX - c;
+            const sunY = centerY;
+            
+            // 第二个焦点位置（右侧焦点）
+            const focus2X = centerX + c;
+            const focus2Y = centerY;
+            
+            // 绘制行星到两个焦点的距离线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            // 连接到太阳（左侧焦点）
+            ctx.beginPath();
+            ctx.moveTo(planetX, planetY);
+            ctx.lineTo(sunX, sunY);
+            ctx.stroke();
+            
+            // 连接到右侧焦点
+            ctx.beginPath();
+            ctx.moveTo(planetX, planetY);
+            ctx.lineTo(focus2X, focus2Y);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // 计算并显示距离
+            const distanceToSun = Math.sqrt((planetX - sunX) ** 2 + (planetY - sunY) ** 2);
+            const distanceToFocus2 = Math.sqrt((planetX - focus2X) ** 2 + (planetY - focus2Y) ** 2);
+            const sumDistances = distanceToSun + distanceToFocus2;
+            
+            // 在行星附近显示距离信息
+            ctx.fillStyle = '#a5d8ff';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`到太阳: ${distanceToSun.toFixed(0)}`, planetX + 15, planetY - 20);
+            ctx.fillText(`距离和: ${sumDistances.toFixed(0)}`, planetX + 15, planetY - 5);
+            ctx.fillText(`2a = ${(2*a).toFixed(0)}`, planetX + 15, planetY + 10);
+            
+            // 绘制行星
+            const gradient = ctx.createRadialGradient(planetX, planetY, 0, planetX, planetY, 20);
+            gradient.addColorStop(0, '#4dabf7');
+            gradient.addColorStop(1, '#1864ab');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制行星标签
+            ctx.fillStyle = '#4dabf7';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('行星', planetX, planetY - 35);
+            
+            // 绘制行星速度矢量
+            const speedScale = 30;
+            // 计算速度方向（椭圆切线方向）
+            const velocityX = -a * Math.sin(angle);
+            const velocityY = b * Math.cos(angle);
+            
+            // 归一化并缩放
+            const magnitude = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+            const normX = velocityX / magnitude;
+            const normY = velocityY / magnitude;
+            
+            ctx.strokeStyle = '#ffd43b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(planetX, planetY);
+            ctx.lineTo(planetX + normX * speedScale, planetY + normY * speedScale);
+            ctx.stroke();
+            
+            // 绘制速度箭头
+            drawArrow(planetX, planetY, planetX + normX * speedScale, planetY + normY * speedScale);
+            
+            // 显示速度信息
+            const speedMultiplier = parseFloat(speedSlider.value);
+            const currentSpeed = speed * speedMultiplier * magnitude;
+            ctx.fillStyle = '#ffd43b';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`速度: ${currentSpeed.toFixed(2)}`, planetX, planetY + 35);
+        }
+        
+        // 绘制箭头
+        function drawArrow(fromX, fromY, toX, toY) {
+            const headlen = 10;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.fillStyle = '#ffd43b';
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI/6), toY - headlen * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI/6), toY - headlen * Math.sin(angle + Math.PI/6));
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // 绘制椭圆参数标注
+        function drawEllipseParameters() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            
+            // 绘制半长轴
+            ctx.beginPath();
+            ctx.moveTo(centerX - a, centerY);
+            ctx.lineTo(centerX + a, centerY);
+            ctx.stroke();
+            
+            // 绘制半长轴标签
+            ctx.fillStyle = '#a5d8ff';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('长轴 2a', centerX, centerY - 10);
+            
+            // 绘制半短轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - b);
+            ctx.lineTo(centerX, centerY + b);
+            ctx.stroke();
+            
+            // 绘制半短轴标签
+            ctx.fillStyle = '#a5d8ff';
+            ctx.fillText('短轴 2b', centerX + 30, centerY);
+            
+            // 绘制焦距
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX - c, centerY);
+            ctx.stroke();
+            
+            // 绘制焦距标签
+            ctx.fillStyle = '#a5d8ff';
+            ctx.fillText('焦距 c', centerX - c/2, centerY + 20);
+            
+            ctx.setLineDash([]);
+        }
+        
+        // 动画循环
+        function animate() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            drawGrid();
+            
+            // 绘制椭圆轨道
+            drawOrbit();
+            
+            // 绘制椭圆参数标注
+            drawEllipseParameters();
+            
+            // 绘制太阳（左侧焦点）
+            drawSun();
+            
+            // 绘制第二个焦点（右侧焦点）
+            drawSecondFocus();
+            
+            // 绘制行星
+            drawPlanet();
+            
+            // 更新行星角度（如果不暂停）
+            if (!isPaused) {
+                angle += speed * parseFloat(speedSlider.value);
+            }
+            
+            // 继续动画循环
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 事件监听器
+        eccentricitySlider.addEventListener('input', function() {
+            e = parseFloat(this.value);
+            eccentricityValue.textContent = e.toFixed(2);
+            c = e * a;
+            b = Math.sqrt(a*a - c*c);
+            updateParameterDisplay();
+        });
+        
+        sizeSlider.addEventListener('input', function() {
+            a = parseInt(this.value);
+            sizeValue.textContent = a;
+            c = e * a;
+            b = Math.sqrt(a*a - c*c);
+            updateParameterDisplay();
+        });
+        
+        speedSlider.addEventListener('input', function() {
+            const speedMultiplier = parseFloat(this.value);
+            speedValue.textContent = speedMultiplier.toFixed(1) + 'x';
+        });
+        
+        toggleOrbitBtn.addEventListener('click', function() {
+            showOrbit = !showOrbit;
+        });
+        
+        toggleGridBtn.addEventListener('click', function() {
+            showGrid = !showGrid;
+        });
+        
+        pauseBtn.addEventListener('click', function() {
+            isPaused = !isPaused;
+            pauseBtn.innerHTML = isPaused ? 
+                '<i class="fas fa-play"></i> 继续' : 
+                '<i class="fas fa-pause"></i> 暂停';
+        });
+        
+        resetBtn.addEventListener('click', function() {
+            // 重置所有参数
+            eccentricitySlider.value = 0.5;
+            e = 0.5;
+            eccentricityValue.textContent = '0.5';
+            
+            sizeSlider.value = 300;
+            a = 300;
+            sizeValue.textContent = '300';
+            
+            speedSlider.value = 1.0;
+            speedValue.textContent = '1.0x';
+            
+            angle = Math.PI; // 从远日点开始
+            isPaused = false;
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+            
+            showOrbit = true;
+            showGrid = false;
+            
+            c = e * a;
+            b = Math.sqrt(a*a - c*c);
+            
+            updateParameterDisplay();
+        });
+        
+        // 初始化仿真
+        init();
+    </script>
+</body>
+</html>

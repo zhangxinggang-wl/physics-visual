@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卫星绕地球运动轨迹模拟</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #0f1c30;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        h1 {
+            margin-bottom: 10px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+        .subtitle {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #b0bec5;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+        }
+        .canvas-container {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
+        }
+        canvas {
+            background-color: #0a1520;
+            display: block;
+        }
+        .controls {
+            background-color: #1a2a3a;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 280px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #81d4fa;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .satellite-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .satellite {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .color-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1565c0;
+        }
+        .info-panel {
+            background-color: #1a2a3a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-width: 800px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .info-panel h3 {
+            color: #4fc3f7;
+            margin-top: 0;
+        }
+        .info-panel p {
+            line-height: 1.5;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>卫星绕地球运动轨迹模拟</h1>
+    <div class="subtitle">演示不同速度的卫星绕地球运动轨迹</div>
+    
+    <div class="container">
+        <div class="canvas-container">
+            <canvas id="earthCanvas" width="600" height="600"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="speedMultiplier">整体速度倍数: <span id="speedValue">1.0</span>x</label>
+                <input type="range" id="speedMultiplier" min="0.1" max="3" step="0.1" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="showTrails">显示轨迹</label>
+                <input type="checkbox" id="showTrails" checked>
+            </div>
+            
+            <div class="satellite-info">
+                <h3>卫星信息</h3>
+                <div class="satellite">
+                    <div class="color-indicator" style="background-color: #ff5252;"></div>
+                    <span>卫星A (低轨道)</span>
+                </div>
+                <div class="satellite">
+                    <div class="color-indicator" style="background-color: #4caf50;"></div>
+                    <span>卫星B (中轨道)</span>
+                </div>
+                <div class="satellite">
+                    <div class="color-indicator" style="background-color: #2196f3;"></div>
+                    <span>卫星C (高轨道)</span>
+                </div>
+                <div class="satellite">
+                    <div class="color-indicator" style="background-color: #ffeb3b;"></div>
+                    <span>卫星D (地球同步轨道)</span>
+                </div>
+            </div>
+            
+            <button id="resetButton">重置模拟</button>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-indicator" style="background-color: #ff5252;"></div>
+                    <span>快速</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-indicator" style="background-color: #4caf50;"></div>
+                    <span>中速</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-indicator" style="background-color: #2196f3;"></div>
+                    <span>慢速</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-indicator" style="background-color: #ffeb3b;"></div>
+                    <span>地球同步</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <h3>关于卫星轨道</h3>
+        <p>卫星绕地球运行的轨道速度和高度密切相关。根据开普勒定律，轨道高度越低，运行速度越快：</p>
+        <ul>
+            <li><strong>低轨道卫星</strong>：通常在200-2000公里高度，运行速度最快，约7.8公里/秒</li>
+            <li><strong>中轨道卫星</strong>：在2000-35000公里高度，速度中等</li>
+            <li><strong>高轨道卫星</strong>：在35000公里以上，速度较慢</li>
+            <li><strong>地球同步轨道卫星</strong>：在35786公里高度，轨道周期与地球自转周期相同，相对地面静止</li>
+        </ul>
+        <p>本模拟展示了不同轨道高度的卫星绕地球运行的相对速度差异。</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('earthCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 获取控制元素
+            const speedMultiplier = document.getElementById('speedMultiplier');
+            const speedValue = document.getElementById('speedValue');
+            const showTrails = document.getElementById('showTrails');
+            const resetButton = document.getElementById('resetButton');
+            
+            // 地球和卫星参数
+            const earthRadius = 80;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // 卫星数据：轨道半径、角速度、颜色
+            const satellites = [
+                { radius: 120, speed: 0.02, angle: 0, color: '#ff5252', trail: [] },
+                { radius: 180, speed: 0.012, angle: Math.PI/2, color: '#4caf50', trail: [] },
+                { radius: 240, speed: 0.007, angle: Math.PI, color: '#2196f3', trail: [] },
+                { radius: 300, speed: 0.004, angle: 3*Math.PI/2, color: '#ffeb3b', trail: [] }
+            ];
+            
+            // 绘制地球
+            function drawEarth() {
+                // 绘制地球的渐变效果
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, 0,
+                    centerX, centerY, earthRadius
+                );
+                gradient.addColorStop(0, '#1e88e5');
+                gradient.addColorStop(1, '#0d47a1');
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, earthRadius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // 添加地球上的大陆轮廓
+                ctx.beginPath();
+                ctx.arc(centerX - 30, centerY - 20, 25, 0, Math.PI * 2);
+                ctx.fillStyle = '#2e7d32';
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(centerX + 40, centerY + 30, 30, 0, Math.PI * 2);
+                ctx.fillStyle = '#2e7d32';
+                ctx.fill();
+                
+                // 添加云层
+                ctx.beginPath();
+                ctx.arc(centerX + 20, centerY - 40, 15, 0, Math.PI * 2);
+                ctx.arc(centerX + 35, centerY - 40, 12, 0, Math.PI * 2);
+                ctx.arc(centerX + 50, centerY - 40, 10, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fill();
+            }
+            
+            // 绘制卫星轨道
+            function drawOrbits() {
+                satellites.forEach(satellite => {
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, satellite.radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.stroke();
+                });
+            }
+            
+            // 绘制卫星轨迹
+            function drawTrails() {
+                satellites.forEach(satellite => {
+                    if (satellite.trail.length > 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(satellite.trail[0].x, satellite.trail[0].y);
+                        
+                        for (let i = 1; i < satellite.trail.length; i++) {
+                            ctx.lineTo(satellite.trail[i].x, satellite.trail[i].y);
+                        }
+                        
+                        ctx.strokeStyle = satellite.color + '80'; // 添加透明度
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                });
+            }
+            
+            // 绘制卫星
+            function drawSatellites() {
+                satellites.forEach(satellite => {
+                    // 计算卫星位置
+                    const x = centerX + satellite.radius * Math.cos(satellite.angle);
+                    const y = centerY + satellite.radius * Math.sin(satellite.angle);
+                    
+                    // 绘制卫星
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = satellite.color;
+                    ctx.fill();
+                    
+                    // 添加卫星高光
+                    ctx.beginPath();
+                    ctx.arc(x - 2, y - 2, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.fill();
+                    
+                    // 添加卫星名称标签
+                    ctx.fillStyle = satellite.color;
+                    ctx.font = '12px Arial';
+                    ctx.fillText(
+                        satellites.indexOf(satellite) === 0 ? 'A' : 
+                        satellites.indexOf(satellite) === 1 ? 'B' : 
+                        satellites.indexOf(satellite) === 2 ? 'C' : 'D', 
+                        x + 10, 
+                        y - 10
+                    );
+                    
+                    // 记录轨迹点
+                    if (showTrails.checked) {
+                        satellite.trail.push({x, y});
+                        
+                        // 限制轨迹长度
+                        if (satellite.trail.length > 200) {
+                            satellite.trail.shift();
+                        }
+                    } else {
+                        // 如果不显示轨迹，清空轨迹数组
+                        satellite.trail = [];
+                    }
+                });
+            }
+            
+            // 更新卫星位置
+            function updateSatellites() {
+                const speedFactor = parseFloat(speedMultiplier.value);
+                
+                satellites.forEach(satellite => {
+                    satellite.angle += satellite.speed * speedFactor;
+                    
+                    // 确保角度在0-2π范围内
+                    if (satellite.angle > Math.PI * 2) {
+                        satellite.angle -= Math.PI * 2;
+                    }
+                });
+            }
+            
+            // 绘制星空背景
+            function drawStars() {
+                // 只在初始化时绘制一次星空
+                if (!drawStars.stars) {
+                    drawStars.stars = [];
+                    for (let i = 0; i < 150; i++) {
+                        drawStars.stars.push({
+                            x: Math.random() * canvas.width,
+                            y: Math.random() * canvas.height,
+                            size: Math.random() * 1.5 + 0.5,
+                            brightness: Math.random() * 0.8 + 0.2
+                        });
+                    }
+                }
+                
+                // 绘制所有星星
+                drawStars.stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                    ctx.fill();
+                });
+            }
+            
+            // 主绘制函数
+            function draw() {
+                // 清空画布
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制星空
+                drawStars();
+                
+                // 绘制轨道
+                drawOrbits();
+                
+                // 绘制轨迹
+                if (showTrails.checked) {
+                    drawTrails();
+                }
+                
+                // 绘制地球
+                drawEarth();
+                
+                // 绘制卫星
+                drawSatellites();
+                
+                // 更新卫星位置
+                updateSatellites();
+                
+                // 循环动画
+                requestAnimationFrame(draw);
+            }
+            
+            // 事件监听
+            speedMultiplier.addEventListener('input', function() {
+                speedValue.textContent = this.value;
+            });
+            
+            resetButton.addEventListener('click', function() {
+                satellites.forEach((satellite, index) => {
+                    satellite.angle = index * Math.PI/2;
+                    satellite.trail = [];
+                });
+                speedMultiplier.value = 1;
+                speedValue.textContent = '1.0';
+            });
+            
+            // 开始动画
+            draw();
+        });
+    </script>
+</body>
+</html>

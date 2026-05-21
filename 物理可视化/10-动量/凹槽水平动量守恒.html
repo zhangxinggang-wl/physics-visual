@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水平动量教学演示 - 椭圆轨迹追踪</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        canvas {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            touch-action: none;
+        }
+        .energy-bar {
+            transition: height 0.05s ease-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4 md:p-8">
+    <div class="max-w-5xl w-full">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">水平动量守恒：小球地面轨迹演示</h1>
+            <p class="text-slate-500 mt-2">观察小球相对于地面的“椭圆轨迹”随质量比的变化</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- 左侧控制面板 -->
+            <div class="lg:col-span-3 space-y-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-slate-700 border-b pb-2">物理参数调节</h3>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">滑块质量 M: <span id="m_slider_val" class="text-blue-600">3.0</span> kg</label>
+                    <input type="range" id="m_slider" min="0.5" max="20" step="0.1" value="3" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">小球质量 m: <span id="m_ball_val" class="text-green-600">1.0</span> kg</label>
+                    <input type="range" id="m_ball" min="0.1" max="5" step="0.1" value="1" class="w-full h-2 bg-green-100 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-2">轨道半径 R: <span id="radius_val">150</span> px</label>
+                    <input type="range" id="radius_slider" min="100" max="200" step="10" value="150" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                </div>
+                
+                <div class="pt-4 space-y-3">
+                    <button id="reset_btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-indigo-200">
+                        重新开始 (清除轨迹)
+                    </button>
+                    <button id="pause_btn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition">
+                        暂停 / 继续
+                    </button>
+                    <div class="flex items-center space-x-2 py-2">
+                        <input type="checkbox" id="show_trace" checked class="w-4 h-4 text-indigo-600">
+                        <label for="show_trace" class="text-sm text-slate-600 font-medium cursor-pointer">显示地面轨迹</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间画布区域 -->
+            <div class="lg:col-span-7 flex flex-col items-center">
+                <canvas id="simCanvas" width="600" height="400" class="w-full h-auto"></canvas>
+                
+                <div class="grid grid-cols-2 gap-4 w-full mt-6">
+                    <div class="bg-blue-600 p-4 rounded-2xl text-white shadow-md">
+                        <p class="text-xs opacity-80 uppercase tracking-wider">水平总动量 (kg·m/s)</p>
+                        <p class="text-2xl font-mono font-bold" id="total_p">0.0000</p>
+                    </div>
+                    <div class="bg-emerald-500 p-4 rounded-2xl text-white shadow-md">
+                        <p class="text-xs opacity-80 uppercase tracking-wider">总机械能 (J)</p>
+                        <p class="text-2xl font-mono font-bold" id="total_e">0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧能量条 -->
+            <div class="lg:col-span-2 bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
+                <h3 class="text-sm font-bold text-slate-700 mb-4">能量实时分布</h3>
+                <div class="flex-1 w-full flex items-end justify-around gap-2 px-2 pb-8">
+                    <div class="relative flex flex-col items-center w-8">
+                        <div id="bar_pe" class="energy-bar w-full bg-orange-400 rounded-t-md" style="height: 50%"></div>
+                        <span class="text-[10px] mt-2 font-bold text-slate-500 italic">E<sub>p</sub></span>
+                    </div>
+                    <div class="relative flex flex-col items-center w-8">
+                        <div id="bar_ke" class="energy-bar w-full bg-blue-400 rounded-t-md" style="height: 20%"></div>
+                        <span class="text-[10px] mt-2 font-bold text-slate-500 italic">E<sub>k</sub></span>
+                    </div>
+                    <div class="relative flex flex-col items-center w-8 border-l border-slate-100 ml-2 pl-2">
+                        <div id="bar_total" class="energy-bar w-full bg-slate-400 rounded-t-md" style="height: 70%"></div>
+                        <span class="text-[10px] mt-2 font-bold text-slate-500 italic">E<sub>tot</sub></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <article class="mt-8 bg-slate-800 text-slate-300 p-8 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                轨迹背后的物理原理
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">
+                <div>
+                    <p class="text-indigo-300 font-semibold underline decoration-indigo-500/30">为什么是椭圆？</p>
+                    <p>设滑块位移为 $X$，小球相对于滑块的坐标为 $(R\sin\theta, R\cos\theta)$。由于水平动量守恒（且初动量为0），系统质心水平位置不动：</p>
+                    <p class="my-2 text-white font-mono">$M \cdot X + m \cdot (X + R\sin\theta) = 0$</p>
+                    <p>由此可得滑块位移 $X = -\frac{m}{M+m} R\sin\theta$。小球对地的水平坐标 $x = X + R\sin\theta = \frac{M}{M+m} R\sin\theta$。</p>
+                </div>
+                <div>
+                    <p class="text-indigo-300 font-semibold underline decoration-indigo-500/30">轨迹方程：</p>
+                    <p>小球对地坐标：<br>
+                    $x = (\frac{M}{M+m}R) \sin\theta$<br>
+                    $y = R \cos\theta$<br>
+                    满足椭圆标准方程：$(\frac{x}{a})^2 + (\frac{y}{b})^2 = 1$，其中：<br>
+                    半长轴 $b = R$（竖直方向）<br>
+                    半短轴 $a = \frac{M}{M+m}R$（水平方向）</p>
+                    <p class="mt-2 text-emerald-400 font-bold">提示：调节 M 越大，a 越接近 R，轨迹越圆。</p>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let M = 3, m = 1, R = 150;
+        const g = 0.5; 
+        
+        let ballTheta = -Math.PI / 2; 
+        let ballOmega = 0; 
+        let blockX = 300; 
+        let blockV = 0; 
+        
+        let isRunning = false;
+        let isPaused = false;
+        let initialEnergy = 0;
+        let tracePoints = []; // 存储小球轨迹点
+
+        const mSlider = document.getElementById('m_slider');
+        const mBallSlider = document.getElementById('m_ball');
+        const rSlider = document.getElementById('radius_slider');
+        const showTraceCheckbox = document.getElementById('show_trace');
+        const totalPText = document.getElementById('total_p');
+        const totalEText = document.getElementById('total_e');
+        const barPE = document.getElementById('bar_pe');
+        const barKE = document.getElementById('bar_ke');
+        const barTotal = document.getElementById('bar_total');
+
+        function updateParams() {
+            M = parseFloat(mSlider.value);
+            m = parseFloat(mBallSlider.value);
+            R = parseFloat(rSlider.value);
+            document.getElementById('m_slider_val').innerText = M.toFixed(1);
+            document.getElementById('m_ball_val').innerText = m.toFixed(1);
+            document.getElementById('radius_val').innerText = R;
+        }
+
+        function resetSim() {
+            updateParams();
+            ballTheta = -Math.PI / 2;
+            ballOmega = 0;
+            blockX = canvas.width / 2;
+            blockV = 0;
+            isRunning = true;
+            isPaused = false;
+            tracePoints = []; // 清空轨迹
+            initialEnergy = m * g * (R - R * Math.cos(ballTheta));
+        }
+
+        // 监听滑块变化即重置轨迹
+        [mSlider, mBallSlider, rSlider].forEach(s => s.oninput = resetSim);
+        document.getElementById('reset_btn').onclick = resetSim;
+        document.getElementById('pause_btn').onclick = () => isPaused = !isPaused;
+
+        function drawVector(x, y, vx, vy, color, label) {
+            if (Math.abs(vx) < 0.1 && Math.abs(vy) < 0.1) return;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + vx, y + vy);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            
+            const angle = Math.atan2(vy, vx);
+            ctx.beginPath();
+            ctx.moveTo(x + vx, y + vy);
+            ctx.lineTo(x + vx - 8 * Math.cos(angle - Math.PI/6), y + vy - 8 * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x + vx - 8 * Math.cos(angle + Math.PI/6), y + vy - 8 * Math.sin(angle + Math.PI/6));
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            ctx.fillStyle = color;
+            ctx.font = "bold 13px Arial";
+            ctx.fillText(label, x + vx + 5, y + vy + 5);
+        }
+
+        function updatePhysics() {
+            const cosT = Math.cos(ballTheta);
+            const sinT = Math.sin(ballTheta);
+            const denominator = R * (1 - (m * cosT * cosT) / (M + m));
+            const alpha = -(g * sinT + (m * R * ballOmega * ballOmega * sinT * cosT) / (M + m)) / denominator;
+            
+            ballOmega += alpha;
+            ballTheta += ballOmega;
+            
+            const vRelX = R * ballOmega * cosT;
+            blockV = -(m * vRelX) / (M + m);
+            blockX += blockV;
+
+            // 轨迹记录 (记录小球在地面参考系的坐标)
+            const bx = blockX + R * Math.sin(ballTheta);
+            const by = (350 - R) + R * Math.cos(ballTheta);
+            tracePoints.push({x: bx, y: by});
+            if (tracePoints.length > 1000) tracePoints.shift(); // 保持性能
+
+            if (blockX < R + 10) { blockX = R + 10; ballOmega = -ballOmega; tracePoints = []; }
+            if (blockX > canvas.width - R - 10) { blockX = canvas.width - R - 10; ballOmega = -ballOmega; tracePoints = []; }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 1. 绘制地平线
+            ctx.beginPath();
+            ctx.moveTo(0, 350);
+            ctx.lineTo(canvas.width, 350);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // 2. 绘制轨迹 (在背景层)
+            if (showTraceCheckbox.checked && tracePoints.length > 1) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)'; // 橙色透明线条
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // 虚线
+                ctx.moveTo(tracePoints[0].x, tracePoints[0].y);
+                for (let i = 1; i < tracePoints.length; i++) {
+                    ctx.lineTo(tracePoints[i].x, tracePoints[i].y);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]); // 恢复实线
+            }
+
+            const centerX = blockX;
+            const centerY = 350 - R;
+            
+            // 3. 绘制滑块块体
+            ctx.fillStyle = '#f1f5f9';
+            ctx.beginPath();
+            ctx.roundRect(blockX - R - 10, 350 - R - 10, (R + 10) * 2, R + 10, 8);
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.stroke();
+            
+            // 4. 绘制凹槽
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, R, 0, Math.PI, false);
+            ctx.fill();
+            ctx.restore();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, R, 0, Math.PI, false);
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // 5. 计算位置
+            const bx = centerX + R * Math.sin(ballTheta);
+            const by = centerY + R * Math.cos(ballTheta);
+            
+            // 6. 绘制小球
+            ctx.beginPath();
+            ctx.arc(bx, by, 12, 0, Math.PI * 2);
+            ctx.fillStyle = '#10b981';
+            ctx.fill();
+            ctx.strokeStyle = '#065f46';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            if (isRunning) {
+                // 绘制滑块速度矢量
+                drawVector(blockX, 350 - R - 30, blockV * 15, 0, '#3b82f6', 'V_滑块');
+                
+                // 能量与动量计算
+                const vRelX = R * ballOmega * Math.cos(ballTheta);
+                const vRelY = -R * ballOmega * Math.sin(ballTheta);
+                const vBallX = blockV + vRelX;
+                const vBallY = vRelY;
+                
+                const ke_total = 0.5 * M * blockV**2 + 0.5 * m * (vBallX**2 + vBallY**2);
+                const pe = m * g * (R - R * Math.cos(ballTheta));
+                const currentTotalE = ke_total + pe;
+                const p_total = M * blockV + m * vBallX;
+
+                totalPText.innerText = p_total.toFixed(4);
+                totalEText.innerText = currentTotalE.toFixed(2);
+                
+                const scale = 180 / (initialEnergy || 1); 
+                barPE.style.height = (pe * scale) + "px";
+                barKE.style.height = (ke_total * scale) + "px";
+                barTotal.style.height = (currentTotalE * scale) + "px";
+
+                if (!isPaused) updatePhysics();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        resetSim();
+        draw();
+    </script>
+</body>
+</html>

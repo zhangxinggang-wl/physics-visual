@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波尔跃迁能级图教学动画 - 燕赵名师张兴刚工作室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f7ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .studio-badge {
+            background-color: #ff6b35;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .left-section {
+            flex: 2;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .right-section {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .animation-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .explanation-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .controls-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #1e3c72;
+            border-bottom: 3px solid #ff6b35;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #ff6b35;
+        }
+        
+        .atom-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #0a1931;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 3px solid #1e3c72;
+        }
+        
+        #nucleus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #ff6b35, #c53d13);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.7);
+            z-index: 10;
+        }
+        
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .electron {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #4dabf7, #1c7ed6);
+            border-radius: 50%;
+            box-shadow: 0 0 10px #4dabf7;
+            z-index: 5;
+            transform: translate(-50%, -50%);
+        }
+        
+        .energy-levels {
+            position: relative;
+            height: 400px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            margin-top: 20px;
+        }
+        
+        .energy-level {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #495057;
+        }
+        
+        .level-label {
+            position: absolute;
+            left: 10px;
+            background-color: #1e3c72;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .energy-value {
+            position: absolute;
+            right: 10px;
+            color: #495057;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .transition-arrow {
+            position: absolute;
+            width: 3px;
+            background-color: #ff6b35;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        .transition-arrow.active {
+            opacity: 1;
+        }
+        
+        .photon {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 100;
+        }
+        
+        .photon.emitted {
+            animation: photonMove 1.5s linear;
+        }
+        
+        @keyframes photonMove {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-group {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .control-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1e3c72;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-title i {
+            color: #ff6b35;
+        }
+        
+        button {
+            background-color: #1e3c72;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #2a5298;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        button.active {
+            background-color: #ff6b35;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label span {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .slider-value {
+            color: #ff6b35;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background-color: #ff6b35;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .formula-box {
+            background-color: #f1f8ff;
+            border-left: 5px solid #1e3c72;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Cambria', 'Times New Roman', serif;
+        }
+        
+        .formula {
+            font-size: 1.3rem;
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .explanation-text {
+            margin-bottom: 20px;
+        }
+        
+        .explanation-text p {
+            margin-bottom: 15px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid #1e3c72;
+        }
+        
+        .feature-card h3 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .footer-text {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .info-box {
+            background-color: #e7f5ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 5px solid #4dabf7;
+        }
+        
+        .info-title {
+            font-weight: bold;
+            color: #1c7ed6;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        @media (max-width: 1100px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .left-section, .right-section {
+                flex: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .atom-container, .energy-levels {
+                height: 300px;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .highlight {
+            color: #ff6b35;
+            font-weight: bold;
+        }
+        
+        .energy-transition {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #495057;
+            text-align: center;
+        }
+        
+        .current-transition {
+            font-weight: bold;
+            color: #ff6b35;
+        }
+        
+        /* 能级高度指示 */
+        .energy-indicator {
+            position: absolute;
+            right: 5px;
+            width: 80px;
+            height: 2px;
+            background-color: transparent;
+        }
+        
+        .energy-indicator-text {
+            position: absolute;
+            right: 90px;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        /* 能级图顶部和底部的标注 */
+        .energy-top-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+        
+        .energy-bottom-label {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-title">
+                <i class="fas fa-atom fa-3x"></i>
+                <div>
+                    <h1>波尔跃迁能级图教学动画</h1>
+                    <div class="subtitle">玻尔原子模型与能级跃迁原理可视化演示</div>
+                </div>
+            </div>
+            <div class="studio-badge">
+                燕赵名师张兴刚工作室
+            </div>
+        </header>
+        
+        <div class="content">
+            <div class="left-section">
+                <section class="animation-section">
+                    <h2 class="section-title"><i class="fas fa-atom"></i> 原子模型演示</h2>
+                    
+                    <div class="atom-container" id="atomContainer">
+                        <!-- 原子核 -->
+                        <div id="nucleus" class="pulse"></div>
+                        
+                        <!-- 电子轨道将通过JavaScript动态生成 -->
+                        
+                        <!-- 电子将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <div class="info-box">
+                        <div class="info-title">
+                            <i class="fas fa-info-circle"></i> 当前状态
+                        </div>
+                        <div>电子轨道数: <span id="currentOrbits" class="highlight">4</span></div>
+                        <div>当前跃迁: <span id="currentTransitionText" class="current-transition">吸收光子 (n=1 → n=2)</span></div>
+                    </div>
+                </section>
+                
+                <section class="animation-section">
+                    <h2 class="section-title"><i class="fas fa-chart-line"></i> 能级图与跃迁</h2>
+                    
+                    <div class="energy-levels" id="energyLevels">
+                        <div class="energy-top-label">高能级 (n越大)</div>
+                        <div class="energy-bottom-label">低能级 (n越小)</div>
+                        <!-- 能级线和跃迁箭头将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <div class="energy-transition">
+                        当前能量差: <span id="energyDifference" class="highlight">10.2 eV</span>
+                        对应波长: <span id="wavelength" class="highlight">121.6 nm (紫外光)</span>
+                    </div>
+                </section>
+            </div>
+            
+            <div class="right-section">
+                <section class="controls-section">
+                    <h2 class="section-title"><i class="fas fa-sliders-h"></i> 控制面板</h2>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <div class="control-title">
+                                <i class="fas fa-cogs"></i> 原子模型设置
+                            </div>
+                            
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span>量子数 n (轨道数量)</span>
+                                    <span class="slider-value" id="orbitCountValue">4</span>
+                                </div>
+                                <input type="range" id="orbitCount" min="3" max="8" value="4" step="1">
+                            </div>
+                            
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span>电子运动速度</span>
+                                    <span class="slider-value" id="speedValue">中等</span>
+                                </div>
+                                <input type="range" id="electronSpeed" min="1" max="5" value="3" step="1">
+                            </div>
+                            
+                            <button id="toggleOrbits">
+                                <i class="fas fa-circle"></i> 显示/隐藏轨道
+                            </button>
+                            
+                            <button id="toggleAnimation">
+                                <i class="fas fa-atom"></i> <span id="animationState">关闭</span>电子运动
+                            </button>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-title">
+                                <i class="fas fa-exchange-alt"></i> 跃迁类型选择
+                            </div>
+                            
+                            <button id="absorption" class="active">
+                                <i class="fas fa-arrow-up"></i> 吸收光子
+                            </button>
+                            
+                            <button id="emission">
+                                <i class="fas fa-arrow-down"></i> 发射光子
+                            </button>
+                            
+                            <button id="lyman">
+                                <i class="fas fa-bolt"></i> 赖曼系 (n→1)
+                            </button>
+                            
+                            <button id="balmer">
+                                <i class="fas fa-sun"></i> 巴耳末系 (n→2)
+                            </button>
+                            
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span>初始能级 n₁</span>
+                                    <span class="slider-value" id="initialLevelValue">1</span>
+                                </div>
+                                <input type="range" id="initialLevel" min="1" max="4" value="1" step="1">
+                            </div>
+                            
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span>最终能级 n₂</span>
+                                    <span class="slider-value" id="finalLevelValue">2</span>
+                                </div>
+                                <input type="range" id="finalLevel" min="2" max="4" value="2" step="1">
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <div class="control-title">
+                                <i class="fas fa-play-circle"></i> 动画控制
+                            </div>
+                            
+                            <button id="startBtn">
+                                <i class="fas fa-play"></i> 开始动画
+                            </button>
+                            
+                            <button id="stepBtn">
+                                <i class="fas fa-step-forward"></i> 逐步演示
+                            </button>
+                            
+                            <button id="resetBtn">
+                                <i class="fas fa-redo"></i> 重置动画
+                            </button>
+                            
+                            <button id="togglePhotons">
+                                <i class="fas fa-lightbulb"></i> 显示/隐藏光子
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="explanation-section">
+                    <h2 class="section-title"><i class="fas fa-book-open"></i> 玻尔模型理论</h2>
+                    
+                    <div class="explanation-text">
+                        <p>玻尔原子模型（1913年）是原子结构理论的重要里程碑，它结合了普朗克的量子理论和卢瑟福的核式模型，成功解释了氢原子光谱。</p>
+                        
+                        <div class="formula-box">
+                            <div class="formula">Eₙ = -13.6 eV / n²</div>
+                            <p style="text-align: center; margin-top: 10px;">氢原子能级公式 (n=1,2,3...)</p>
+                        </div>
+                        
+                        <p><span class="highlight">重要概念：</span></p>
+                        <ul>
+                            <li><strong>n越大，能级越高</strong>（绝对值越小但能量值越高）</li>
+                            <li>n=1为基态，能量最低，最稳定</li>
+                            <li>n>1为激发态，能量较高，不稳定</li>
+                            <li>电子从高能级向低能级跃迁时发射光子</li>
+                            <li>电子从低能级向高能级跃迁时吸收光子</li>
+                        </ul>
+                        
+                        <div class="formula-box">
+                            <div class="formula">ΔE = E₂ - E₁ = hν = hc/λ</div>
+                            <p style="text-align: center; margin-top: 10px;">跃迁能量公式</p>
+                        </div>
+                        
+                        <p><span class="highlight">光谱系：</span></p>
+                        <ul>
+                            <li><strong>赖曼系：</strong>从n≥2向n=1跃迁，紫外光区</li>
+                            <li><strong>巴耳末系：</strong>从n≥3向n=2跃迁，可见光区</li>
+                            <li><strong>帕邢系：</strong>从n≥4向n=3跃迁，红外光区</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3><i class="fas fa-eye"></i> 可视化学习</h3>
+                <p>通过动画直观展示电子跃迁过程，将抽象概念转化为可视图像，加深理解。</p>
+            </div>
+            <div class="feature-card">
+                <h3><i class="fas fa-sliders-h"></i> 可调参数</h3>
+                <p>可调节量子数n、能级、电子速度等参数，实现个性化学习体验。</p>
+            </div>
+            <div class="feature-card">
+                <h3><i class="fas fa-graduation-cap"></i> 教学一体化</h3>
+                <p>结合动画演示与理论解释，适合课堂教学与学生自主学习。</p>
+            </div>
+            <div class="feature-card">
+                <h3><i class="fas fa-mobile-alt"></i> 响应式设计</h3>
+                <p>适应各种屏幕尺寸，在电脑、平板和手机上均可流畅使用。</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p class="footer-text">本教学资源由 <span class="highlight">燕赵名师张兴刚工作室</span> 设计开发</p>
+            <p>致力于中学物理教学创新与可视化教学资源开发</p>
+            <p style="margin-top: 15px; opacity: 0.9;">© 2023 玻尔模型教学动画 | 物理学可视化教学系列</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const atomContainer = document.getElementById('atomContainer');
+        const energyLevels = document.getElementById('energyLevels');
+        
+        // 控制按钮和滑块
+        const absorptionBtn = document.getElementById('absorption');
+        const emissionBtn = document.getElementById('emission');
+        const lymanBtn = document.getElementById('lyman');
+        const balmerBtn = document.getElementById('balmer');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const stepBtn = document.getElementById('stepBtn');
+        const toggleOrbitsBtn = document.getElementById('toggleOrbits');
+        const togglePhotonsBtn = document.getElementById('togglePhotons');
+        const toggleAnimationBtn = document.getElementById('toggleAnimation');
+        const animationState = document.getElementById('animationState');
+        
+        // 滑块元素
+        const orbitCountSlider = document.getElementById('orbitCount');
+        const orbitCountValue = document.getElementById('orbitCountValue');
+        const electronSpeedSlider = document.getElementById('electronSpeed');
+        const speedValue = document.getElementById('speedValue');
+        const initialLevelSlider = document.getElementById('initialLevel');
+        const initialLevelValue = document.getElementById('initialLevelValue');
+        const finalLevelSlider = document.getElementById('finalLevel');
+        const finalLevelValue = document.getElementById('finalLevelValue');
+        
+        // 状态显示元素
+        const currentOrbits = document.getElementById('currentOrbits');
+        const currentTransitionText = document.getElementById('currentTransitionText');
+        const energyDifference = document.getElementById('energyDifference');
+        const wavelength = document.getElementById('wavelength');
+        
+        // 状态变量
+        let currentTransition = 'absorption';
+        let animationRunning = false;
+        let orbitsVisible = true;
+        let photonsVisible = true;
+        let electronAnimationEnabled = false;
+        let orbitCount = 4;
+        let electronSpeed = 3;
+        let initialLevel = 1;
+        let finalLevel = 2;
+        let animationId;
+        
+        // 存储动态创建的元素
+        let orbits = [];
+        let electrons = [];
+        let energyLevelLines = [];
+        let transitionArrows = [];
+        
+        // 初始化
+        function init() {
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 根据初始设置创建原子模型和能级图
+            updateOrbitCount();
+            updateEnergyLevels();
+            
+            // 初始显示吸收跃迁
+            showTransition('absorption');
+            updateEnergyInfo();
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 跃迁类型按钮
+            absorptionBtn.addEventListener('click', () => {
+                setActiveButton(absorptionBtn);
+                currentTransition = 'absorption';
+                showTransition('absorption');
+                updateEnergyInfo();
+            });
+            
+            emissionBtn.addEventListener('click', () => {
+                setActiveButton(emissionBtn);
+                currentTransition = 'emission';
+                showTransition('emission');
+                updateEnergyInfo();
+            });
+            
+            lymanBtn.addEventListener('click', () => {
+                setActiveButton(lymanBtn);
+                currentTransition = 'lyman';
+                showTransition('lyman');
+                updateEnergyInfo();
+            });
+            
+            balmerBtn.addEventListener('click', () => {
+                setActiveButton(balmerBtn);
+                currentTransition = 'balmer';
+                showTransition('balmer');
+                updateEnergyInfo();
+            });
+            
+            // 控制按钮
+            startBtn.addEventListener('click', startTransitionAnimation);
+            resetBtn.addEventListener('click', resetAnimation);
+            stepBtn.addEventListener('click', stepAnimation);
+            
+            // 显示选项
+            toggleOrbitsBtn.addEventListener('click', toggleOrbits);
+            togglePhotonsBtn.addEventListener('click', togglePhotons);
+            toggleAnimationBtn.addEventListener('click', toggleElectronAnimation);
+            
+            // 滑块事件
+            orbitCountSlider.addEventListener('input', () => {
+                orbitCount = parseInt(orbitCountSlider.value);
+                orbitCountValue.textContent = orbitCount;
+                currentOrbits.textContent = orbitCount;
+                updateOrbitCount();
+                updateEnergyLevels();
+                updateEnergyInfo();
+                
+                // 更新能级滑块的最大值
+                initialLevelSlider.max = Math.min(orbitCount, 8);
+                finalLevelSlider.max = Math.min(orbitCount, 8);
+                
+                // 调整当前能级值
+                if (initialLevel > orbitCount) {
+                    initialLevel = orbitCount;
+                    initialLevelSlider.value = initialLevel;
+                    initialLevelValue.textContent = initialLevel;
+                }
+                if (finalLevel > orbitCount) {
+                    finalLevel = orbitCount;
+                    finalLevelSlider.value = finalLevel;
+                    finalLevelValue.textContent = finalLevel;
+                }
+                if (finalLevel <= initialLevel) {
+                    finalLevel = initialLevel + 1;
+                    finalLevelSlider.value = finalLevel;
+                    finalLevelValue.textContent = finalLevel;
+                }
+            });
+            
+            electronSpeedSlider.addEventListener('input', () => {
+                electronSpeed = parseInt(electronSpeedSlider.value);
+                const speedText = ['很慢', '较慢', '中等', '较快', '很快'];
+                speedValue.textContent = speedText[electronSpeed - 1];
+            });
+            
+            initialLevelSlider.addEventListener('input', () => {
+                initialLevel = parseInt(initialLevelSlider.value);
+                initialLevelValue.textContent = initialLevel;
+                
+                // 确保最终能级大于初始能级
+                if (finalLevel <= initialLevel) {
+                    finalLevel = initialLevel + 1;
+                    finalLevelSlider.value = finalLevel;
+                    finalLevelValue.textContent = finalLevel;
+                }
+                
+                updateEnergyInfo();
+            });
+            
+            finalLevelSlider.addEventListener('input', () => {
+                finalLevel = parseInt(finalLevelSlider.value);
+                finalLevelValue.textContent = finalLevel;
+                
+                // 确保最终能级大于初始能级
+                if (finalLevel <= initialLevel) {
+                    initialLevel = finalLevel - 1;
+                    initialLevelSlider.value = initialLevel;
+                    initialLevelValue.textContent = initialLevel;
+                }
+                
+                updateEnergyInfo();
+            });
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', () => {
+                updateElectronPositions();
+                updateEnergyLevelPositions();
+            });
+        }
+        
+        // 设置活动按钮
+        function setActiveButton(activeBtn) {
+            [absorptionBtn, emissionBtn, lymanBtn, balmerBtn].forEach(btn => {
+                btn.classList.remove('active');
+            });
+            activeBtn.classList.add('active');
+        }
+        
+        // 更新轨道数量
+        function updateOrbitCount() {
+            // 清除现有轨道和电子
+            orbits.forEach(orbit => orbit.remove());
+            electrons.forEach(electron => electron.remove());
+            
+            orbits = [];
+            electrons = [];
+            
+            // 创建新轨道和电子
+            const containerRect = atomContainer.getBoundingClientRect();
+            const centerX = containerRect.width / 2;
+            const centerY = containerRect.height / 2;
+            
+            // 最大轨道半径（不超过容器尺寸的一半）
+            const maxRadius = Math.min(centerX, centerY) - 40;
+            
+            for (let i = 1; i <= orbitCount; i++) {
+                // 计算轨道半径（从内向外逐渐增大）
+                const radius = 40 + (i * maxRadius / (orbitCount + 2));
+                
+                // 创建轨道
+                const orbit = document.createElement('div');
+                orbit.className = 'orbit';
+                orbit.style.width = `${radius * 2}px`;
+                orbit.style.height = `${radius * 2}px`;
+                orbit.style.borderColor = orbitsVisible ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0)';
+                atomContainer.appendChild(orbit);
+                orbits.push(orbit);
+                
+                // 为每个轨道创建一个电子（除了最内层轨道，因为它通常被占满）
+                if (i > 1) {
+                    const electron = document.createElement('div');
+                    electron.className = 'electron';
+                    electron.id = `electron-${i}`;
+                    electron.dataset.orbit = i;
+                    atomContainer.appendChild(electron);
+                    electrons.push(electron);
+                }
+            }
+            
+            // 创建最内层轨道的电子（通常只有一个）
+            const innerElectron = document.createElement('div');
+            innerElectron.className = 'electron';
+            innerElectron.id = 'electron-1';
+            innerElectron.dataset.orbit = 1;
+            atomContainer.appendChild(innerElectron);
+            electrons.push(innerElectron);
+            
+            // 设置电子初始位置
+            updateElectronPositions();
+            
+            // 如果动画开启，开始电子运动
+            if (electronAnimationEnabled) {
+                animateElectrons();
+            }
+        }
+        
+        // 更新电子位置
+        function updateElectronPositions() {
+            const containerRect = atomContainer.getBoundingClientRect();
+            const centerX = containerRect.width / 2;
+            const centerY = containerRect.height / 2;
+            
+            // 最大轨道半径
+            const maxRadius = Math.min(centerX, centerY) - 40;
+            
+            electrons.forEach((electron, index) => {
+                const orbitNum = parseInt(electron.dataset.orbit);
+                const radius = 40 + (orbitNum * maxRadius / (orbitCount + 2));
+                
+                // 每个电子在不同角度
+                const angle = (index * 360 / electrons.length) + (Date.now() / 1000 * 10) % 360;
+                const radian = angle * (Math.PI / 180);
+                
+                const x = centerX + radius * Math.cos(radian);
+                const y = centerY + radius * Math.sin(radian);
+                
+                electron.style.left = `${x}px`;
+                electron.style.top = `${y}px`;
+            });
+        }
+        
+        // 动画电子运动
+        function animateElectrons() {
+            if (!electronAnimationEnabled) return;
+            
+            updateElectronPositions();
+            
+            animationId = requestAnimationFrame(animateElectrons);
+        }
+        
+        // 更新能级图 - 修正：n越大，能级越高（位置越靠上）
+        function updateEnergyLevels() {
+            // 清除现有能级线和跃迁箭头
+            energyLevelLines.forEach(line => line.remove());
+            transitionArrows.forEach(arrow => arrow.remove());
+            
+            energyLevelLines = [];
+            transitionArrows = [];
+            
+            // 能级图的总高度（减去上下边距）
+            const totalHeight = 350;
+            const topMargin = 50;
+            const bottomMargin = 20;
+            const availableHeight = totalHeight - topMargin - bottomMargin;
+            
+            // 创建能级线 - 修正：n越大，能级越高，位置越靠上
+            for (let i = 1; i <= orbitCount; i++) {
+                // 计算能级位置：n越大，位置越靠上
+                // n=1 在最下面，n=orbitCount 在最上面
+                const top = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                
+                // 创建能级线
+                const levelLine = document.createElement('div');
+                levelLine.className = 'energy-level';
+                levelLine.style.top = `${top}px`;
+                energyLevels.appendChild(levelLine);
+                energyLevelLines.push(levelLine);
+                
+                // 创建能级标签
+                const levelLabel = document.createElement('div');
+                levelLabel.className = 'level-label';
+                levelLabel.textContent = `n=${i}`;
+                levelLabel.style.top = `${top - 15}px`;
+                energyLevels.appendChild(levelLabel);
+                
+                // 计算并显示能级值
+                const energyValue = document.createElement('div');
+                energyValue.className = 'energy-value';
+                const energy = (-13.6 / (i * i)).toFixed(2);
+                energyValue.textContent = `${energy} eV`;
+                energyValue.style.top = `${top - 8}px`;
+                energyLevels.appendChild(energyValue);
+                
+                // 为莱曼系创建跃迁箭头（从n>1到n=1）
+                if (i > 1) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'transition-arrow';
+                    arrow.dataset.type = 'lyman';
+                    arrow.dataset.from = i;
+                    arrow.dataset.to = 1;
+                    
+                    // 计算箭头位置 - 修正：从高能级向低能级跃迁
+                    const fromTop = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                    const toTop = topMargin + (orbitCount - 1) * (availableHeight / (orbitCount - 1));
+                    const height = toTop - fromTop; // 向下箭头
+                    
+                    arrow.style.top = `${fromTop}px`;
+                    arrow.style.height = `${height}px`;
+                    arrow.style.left = `${150 + (i-2)*30}px`;
+                    
+                    energyLevels.appendChild(arrow);
+                    transitionArrows.push(arrow);
+                }
+                
+                // 为巴耳末系创建跃迁箭头（从n>2到n=2）
+                if (i > 2) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'transition-arrow';
+                    arrow.dataset.type = 'balmer';
+                    arrow.dataset.from = i;
+                    arrow.dataset.to = 2;
+                    
+                    // 计算箭头位置 - 修正：从高能级向低能级跃迁
+                    const fromTop = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                    const toTop = topMargin + (orbitCount - 2) * (availableHeight / (orbitCount - 1));
+                    const height = toTop - fromTop; // 向下箭头
+                    
+                    arrow.style.top = `${fromTop}px`;
+                    arrow.style.height = `${height}px`;
+                    arrow.style.left = `${250 + (i-3)*30}px`;
+                    
+                    energyLevels.appendChild(arrow);
+                    transitionArrows.push(arrow);
+                }
+            }
+            
+            // 创建自定义跃迁箭头
+            const customArrow = document.createElement('div');
+            customArrow.className = 'transition-arrow';
+            customArrow.id = 'customTransition';
+            customArrow.style.left = '350px';
+            energyLevels.appendChild(customArrow);
+            transitionArrows.push(customArrow);
+            
+            updateEnergyLevelPositions();
+        }
+        
+        // 更新能级图位置
+        function updateEnergyLevelPositions() {
+            // 更新跃迁箭头位置
+            transitionArrows.forEach(arrow => {
+                if (arrow.dataset.type === 'lyman' && arrow.dataset.from && arrow.dataset.to) {
+                    const fromLevel = parseInt(arrow.dataset.from);
+                    const toLevel = parseInt(arrow.dataset.to);
+                    
+                    const totalHeight = 350;
+                    const topMargin = 50;
+                    const bottomMargin = 20;
+                    const availableHeight = totalHeight - topMargin - bottomMargin;
+                    
+                    // 修正：从高能级向低能级跃迁（向下箭头）
+                    const fromTop = topMargin + (orbitCount - fromLevel) * (availableHeight / (orbitCount - 1));
+                    const toTop = topMargin + (orbitCount - toLevel) * (availableHeight / (orbitCount - 1));
+                    const height = toTop - fromTop; // 向下为正
+                    
+                    arrow.style.top = `${fromTop}px`;
+                    arrow.style.height = `${height}px`;
+                } else if (arrow.dataset.type === 'balmer' && arrow.dataset.from && arrow.dataset.to) {
+                    const fromLevel = parseInt(arrow.dataset.from);
+                    const toLevel = parseInt(arrow.dataset.to);
+                    
+                    const totalHeight = 350;
+                    const topMargin = 50;
+                    const bottomMargin = 20;
+                    const availableHeight = totalHeight - topMargin - bottomMargin;
+                    
+                    // 修正：从高能级向低能级跃迁（向下箭头）
+                    const fromTop = topMargin + (orbitCount - fromLevel) * (availableHeight / (orbitCount - 1));
+                    const toTop = topMargin + (orbitCount - toLevel) * (availableHeight / (orbitCount - 1));
+                    const height = toTop - fromTop; // 向下为正
+                    
+                    arrow.style.top = `${fromTop}px`;
+                    arrow.style.height = `${height}px`;
+                }
+            });
+        }
+        
+        // 显示特定跃迁
+        function showTransition(type) {
+            // 隐藏所有跃迁箭头
+            transitionArrows.forEach(arrow => {
+                arrow.classList.remove('active');
+            });
+            
+            // 根据类型显示相应跃迁
+            switch(type) {
+                case 'absorption':
+                    // 显示自定义跃迁箭头（从低能级initialLevel到高能级finalLevel）- 向上箭头
+                    const absorptionArrow = document.getElementById('customTransition');
+                    if (absorptionArrow) {
+                        const totalHeight = 350;
+                        const topMargin = 50;
+                        const bottomMargin = 20;
+                        const availableHeight = totalHeight - topMargin - bottomMargin;
+                        
+                        // 吸收：从低能级向高能级跃迁（向上箭头）
+                        const fromTop = topMargin + (orbitCount - initialLevel) * (availableHeight / (orbitCount - 1));
+                        const toTop = topMargin + (orbitCount - finalLevel) * (availableHeight / (orbitCount - 1));
+                        const height = toTop - fromTop; // 向上为负，向下为正
+                        
+                        absorptionArrow.style.top = `${fromTop}px`;
+                        absorptionArrow.style.height = `${height}px`;
+                        absorptionArrow.style.backgroundColor = '#ff6b35';
+                        absorptionArrow.classList.add('active');
+                        
+                        currentTransitionText.textContent = `吸收光子 (n=${initialLevel} → n=${finalLevel})`;
+                    }
+                    break;
+                    
+                case 'emission':
+                    // 显示自定义跃迁箭头（从高能级finalLevel到低能级initialLevel）- 向下箭头
+                    const emissionArrow = document.getElementById('customTransition');
+                    if (emissionArrow) {
+                        const totalHeight = 350;
+                        const topMargin = 50;
+                        const bottomMargin = 20;
+                        const availableHeight = totalHeight - topMargin - bottomMargin;
+                        
+                        // 发射：从高能级向低能级跃迁（向下箭头）
+                        const fromTop = topMargin + (orbitCount - finalLevel) * (availableHeight / (orbitCount - 1));
+                        const toTop = topMargin + (orbitCount - initialLevel) * (availableHeight / (orbitCount - 1));
+                        const height = toTop - fromTop; // 向下为正
+                        
+                        emissionArrow.style.top = `${fromTop}px`;
+                        emissionArrow.style.height = `${height}px`;
+                        emissionArrow.style.backgroundColor = '#4dabf7';
+                        emissionArrow.classList.add('active');
+                        
+                        currentTransitionText.textContent = `发射光子 (n=${finalLevel} → n=${initialLevel})`;
+                    }
+                    break;
+                    
+                case 'lyman':
+                    // 显示所有莱曼系跃迁箭头（从n>1到n=1）- 向下箭头
+                    transitionArrows.forEach(arrow => {
+                        if (arrow.dataset.type === 'lyman') {
+                            arrow.style.backgroundColor = '#ff6b35';
+                            arrow.classList.add('active');
+                        }
+                    });
+                    currentTransitionText.textContent = `赖曼系 (n≥2 → n=1)`;
+                    break;
+                    
+                case 'balmer':
+                    // 显示所有巴耳末系跃迁箭头（从n>2到n=2）- 向下箭头
+                    transitionArrows.forEach(arrow => {
+                        if (arrow.dataset.type === 'balmer') {
+                            arrow.style.backgroundColor = '#37b24d';
+                            arrow.classList.add('active');
+                        }
+                    });
+                    currentTransitionText.textContent = `巴耳末系 (n≥3 → n=2)`;
+                    break;
+            }
+        }
+        
+        // 更新能量信息
+        function updateEnergyInfo() {
+            // 计算能级差
+            let fromLevel, toLevel;
+            
+            switch(currentTransition) {
+                case 'absorption':
+                    fromLevel = initialLevel;
+                    toLevel = finalLevel;
+                    break;
+                case 'emission':
+                    fromLevel = finalLevel;
+                    toLevel = initialLevel;
+                    break;
+                case 'lyman':
+                    fromLevel = 2; // 最小莱曼系跃迁
+                    toLevel = 1;
+                    break;
+                case 'balmer':
+                    fromLevel = 3; // 最小巴耳末系跃迁
+                    toLevel = 2;
+                    break;
+            }
+            
+            // 计算能级差 (E_n = -13.6/n² eV)
+            const energyFrom = -13.6 / (fromLevel * fromLevel);
+            const energyTo = -13.6 / (toLevel * toLevel);
+            const deltaE = Math.abs(energyTo - energyFrom);
+            
+            // 计算波长 (λ = hc/ΔE)
+            // hc = 1240 eV·nm
+            const lambda = 1240 / deltaE;
+            
+            // 确定光谱区域
+            let spectralRegion = '';
+            if (lambda < 400) spectralRegion = '紫外光';
+            else if (lambda >= 400 && lambda <= 700) spectralRegion = '可见光';
+            else spectralRegion = '红外光';
+            
+            energyDifference.textContent = `${deltaE.toFixed(2)} eV`;
+            wavelength.textContent = `${lambda.toFixed(1)} nm (${spectralRegion})`;
+        }
+        
+        // 开始跃迁动画
+        function startTransitionAnimation() {
+            if (animationRunning) return;
+            
+            animationRunning = true;
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 动画进行中';
+            
+            // 根据当前选择的跃迁类型执行动画
+            switch(currentTransition) {
+                case 'absorption':
+                    animateAbsorption();
+                    break;
+                case 'emission':
+                    animateEmission();
+                    break;
+                case 'lyman':
+                    animateLymanSeries();
+                    break;
+                case 'balmer':
+                    animateBalmerSeries();
+                    break;
+            }
+        }
+        
+        // 吸收跃迁动画 - 从低能级向高能级
+        function animateAbsorption() {
+            const totalHeight = 350;
+            const topMargin = 50;
+            const bottomMargin = 20;
+            const availableHeight = totalHeight - topMargin - bottomMargin;
+            
+            // 吸收：从低能级向高能级跃迁（向上）
+            const fromTop = topMargin + (orbitCount - initialLevel) * (availableHeight / (orbitCount - 1));
+            const toTop = topMargin + (orbitCount - finalLevel) * (availableHeight / (orbitCount - 1));
+            
+            // 创建光子（向上运动）
+            const photon = createPhoton(350, fromTop, 350, toTop, '#ff6b35');
+            
+            // 动画完成后效果
+            setTimeout(() => {
+                // 模拟电子跃迁
+                const electron = document.getElementById(`electron-${initialLevel}`);
+                if (electron) {
+                    electron.style.backgroundColor = '#ffde7d';
+                    electron.style.boxShadow = '0 0 15px #ffde7d';
+                    
+                    // 恢复原状
+                    setTimeout(() => {
+                        electron.style.backgroundColor = '';
+                        electron.style.boxShadow = '';
+                        animationRunning = false;
+                        startBtn.disabled = false;
+                        startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+                    }, 1000);
+                } else {
+                    animationRunning = false;
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+                }
+            }, 1500);
+        }
+        
+        // 发射跃迁动画 - 从高能级向低能级
+        function animateEmission() {
+            const totalHeight = 350;
+            const topMargin = 50;
+            const bottomMargin = 20;
+            const availableHeight = totalHeight - topMargin - bottomMargin;
+            
+            // 发射：从高能级向低能级跃迁（向下）
+            const fromTop = topMargin + (orbitCount - finalLevel) * (availableHeight / (orbitCount - 1));
+            const toTop = topMargin + (orbitCount - initialLevel) * (availableHeight / (orbitCount - 1));
+            
+            // 创建光子（向下运动）
+            const photon = createPhoton(350, fromTop, 350, toTop, '#4dabf7');
+            
+            // 动画完成后效果
+            setTimeout(() => {
+                // 模拟电子跃迁
+                const electron = document.getElementById(`electron-${finalLevel}`);
+                if (electron) {
+                    electron.style.backgroundColor = '#ffde7d';
+                    electron.style.boxShadow = '0 0 15px #ffde7d';
+                    
+                    // 恢复原状
+                    setTimeout(() => {
+                        electron.style.backgroundColor = '';
+                        electron.style.boxShadow = '';
+                        animationRunning = false;
+                        startBtn.disabled = false;
+                        startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+                    }, 1000);
+                } else {
+                    animationRunning = false;
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+                }
+            }, 1500);
+        }
+        
+        // 赖曼系动画 - 从高能级向n=1跃迁（向下）
+        function animateLymanSeries() {
+            const totalHeight = 350;
+            const topMargin = 50;
+            const bottomMargin = 20;
+            const availableHeight = totalHeight - topMargin - bottomMargin;
+            
+            const toTop = topMargin + (orbitCount - 1) * (availableHeight / (orbitCount - 1));
+            
+            // 创建多个光子（从n=2,3,4,...到n=1）
+            const maxPhotons = Math.min(orbitCount, 5);
+            for (let i = 2; i <= maxPhotons; i++) {
+                const fromTop = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                const left = 150 + (i-2)*30;
+                setTimeout(() => {
+                    createPhoton(left, fromTop, left, toTop, '#ff6b35');
+                }, i * 200);
+            }
+            
+            // 动画完成后效果
+            setTimeout(() => {
+                // 模拟电子跃迁
+                for (let i = 2; i <= maxPhotons; i++) {
+                    const electron = document.getElementById(`electron-${i}`);
+                    if (electron) {
+                        electron.style.backgroundColor = '#ffde7d';
+                        electron.style.boxShadow = '0 0 15px #ffde7d';
+                    }
+                }
+                
+                // 恢复原状
+                setTimeout(() => {
+                    for (let i = 2; i <= maxPhotons; i++) {
+                        const electron = document.getElementById(`electron-${i}`);
+                        if (electron) {
+                            electron.style.backgroundColor = '';
+                            electron.style.boxShadow = '';
+                        }
+                    }
+                    animationRunning = false;
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+                }, 1000);
+            }, maxPhotons * 200 + 1000);
+        }
+        
+        // 巴耳末系动画 - 从高能级向n=2跃迁（向下）
+        function animateBalmerSeries() {
+            const totalHeight = 350;
+            const topMargin = 50;
+            const bottomMargin = 20;
+            const availableHeight = totalHeight - topMargin - bottomMargin;
+            
+            const toTop = topMargin + (orbitCount - 2) * (availableHeight / (orbitCount - 1));
+            
+            // 创建多个光子（从n=3,4,5,...到n=2）
+            const maxPhotons = Math.min(orbitCount, 6);
+            for (let i = 3; i <= maxPhotons; i++) {
+                const fromTop = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                const left = 250 + (i-3)*30;
+                setTimeout(() => {
+                    createPhoton(left, fromTop, left, toTop, '#37b24d');
+                }, (i-2) * 200);
+            }
+            
+            // 动画完成后效果
+            setTimeout(() => {
+                // 模拟电子跃迁
+                for (let i = 3; i <= maxPhotons; i++) {
+                    const electron = document.getElementById(`electron-${i}`);
+                    if (electron) {
+                        electron.style.backgroundColor = '#ffde7d';
+                        electron.style.boxShadow = '0 0 15px #ffde7d';
+                    }
+                }
+                
+                // 恢复原状
+                setTimeout(() => {
+                    for (let i = 3; i <= maxPhotons; i++) {
+                        const electron = document.getElementById(`electron-${i}`);
+                        if (electron) {
+                            electron.style.backgroundColor = '';
+                            electron.style.boxShadow = '';
+                        }
+                    }
+                    animationRunning = false;
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+                }, 1000);
+            }, (maxPhotons-1) * 200 + 1000);
+        }
+        
+        // 创建光子动画
+        function createPhoton(startX, startY, endX, endY, color) {
+            if (!photonsVisible) return null;
+            
+            const photon = document.createElement('div');
+            photon.className = 'photon';
+            photon.style.left = `${startX}px`;
+            photon.style.top = `${startY}px`;
+            photon.style.backgroundColor = color;
+            photon.style.boxShadow = `0 0 10px ${color}`;
+            
+            energyLevels.appendChild(photon);
+            
+            // 触发动画
+            setTimeout(() => {
+                photon.classList.add('emitted');
+                photon.style.left = `${endX}px`;
+                photon.style.top = `${endY}px`;
+            }, 10);
+            
+            // 动画完成后移除光子
+            setTimeout(() => {
+                if (photon.parentNode) {
+                    photon.parentNode.removeChild(photon);
+                }
+            }, 1600);
+            
+            return photon;
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            // 隐藏所有跃迁箭头
+            transitionArrows.forEach(arrow => {
+                arrow.classList.remove('active');
+            });
+            
+            // 恢复按钮状态
+            animationRunning = false;
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+            
+            // 重新显示当前选择的跃迁
+            showTransition(currentTransition);
+        }
+        
+        // 逐步演示
+        function stepAnimation() {
+            if (animationRunning) return;
+            
+            switch(currentTransition) {
+                case 'absorption':
+                    showTransition('absorption');
+                    setTimeout(() => {
+                        const totalHeight = 350;
+                        const topMargin = 50;
+                        const bottomMargin = 20;
+                        const availableHeight = totalHeight - topMargin - bottomMargin;
+                        
+                        const fromTop = topMargin + (orbitCount - initialLevel) * (availableHeight / (orbitCount - 1));
+                        const toTop = topMargin + (orbitCount - finalLevel) * (availableHeight / (orbitCount - 1));
+                        createPhoton(350, fromTop, 350, toTop, '#ff6b35');
+                    }, 800);
+                    break;
+                case 'emission':
+                    showTransition('emission');
+                    setTimeout(() => {
+                        const totalHeight = 350;
+                        const topMargin = 50;
+                        const bottomMargin = 20;
+                        const availableHeight = totalHeight - topMargin - bottomMargin;
+                        
+                        const fromTop = topMargin + (orbitCount - finalLevel) * (availableHeight / (orbitCount - 1));
+                        const toTop = topMargin + (orbitCount - initialLevel) * (availableHeight / (orbitCount - 1));
+                        createPhoton(350, fromTop, 350, toTop, '#4dabf7');
+                    }, 800);
+                    break;
+                case 'lyman':
+                    showTransition('lyman');
+                    setTimeout(() => {
+                        const totalHeight = 350;
+                        const topMargin = 50;
+                        const bottomMargin = 20;
+                        const availableHeight = totalHeight - topMargin - bottomMargin;
+                        
+                        const toTop = topMargin + (orbitCount - 1) * (availableHeight / (orbitCount - 1));
+                        const maxPhotons = Math.min(orbitCount, 5);
+                        for (let i = 2; i <= maxPhotons; i++) {
+                            const fromTop = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                            const left = 150 + (i-2)*30;
+                            setTimeout(() => {
+                                createPhoton(left, fromTop, left, toTop, '#ff6b35');
+                            }, (i-1) * 300);
+                        }
+                    }, 800);
+                    break;
+                case 'balmer':
+                    showTransition('balmer');
+                    setTimeout(() => {
+                        const totalHeight = 350;
+                        const topMargin = 50;
+                        const bottomMargin = 20;
+                        const availableHeight = totalHeight - topMargin - bottomMargin;
+                        
+                        const toTop = topMargin + (orbitCount - 2) * (availableHeight / (orbitCount - 1));
+                        const maxPhotons = Math.min(orbitCount, 6);
+                        for (let i = 3; i <= maxPhotons; i++) {
+                            const fromTop = topMargin + (orbitCount - i) * (availableHeight / (orbitCount - 1));
+                            const left = 250 + (i-3)*30;
+                            setTimeout(() => {
+                                createPhoton(left, fromTop, left, toTop, '#37b24d');
+                            }, (i-2) * 300);
+                        }
+                    }, 800);
+                    break;
+            }
+        }
+        
+        // 切换轨道可见性
+        function toggleOrbits() {
+            orbitsVisible = !orbitsVisible;
+            const opacity = orbitsVisible ? '0.3' : '0';
+            orbits.forEach(orbit => {
+                orbit.style.borderColor = `rgba(255, 255, 255, ${opacity})`;
+            });
+            
+            toggleOrbitsBtn.innerHTML = orbitsVisible ? 
+                '<i class="fas fa-eye-slash"></i> 隐藏轨道' : 
+                '<i class="fas fa-eye"></i> 显示轨道';
+        }
+        
+        // 切换光子可见性
+        function togglePhotons() {
+            photonsVisible = !photonsVisible;
+            togglePhotonsBtn.innerHTML = photonsVisible ? 
+                '<i class="fas fa-eye-slash"></i> 隐藏光子' : 
+                '<i class="fas fa-eye"></i> 显示光子';
+        }
+        
+        // 切换电子动画
+        function toggleElectronAnimation() {
+            electronAnimationEnabled = !electronAnimationEnabled;
+            
+            if (electronAnimationEnabled) {
+                animationState.textContent = '开启';
+                animateElectrons();
+                toggleAnimationBtn.innerHTML = '<i class="fas fa-pause"></i> 关闭电子运动';
+            } else {
+                animationState.textContent = '关闭';
+                cancelAnimationFrame(animationId);
+                toggleAnimationBtn.innerHTML = '<i class="fas fa-play"></i> 开启电子运动';
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

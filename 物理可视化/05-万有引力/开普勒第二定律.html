@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开普勒第二定律 - 面积定律演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: #0a1a2d;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(41, 182, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(79, 195, 247, 0.1) 0%, transparent 50%);
+            color: #e0e0ff;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background-color: rgba(16, 30, 50, 0.95);
+            border-radius: 20px;
+            box-shadow: 
+                0 10px 40px rgba(0, 10, 30, 0.7),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid rgba(64, 156, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(64, 156, 255, 0.4), 
+                transparent);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid rgba(64, 156, 255, 0.3);
+            position: relative;
+        }
+        
+        h1 {
+            color: #4fc3f7;
+            font-size: 3rem;
+            text-shadow: 
+                0 0 15px rgba(79, 195, 247, 0.7),
+                0 0 30px rgba(79, 195, 247, 0.3);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #4fc3f7, #29b6f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .title-underline {
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                #4fc3f7, 
+                transparent);
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+        
+        .subtitle {
+            position: absolute;
+            right: 0;
+            bottom: 15px;
+            font-size: 1.1rem;
+            color: #90a4ae;
+            font-style: italic;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .law-statement {
+            background: rgba(25, 40, 65, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px auto;
+            max-width: 800px;
+            border-left: 4px solid #4fc3f7;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .law-statement .emphasis {
+            color: #ffeb3b;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .canvas-container {
+            flex: 3;
+            min-width: 600px;
+            background: linear-gradient(145deg, #0d1b2f, #0a1523);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.8),
+                0 10px 25px rgba(0, 0, 0, 0.5);
+            position: relative;
+            border: 1px solid rgba(64, 156, 255, 0.1);
+        }
+        
+        #orbitCanvas {
+            width: 100%;
+            height: 600px;
+            display: block;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        
+        .canvas-instruction {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: rgba(0, 10, 30, 0.9);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+        
+        .canvas-instruction kbd {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0 2px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .right-panel {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .control-section {
+            background: linear-gradient(145deg, rgba(25, 40, 65, 0.9), rgba(15, 30, 50, 0.9));
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(64, 156, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            color: #29b6f6;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(41, 182, 246, 0.3);
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2::before {
+            content: '▶';
+            font-size: 0.8rem;
+            color: #4fc3f7;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #bbdefb;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, #1565c0, #1e88e5);
+            border-radius: 4px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #4fc3f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.8);
+            border: 2px solid white;
+        }
+        
+        .value-display {
+            color: #4fc3f7;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 8px;
+            font-size: 1.1rem;
+            background: rgba(25, 40, 65, 0.5);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 14px 24px;
+            background: linear-gradient(145deg, #1565c0, #0d47a1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover {
+            background: linear-gradient(145deg, #1e88e5, #1565c0);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(30, 136, 229, 0.4);
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(30, 136, 229, 0.3);
+        }
+        
+        button i {
+            font-style: normal;
+            font-size: 1.2rem;
+        }
+        
+        .marker-controls {
+            background: linear-gradient(145deg, rgba(41, 182, 246, 0.15), rgba(25, 40, 65, 0.9));
+            border-left: 5px solid #29b6f6;
+            padding: 25px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 30px;
+            border: 1px solid rgba(41, 182, 246, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .marker-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .data-display {
+            background: linear-gradient(145deg, rgba(0, 30, 60, 0.8), rgba(0, 20, 40, 0.9));
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            margin-top: 0;
+            border: 1px solid rgba(64, 156, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            background: linear-gradient(145deg, rgba(20, 40, 70, 0.7), rgba(10, 30, 60, 0.7));
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(64, 156, 255, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .data-item:hover {
+            transform: translateY(-5px);
+            border-color: rgba(64, 156, 255, 0.3);
+        }
+        
+        .data-value {
+            font-size: 1.8rem;
+            color: #ffeb3b;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.3);
+        }
+        
+        .data-label {
+            color: #90a4ae;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .marker-info {
+            background: linear-gradient(145deg, rgba(76, 175, 80, 0.15), rgba(25, 40, 65, 0.9));
+            border-left: 5px solid #4caf50;
+            padding: 25px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 30px;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .area-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .area-info-item {
+            background: linear-gradient(145deg, rgba(30, 50, 80, 0.7), rgba(20, 40, 70, 0.7));
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .area-info-item:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .marker-angles {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #bbdefb;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(64, 156, 255, 0.3);
+            color: #90a4ae;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+        
+        .footer-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .footer-link {
+            color: #4fc3f7;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .footer-link:hover {
+            background: rgba(79, 195, 247, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .keyboard-shortcuts {
+            background: rgba(25, 40, 65, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        
+        .shortcut-key {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .canvas-container {
+                min-width: 100%;
+            }
+            
+            .marker-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .data-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .area-info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                position: static;
+                margin-top: 10px;
+            }
+            
+            .marker-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .area-info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            #orbitCanvas {
+                height: 450px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            #orbitCanvas {
+                height: 350px;
+            }
+            
+            .canvas-instruction {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                text-align: center;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 26, 45, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(79, 195, 247, 0.2);
+            border-top-color: #4fc3f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div style="color: #4fc3f7; font-size: 1.2rem; margin-top: 20px;">加载演示系统中...</div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>开普勒第二定律</h1>
+            <div class="title-underline"></div>
+            <p style="color: #bbdefb; font-size: 1.1rem; margin-top: 15px;">行星运动面积定律的交互式演示</p>
+            <div class="subtitle">张兴刚燕赵名师工作室 · 耿春辉</div>
+        </div>
+        
+        <div class="law-statement">
+            <p>开普勒第二定律（面积定律）：<span class="emphasis">在相等时间内，太阳和运动中的行星的连线所扫过的面积都是相等的</span>。</p>
+            <p style="margin-top: 10px; font-size: 1rem;">这一定律揭示了行星在轨道上运动时角动量守恒的特性。</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <div class="canvas-instruction">
+                    <span>点击椭圆轨道设置标记点（A-F），再次点击可删除 | 快捷键：空格=暂停，R=重置，C=清除标记</span>
+                </div>
+                <canvas id="orbitCanvas"></canvas>
+            </div>
+            
+            <div class="right-panel">
+                <div class="control-section">
+                    <h2><i>⏯</i> 动画控制</h2>
+                    <div class="buttons">
+                        <button id="playPauseBtn"><i>⏸</i> 暂停动画</button>
+                        <button id="resetBtn"><i>↺</i> 重置动画</button>
+                        <button id="speedUpBtn"><i>⚡</i> 加速模式</button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h2><i>⚙️</i> 轨道参数</h2>
+                    <div class="control-group">
+                        <label for="eccentricity">轨道偏心率 <span id="eccDesc" style="color: #ff9800; font-size: 0.9rem;">(0.7)</span></label>
+                        <input type="range" id="eccentricity" min="0.1" max="0.9" step="0.05" value="0.7">
+                        <div class="value-display" id="eccentricityValue">0.70</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="speedControl">时间步长 <span style="color: #ff9800; font-size: 0.9rem;">(控制动画速度)</span></label>
+                        <input type="range" id="speedControl" min="10" max="150" value="80">
+                        <div class="value-display" id="speedValue">超快</div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h2><i>🎯</i> 标记点控制</h2>
+                    <div class="buttons">
+                        <button id="autoSetMarkersBtn"><i>✨</i> 自动设置相等面积点</button>
+                        <button id="clearMarkersBtn"><i>🗑</i> 清除所有标记</button>
+                        <button id="showEqualAreasBtn"><i>📐</i> 显示相等面积</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="marker-info">
+            <h2><i>📊</i> 相等面积验证</h2>
+            <div class="area-info-grid">
+                <div class="area-info-item" style="border-top: 4px solid #FF5252;">
+                    <div class="data-label">扇形面积 AB</div>
+                    <div class="data-value" id="areaAB">0.00</div>
+                    <div class="marker-angles">
+                        <div>A: <span id="markerAInfo">未设置</span></div>
+                        <div>B: <span id="markerBInfo">未设置</span></div>
+                    </div>
+                </div>
+                <div class="area-info-item" style="border-top: 4px solid #4CAF50;">
+                    <div class="data-label">扇形面积 CD</div>
+                    <div class="data-value" id="areaCD">0.00</div>
+                    <div class="marker-angles">
+                        <div>C: <span id="markerCInfo">未设置</span></div>
+                        <div>D: <span id="markerDInfo">未设置</span></div>
+                    </div>
+                </div>
+                <div class="area-info-item" style="border-top: 4px solid #9C27B0;">
+                    <div class="data-label">扇形面积 EF</div>
+                    <div class="data-value" id="areaEF">0.00</div>
+                    <div class="marker-angles">
+                        <div>E: <span id="markerEInfo">未设置</span></div>
+                        <div>F: <span id="markerFInfo">未设置</span></div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 25px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 8px;">
+                <div style="text-align: center; color: #ffeb3b; font-size: 1.1rem; margin-bottom: 10px;">
+                    <i>📈</i> 面积一致性分析
+                </div>
+                <div id="areaComparison" style="text-align: center; font-size: 1rem;">
+                    请设置标记点验证面积相等 (需要至少两组: A-B, C-D, E-F)
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-display">
+            <h2><i>📡</i> 物理量实时监测</h2>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">角动量</div>
+                    <div class="data-value" id="angularMomentum">0.00</div>
+                    <div class="data-label">(kg·m²/s) 守恒量</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">面积速率</div>
+                    <div class="data-value" id="areaRate">0.00</div>
+                    <div class="data-label">(m²/s) 恒定值</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">行星线速度</div>
+                    <div class="data-value" id="planetSpeed">0.00</div>
+                    <div class="data-label">(m/s) 近日点最快</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">距日距离</div>
+                    <div class="data-value" id="sunDistance">0.00</div>
+                    <div class="data-label">(m) 实时变化</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="keyboard-shortcuts">
+            <div style="color: #4fc3f7; margin-bottom: 10px; text-align: center;">
+                <i>⌨️</i> 键盘快捷键
+            </div>
+            <div class="shortcut-item">
+                <span>空格键</span>
+                <span class="shortcut-key">SPACE</span>
+                <span>暂停/播放动画</span>
+            </div>
+            <div class="shortcut-item">
+                <span>R键</span>
+                <span class="shortcut-key">R</span>
+                <span>重置动画</span>
+            </div>
+            <div class="shortcut-item">
+                <span>C键</span>
+                <span class="shortcut-key">C</span>
+                <span>清除所有标记</span>
+            </div>
+            <div class="shortcut-item">
+                <span>ESC键</span>
+                <span class="shortcut-key">ESC</span>
+                <span>显示/隐藏快捷键</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>本交互式演示系统展示了开普勒第二定律（面积定律）与角动量守恒的物理关系。</p>
+            <p>行星在相等时间内扫过的面积相等，这验证了行星运动中的角动量守恒定律。</p>
+            
+            <div class="footer-links">
+                <a href="#" class="footer-link" id="screenshotBtn"><i>📸</i> 保存截图</a>
+                <a href="#" class="footer-link" id="exportDataBtn"><i>📊</i> 导出数据</a>
+                <a href="#" class="footer-link" id="helpBtn"><i>❓</i> 使用帮助</a>
+            </div>
+            
+            <p style="margin-top: 20px; color: #90a4ae; font-size: 0.9rem;">
+                使用HTML5 Canvas和JavaScript实现 © 2023 张兴刚燕赵名师工作室 · 耿春辉
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 优化后的开普勒第二定律演示系统
+        class KeplerSimulator {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.init();
+            }
+            
+            init() {
+                // 设置Canvas尺寸
+                this.setCanvasSize();
+                
+                // 动画状态
+                this.animationId = null;
+                this.isPlaying = true;
+                this.isSpeedUpMode = false;
+                
+                // 轨道参数
+                this.a = 250; // 椭圆长半轴
+                this.b = 180; // 椭圆短半轴
+                this.eccentricity = 0.7;
+                this.centerX = this.canvas.width / 2;
+                this.centerY = this.canvas.height / 2;
+                
+                // 物理参数
+                this.angle = Math.PI * 0.25;
+                this.planetRadius = 12;
+                this.sunRadius = 30;
+                this.planetMass = 1.0;
+                this.angularMomentum = 0;
+                this.areaRate = 0;
+                this.planetSpeed = 0;
+                this.distanceToSun = 0;
+                
+                // 显示选项
+                this.showEqualAreas = true;
+                
+                // 标记点系统
+                this.markers = {};
+                this.markerLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
+                this.markerColors = {
+                    'A': '#FF5252', 'B': '#FF9800', 
+                    'C': '#4CAF50', 'D': '#2196F3',
+                    'E': '#9C27B0', 'F': '#00BCD4'
+                };
+                
+                this.areaColors = {
+                    'AB': 'rgba(255, 82, 82, 0.4)',
+                    'CD': 'rgba(76, 175, 80, 0.4)',
+                    'EF': 'rgba(156, 39, 176, 0.4)'
+                };
+                
+                // 性能优化：缓存渐变对象
+                this.backgroundGradient = null;
+                this.sunGradient = null;
+                this.planetGradient = null;
+                
+                // 轨迹数据
+                this.trailPoints = [];
+                this.maxTrailLength = 50;
+                
+                // 更新轨道参数
+                this.updateOrbitParameters();
+                
+                // 初始化角动量
+                this.initAngularMomentum();
+            }
+            
+            setCanvasSize() {
+                this.canvas.width = this.canvas.offsetWidth;
+                this.canvas.height = this.canvas.offsetHeight;
+            }
+            
+            updateOrbitParameters() {
+                this.eccentricity = parseFloat(document.getElementById('eccentricity').value);
+                document.getElementById('eccentricityValue').textContent = this.eccentricity.toFixed(2);
+                
+                // 更新偏心率描述
+                const eccDesc = document.getElementById('eccDesc');
+                if (this.eccentricity < 0.3) {
+                    eccDesc.textContent = '(近圆形)';
+                } else if (this.eccentricity < 0.6) {
+                    eccDesc.textContent = '(椭圆)';
+                } else {
+                    eccDesc.textContent = '(高度椭圆)';
+                }
+                
+                // 计算短半轴
+                this.b = this.a * Math.sqrt(1 - this.eccentricity * this.eccentricity);
+                this.focusDistance = this.eccentricity * this.a;
+                
+                // 太阳位于左侧焦点
+                this.sunX = this.centerX - this.focusDistance;
+                this.sunY = this.centerY;
+                
+                // 调整中心位置确保椭圆完全可见
+                if (this.sunX - (this.a - this.focusDistance) < 50) {
+                    this.centerX += 50 - (this.sunX - (this.a - this.focusDistance));
+                    this.sunX = this.centerX - this.focusDistance;
+                }
+            }
+            
+            initAngularMomentum() {
+                // 根据近日点距离和速度计算角动量
+                const perihelionDistance = this.a * (1 - this.eccentricity);
+                const perihelionSpeed = Math.sqrt(this.calculateGravitationalConstant() / perihelionDistance);
+                this.angularMomentum = this.planetMass * perihelionDistance * perihelionSpeed;
+            }
+            
+            calculateGravitationalConstant() {
+                // 模拟引力常数
+                return 5000;
+            }
+            
+            calculatePlanetPosition(angle) {
+                const x = this.centerX + this.a * Math.cos(angle);
+                const y = this.centerY + this.b * Math.sin(angle);
+                return { x, y };
+            }
+            
+            calculateAngleFromScreen(x, y) {
+                const dx = x - this.centerX;
+                const dy = y - this.centerY;
+                
+                let angle = Math.atan2(dy / this.b, dx / this.a);
+                if (angle < 0) angle += 2 * Math.PI;
+                
+                return angle;
+            }
+            
+            calculatePlanetVelocity(angle) {
+                const pos = this.calculatePlanetPosition(angle);
+                
+                const dx = pos.x - this.sunX;
+                const dy = pos.y - this.sunY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 根据角动量守恒计算速度
+                const vPerp = this.angularMomentum / (this.planetMass * distance);
+                
+                // 计算切向方向
+                const tangentX = -dy / distance;
+                const tangentY = dx / distance;
+                
+                return {
+                    x: vPerp * tangentX,
+                    y: vPerp * tangentY,
+                    magnitude: vPerp
+                };
+            }
+            
+            updatePhysicalQuantities() {
+                const pos = this.calculatePlanetPosition(this.angle);
+                
+                // 计算到太阳的距离
+                const dx = pos.x - this.sunX;
+                const dy = pos.y - this.sunY;
+                this.distanceToSun = Math.sqrt(dx * dx + dy * dy);
+                
+                // 计算速度
+                const velocity = this.calculatePlanetVelocity(this.angle);
+                this.planetSpeed = velocity.magnitude;
+                
+                // 计算面积速率
+                this.areaRate = this.angularMomentum / (2 * this.planetMass);
+                
+                // 更新显示
+                document.getElementById('angularMomentum').textContent = this.angularMomentum.toFixed(2);
+                document.getElementById('areaRate').textContent = this.areaRate.toFixed(2);
+                document.getElementById('planetSpeed').textContent = this.planetSpeed.toFixed(2);
+                document.getElementById('sunDistance').textContent = this.distanceToSun.toFixed(2);
+            }
+            
+            drawScene() {
+                // 清除Canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 绘制背景
+                this.drawBackground();
+                
+                // 绘制椭圆轨道
+                this.drawOrbit();
+                
+                // 绘制太阳
+                this.drawSun();
+                
+                // 绘制标记点
+                this.drawMarkers();
+                
+                // 绘制相等时间间隔的面积
+                if (this.showEqualAreas) {
+                    this.drawEqualTimeAreas();
+                }
+                
+                // 绘制行星
+                this.drawPlanet();
+                
+                // 绘制行星轨迹
+                this.drawPlanetTrail();
+                
+                // 更新物理量显示
+                this.updatePhysicalQuantities();
+            }
+            
+            drawBackground() {
+                if (!this.backgroundGradient) {
+                    this.backgroundGradient = this.ctx.createRadialGradient(
+                        this.centerX, this.centerY, 0,
+                        this.centerX, this.centerY, Math.max(this.canvas.width, this.canvas.height) / 2
+                    );
+                    this.backgroundGradient.addColorStop(0, 'rgba(10, 25, 45, 0.9)');
+                    this.backgroundGradient.addColorStop(0.5, 'rgba(5, 15, 30, 0.8)');
+                    this.backgroundGradient.addColorStop(1, 'rgba(2, 8, 18, 1)');
+                }
+                
+                this.ctx.fillStyle = this.backgroundGradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            drawOrbit() {
+                this.ctx.beginPath();
+                this.ctx.ellipse(this.centerX, this.centerY, this.a, this.b, 0, 0, 2 * Math.PI);
+                
+                // 轨道渐变
+                const orbitGradient = this.ctx.createLinearGradient(
+                    this.centerX - this.a, this.centerY,
+                    this.centerX + this.a, this.centerY
+                );
+                orbitGradient.addColorStop(0, 'rgba(64, 156, 255, 0.8)');
+                orbitGradient.addColorStop(0.5, 'rgba(79, 195, 247, 0.9)');
+                orbitGradient.addColorStop(1, 'rgba(64, 156, 255, 0.8)');
+                
+                this.ctx.strokeStyle = orbitGradient;
+                this.ctx.lineWidth = 3;
+                this.ctx.stroke();
+                
+                // 绘制近日点和远日点标记
+                this.drawOrbitMarkings();
+            }
+            
+            drawOrbitMarkings() {
+                const perihelionAngle = Math.PI;
+                const perihelionPos = this.calculatePlanetPosition(perihelionAngle);
+                
+                const aphelionAngle = 0;
+                const aphelionPos = this.calculatePlanetPosition(aphelionAngle);
+                
+                // 近日点标记
+                this.ctx.fillStyle = '#ff5252';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText("近日点", perihelionPos.x - 35, perihelionPos.y - 30);
+                
+                // 远日点标记
+                this.ctx.fillStyle = '#448aff';
+                this.ctx.fillText("远日点", aphelionPos.x + 35, aphelionPos.y - 30);
+                
+                // 绘制角度刻度
+                for (let i = 0; i < 12; i++) {
+                    const angle = i * Math.PI / 6;
+                    const pos = this.calculatePlanetPosition(angle);
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(pos.x, pos.y, 3, 0, 2 * Math.PI);
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    this.ctx.fill();
+                }
+            }
+            
+            drawSun() {
+                if (!this.sunGradient) {
+                    this.sunGradient = this.ctx.createRadialGradient(
+                        this.sunX, this.sunY, 0,
+                        this.sunX, this.sunY, this.sunRadius * 1.8
+                    );
+                    this.sunGradient.addColorStop(0, '#ffff00');
+                    this.sunGradient.addColorStop(0.5, '#ff9800');
+                    this.sunGradient.addColorStop(0.8, '#ff5722');
+                    this.sunGradient.addColorStop(1, 'rgba(255, 87, 34, 0.1)');
+                }
+                
+                // 太阳光晕
+                this.ctx.beginPath();
+                this.ctx.arc(this.sunX, this.sunY, this.sunRadius * 2.5, 0, 2 * Math.PI);
+                this.ctx.fillStyle = 'rgba(255, 152, 0, 0.15)';
+                this.ctx.fill();
+                
+                // 太阳本体
+                this.ctx.beginPath();
+                this.ctx.arc(this.sunX, this.sunY, this.sunRadius, 0, 2 * Math.PI);
+                this.ctx.fillStyle = this.sunGradient;
+                this.ctx.fill();
+                
+                // 太阳表面纹理
+                this.ctx.beginPath();
+                this.ctx.arc(this.sunX - 8, this.sunY - 5, 3, 0, 2 * Math.PI);
+                this.ctx.fillStyle = '#ff7043';
+                this.ctx.fill();
+                
+                this.ctx.beginPath();
+                this.ctx.arc(this.sunX + 10, this.sunY + 8, 4, 0, 2 * Math.PI);
+                this.ctx.fillStyle = '#ffab40';
+                this.ctx.fill();
+            }
+            
+            drawMarkers() {
+                Object.keys(this.markers).forEach(label => {
+                    const marker = this.markers[label];
+                    const pos = this.calculatePlanetPosition(marker.angle);
+                    
+                    // 标记点
+                    this.ctx.beginPath();
+                    this.ctx.arc(pos.x, pos.y, 12, 0, 2 * Math.PI);
+                    this.ctx.fillStyle = this.markerColors[label];
+                    this.ctx.fill();
+                    
+                    // 标记点边框
+                    this.ctx.beginPath();
+                    this.ctx.arc(pos.x, pos.y, 12, 0, 2 * Math.PI);
+                    this.ctx.strokeStyle = '#FFFFFF';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                    
+                    // 标记标签
+                    this.ctx.fillStyle = '#FFFFFF';
+                    this.ctx.font = 'bold 18px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(label, pos.x, pos.y);
+                    
+                    // 连线到太阳
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.sunX, this.sunY);
+                    this.ctx.lineTo(pos.x, pos.y);
+                    this.ctx.strokeStyle = this.markerColors[label] + 'AA';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                });
+            }
+            
+            drawEqualTimeAreas() {
+                // 绘制AB之间的面积
+                if (this.markers['A'] && this.markers['B']) {
+                    this.drawSectorArea(this.markers['A'].angle, this.markers['B'].angle, this.areaColors['AB'], 'AB');
+                }
+                
+                // 绘制CD之间的面积
+                if (this.markers['C'] && this.markers['D']) {
+                    this.drawSectorArea(this.markers['C'].angle, this.markers['D'].angle, this.areaColors['CD'], 'CD');
+                }
+                
+                // 绘制EF之间的面积
+                if (this.markers['E'] && this.markers['F']) {
+                    this.drawSectorArea(this.markers['E'].angle, this.markers['F'].angle, this.areaColors['EF'], 'EF');
+                }
+                
+                this.updateAreaInfo();
+            }
+            
+            drawSectorArea(startAngle, endAngle, color, label) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.sunX, this.sunY);
+                
+                if (endAngle < startAngle) endAngle += 2 * Math.PI;
+                
+                // 绘制扇形边缘
+                const steps = 100;
+                for (let j = 0; j <= steps; j++) {
+                    const intermediateAngle = startAngle + (endAngle - startAngle) * (j / steps);
+                    const pos = this.calculatePlanetPosition(intermediateAngle);
+                    this.ctx.lineTo(pos.x, pos.y);
+                }
+                
+                this.ctx.closePath();
+                
+                // 填充扇形
+                this.ctx.fillStyle = color;
+                this.ctx.fill();
+                
+                // 扇形边界
+                this.ctx.strokeStyle = color.replace('0.4', '0.9');
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // 扇形中心标签
+                const midAngle = startAngle + (endAngle - startAngle) / 2;
+                const midPos = this.calculatePlanetPosition(midAngle);
+                const labelPos = {
+                    x: this.sunX + (midPos.x - this.sunX) * 0.5,
+                    y: this.sunY + (midPos.y - this.sunY) * 0.5
+                };
+                
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.font = 'bold 20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(label, labelPos.x, labelPos.y);
+            }
+            
+            updateAreaInfo() {
+                let areas = [];
+                
+                // 计算AB面积
+                if (this.markers['A'] && this.markers['B']) {
+                    const areaAB = this.calculateSectorArea(this.markers['A'].angle, this.markers['B'].angle);
+                    document.getElementById('areaAB').textContent = areaAB.toFixed(2);
+                    document.getElementById('markerAInfo').textContent = `${(this.markers['A'].angle * 180 / Math.PI).toFixed(1)}°`;
+                    document.getElementById('markerBInfo').textContent = `${(this.markers['B'].angle * 180 / Math.PI).toFixed(1)}°`;
+                    areas.push({label: 'AB', value: areaAB});
+                } else {
+                    document.getElementById('areaAB').textContent = '0.00';
+                    document.getElementById('markerAInfo').textContent = '未设置';
+                    document.getElementById('markerBInfo').textContent = '未设置';
+                }
+                
+                // 计算CD面积
+                if (this.markers['C'] && this.markers['D']) {
+                    const areaCD = this.calculateSectorArea(this.markers['C'].angle, this.markers['D'].angle);
+                    document.getElementById('areaCD').textContent = areaCD.toFixed(2);
+                    document.getElementById('markerCInfo').textContent = `${(this.markers['C'].angle * 180 / Math.PI).toFixed(1)}°`;
+                    document.getElementById('markerDInfo').textContent = `${(this.markers['D'].angle * 180 / Math.PI).toFixed(1)}°`;
+                    areas.push({label: 'CD', value: areaCD});
+                } else {
+                    document.getElementById('areaCD').textContent = '0.00';
+                    document.getElementById('markerCInfo').textContent = '未设置';
+                    document.getElementById('markerDInfo').textContent = '未设置';
+                }
+                
+                // 计算EF面积
+                if (this.markers['E'] && this.markers['F']) {
+                    const areaEF = this.calculateSectorArea(this.markers['E'].angle, this.markers['F'].angle);
+                    document.getElementById('areaEF').textContent = areaEF.toFixed(2);
+                    document.getElementById('markerEInfo').textContent = `${(this.markers['E'].angle * 180 / Math.PI).toFixed(1)}°`;
+                    document.getElementById('markerFInfo').textContent = `${(this.markers['F'].angle * 180 / Math.PI).toFixed(1)}°`;
+                    areas.push({label: 'EF', value: areaEF});
+                } else {
+                    document.getElementById('areaEF').textContent = '0.00';
+                    document.getElementById('markerEInfo').textContent = '未设置';
+                    document.getElementById('markerFInfo').textContent = '未设置';
+                }
+                
+                // 更新面积比较信息
+                if (areas.length >= 2) {
+                    const avgArea = areas.reduce((sum, a) => sum + a.value, 0) / areas.length;
+                    const maxDiff = Math.max(...areas.map(a => Math.abs(a.value - avgArea)));
+                    const diffPercent = (maxDiff / avgArea * 100).toFixed(1);
+                    
+                    if (diffPercent < 3) {
+                        document.getElementById('areaComparison').innerHTML = 
+                            `<span style="color:#4CAF50; font-weight:bold;">✓ 面积高度一致 (最大差异: ${diffPercent}%) - 验证成功！</span>`;
+                    } else if (diffPercent < 10) {
+                        document.getElementById('areaComparison').innerHTML = 
+                            `<span style="color:#FF9800;">面积基本相等 (最大差异: ${diffPercent}%)</span>`;
+                    } else {
+                        document.getElementById('areaComparison').innerHTML = 
+                            `<span style="color:#FF5252;">面积差异较大 (最大差异: ${diffPercent}%) - 请检查标记点位置</span>`;
+                    }
+                } else {
+                    document.getElementById('areaComparison').textContent = 
+                        '请设置标记点验证面积相等 (需要至少两组: A-B, C-D, E-F)';
+                }
+            }
+            
+            calculateSectorArea(startAngle, endAngle) {
+                if (endAngle < startAngle) endAngle += 2 * Math.PI;
+                
+                // 使用高斯积分提高精度
+                const gaussPoints = 16;
+                const gaussWeights = [
+                    0.18945061, 0.18945061, 0.18260342, 0.18260342,
+                    0.16915652, 0.16915652, 0.14959599, 0.14959599,
+                    0.12462897, 0.12462897, 0.09515851, 0.09515851,
+                    0.06225352, 0.06225352, 0.02715246, 0.02715246
+                ];
+                
+                let totalArea = 0;
+                const halfRange = (endAngle - startAngle) / 2;
+                
+                for (let i = 0; i < gaussPoints; i++) {
+                    const t = startAngle + halfRange * (1 + Math.cos((i + 0.5) * Math.PI / gaussPoints));
+                    const pos = this.calculatePlanetPosition(t);
+                    
+                    // 微元面积：0.5 * r² * dθ
+                    const dx = pos.x - this.sunX;
+                    const dy = pos.y - this.sunY;
+                    const r2 = dx * dx + dy * dy;
+                    
+                    totalArea += 0.5 * r2 * halfRange * gaussWeights[i];
+                }
+                
+                return totalArea;
+            }
+            
+            findAngleForArea(startAngle, targetArea) {
+                let currentAngle = startAngle;
+                let accumulatedArea = 0;
+                const step = 0.005;
+                
+                while (accumulatedArea < targetArea && currentAngle < startAngle + 2 * Math.PI) {
+                    const nextAngle = currentAngle + step;
+                    const segmentArea = this.calculateSegmentArea(currentAngle, nextAngle);
+                    accumulatedArea += segmentArea;
+                    currentAngle = nextAngle;
+                }
+                
+                return currentAngle;
+            }
+            
+            calculateSegmentArea(startAngle, endAngle) {
+                const pos1 = this.calculatePlanetPosition(startAngle);
+                const pos2 = this.calculatePlanetPosition(endAngle);
+                
+                return 0.5 * Math.abs(
+                    (pos1.x - this.sunX) * (pos2.y - this.sunY) - 
+                    (pos2.x - this.sunX) * (pos1.y - this.sunY)
+                );
+            }
+            
+            drawPlanet() {
+                const planetPos = this.calculatePlanetPosition(this.angle);
+                
+                // 添加轨迹点
+                this.trailPoints.unshift({x: planetPos.x, y: planetPos.y});
+                if (this.trailPoints.length > this.maxTrailLength) {
+                    this.trailPoints.pop();
+                }
+                
+                // 行星光晕
+                this.ctx.beginPath();
+                this.ctx.arc(planetPos.x, planetPos.y, this.planetRadius * 2.5, 0, 2 * Math.PI);
+                this.ctx.fillStyle = 'rgba(79, 195, 247, 0.15)';
+                this.ctx.fill();
+                
+                // 行星本体
+                if (!this.planetGradient) {
+                    this.planetGradient = this.ctx.createRadialGradient(
+                        planetPos.x, planetPos.y, 0,
+                        planetPos.x, planetPos.y, this.planetRadius
+                    );
+                    this.planetGradient.addColorStop(0, '#4fc3f7');
+                    this.planetGradient.addColorStop(0.7, '#0288d1');
+                    this.planetGradient.addColorStop(1, '#01579b');
+                }
+                
+                this.ctx.beginPath();
+                this.ctx.arc(planetPos.x, planetPos.y, this.planetRadius, 0, 2 * Math.PI);
+                this.ctx.fillStyle = this.planetGradient;
+                this.ctx.fill();
+                
+                // 行星表面纹理
+                this.ctx.beginPath();
+                this.ctx.arc(planetPos.x - 3, planetPos.y - 2, 2, 0, 2 * Math.PI);
+                this.ctx.fillStyle = '#81d4fa';
+                this.ctx.fill();
+                
+                // 行星与太阳的连线
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.sunX, this.sunY);
+                this.ctx.lineTo(planetPos.x, planetPos.y);
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // 显示行星速度方向
+                this.drawVelocityVector(planetPos);
+            }
+            
+            drawVelocityVector(planetPos) {
+                const velocity = this.calculatePlanetVelocity(this.angle);
+                const scale = 20;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(planetPos.x, planetPos.y);
+                this.ctx.lineTo(
+                    planetPos.x + velocity.x * scale,
+                    planetPos.y + velocity.y * scale
+                );
+                
+                // 速度向量颜色根据大小变化
+                const speedRatio = this.planetSpeed / 50;
+                const r = Math.min(255, 100 + speedRatio * 155);
+                const g = Math.min(255, 200 - speedRatio * 100);
+                const b = 255;
+                
+                this.ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
+                this.ctx.lineWidth = 3;
+                this.ctx.stroke();
+                
+                // 绘制速度箭头
+                this.ctx.beginPath();
+                this.ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                
+                const arrowLength = 8;
+                const arrowAngle = Math.atan2(velocity.y, velocity.x);
+                const arrowX = planetPos.x + velocity.x * scale;
+                const arrowY = planetPos.y + velocity.y * scale;
+                
+                this.ctx.moveTo(arrowX, arrowY);
+                this.ctx.lineTo(
+                    arrowX - arrowLength * Math.cos(arrowAngle - Math.PI/6),
+                    arrowY - arrowLength * Math.sin(arrowAngle - Math.PI/6)
+                );
+                this.ctx.lineTo(
+                    arrowX - arrowLength * Math.cos(arrowAngle + Math.PI/6),
+                    arrowY - arrowLength * Math.sin(arrowAngle + Math.PI/6)
+                );
+                this.ctx.closePath();
+                this.ctx.fill();
+            }
+            
+            drawPlanetTrail() {
+                if (this.trailPoints.length < 2) return;
+                
+                // 绘制轨迹线
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.trailPoints[0].x, this.trailPoints[0].y);
+                
+                for (let i = 1; i < this.trailPoints.length; i++) {
+                    this.ctx.lineTo(this.trailPoints[i].x, this.trailPoints[i].y);
+                }
+                
+                // 轨迹渐变
+                const gradient = this.ctx.createLinearGradient(
+                    this.trailPoints[0].x, this.trailPoints[0].y,
+                    this.trailPoints[this.trailPoints.length - 1].x, 
+                    this.trailPoints[this.trailPoints.length - 1].y
+                );
+                gradient.addColorStop(0, 'rgba(79, 195, 247, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(79, 195, 247, 0.4)');
+                gradient.addColorStop(1, 'rgba(79, 195, 247, 0.1)');
+                
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // 轨迹点
+                for (let i = 0; i < this.trailPoints.length; i += 3) {
+                    const alpha = 1 - i / this.trailPoints.length;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.trailPoints[i].x, this.trailPoints[i].y, 2, 0, 2 * Math.PI);
+                    this.ctx.fillStyle = `rgba(79, 195, 247, ${alpha * 0.8})`;
+                    this.ctx.fill();
+                }
+            }
+            
+            update() {
+                if (this.isPlaying) {
+                    const pos = this.calculatePlanetPosition(this.angle);
+                    const dx = pos.x - this.sunX;
+                    const dy = pos.y - this.sunY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // 角速度计算
+                    const angularSpeed = this.angularMomentum / (this.planetMass * distance * distance);
+                    
+                    // 时间步长
+                    const speedControl = document.getElementById('speedControl');
+                    let timeStep = parseFloat(speedControl.value);
+                    
+                    // 加速模式
+                    if (this.isSpeedUpMode) {
+                        timeStep *= 2;
+                    }
+                    
+                    this.angle += angularSpeed * timeStep * 0.05;
+                    
+                    if (this.angle >= 2 * Math.PI) {
+                        this.angle -= 2 * Math.PI;
+                    }
+                }
+            }
+            
+            animate() {
+                this.update();
+                this.drawScene();
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+            
+            toggleMarker(clickX, clickY) {
+                const clickAngle = this.calculateAngleFromScreen(clickX, clickY);
+                const pos = this.calculatePlanetPosition(clickAngle);
+                const distanceToClick = Math.sqrt(
+                    Math.pow(clickX - pos.x, 2) + Math.pow(clickY - pos.y, 2)
+                );
+                
+                if (distanceToClick < 40) {
+                    // 检查是否点击了已有的标记点
+                    let clickedExistingMarker = null;
+                    Object.keys(this.markers).forEach(label => {
+                        const marker = this.markers[label];
+                        const markerPos = this.calculatePlanetPosition(marker.angle);
+                        const distanceToMarker = Math.sqrt(
+                            Math.pow(clickX - markerPos.x, 2) + Math.pow(clickY - markerPos.y, 2)
+                        );
+                        
+                        if (distanceToMarker < 20) {
+                            clickedExistingMarker = label;
+                        }
+                    });
+                    
+                    if (clickedExistingMarker) {
+                        delete this.markers[clickedExistingMarker];
+                        this.updateAreaInfo();
+                    } else {
+                        let availableLabel = null;
+                        for (const label of this.markerLabels) {
+                            if (!this.markers[label]) {
+                                availableLabel = label;
+                                break;
+                            }
+                        }
+                        
+                        if (availableLabel) {
+                            this.markers[availableLabel] = {
+                                angle: clickAngle,
+                                color: this.markerColors[availableLabel]
+                            };
+                            this.updateAreaInfo();
+                        } else {
+                            this.showNotification('已设置所有标记点 (A-F)，请先删除一些点再添加新点', 'warning');
+                        }
+                    }
+                }
+            }
+            
+            autoSetEqualAreaMarkers() {
+                this.clearMarkers();
+                
+                const totalArea = Math.PI * this.a * this.b;
+                const targetArea = totalArea / 6;
+                
+                // 设置A点
+                const startAngleA = Math.PI * 0.9;
+                this.markers['A'] = { angle: startAngleA, color: this.markerColors['A'] };
+                
+                // 计算B点
+                const angleB = this.findAngleForArea(startAngleA, targetArea);
+                this.markers['B'] = { angle: angleB, color: this.markerColors['B'] };
+                
+                // 设置C点
+                const startAngleC = angleB + 0.1;
+                this.markers['C'] = { angle: startAngleC, color: this.markerColors['C'] };
+                
+                // 计算D点
+                const angleD = this.findAngleForArea(startAngleC, targetArea);
+                this.markers['D'] = { angle: angleD, color: this.markerColors['D'] };
+                
+                // 设置E点
+                const startAngleE = angleD + 0.1;
+                this.markers['E'] = { angle: startAngleE, color: this.markerColors['E'] };
+                
+                // 计算F点
+                const angleF = this.findAngleForArea(startAngleE, targetArea);
+                this.markers['F'] = { angle: angleF, color: this.markerColors['F'] };
+                
+                if (this.markers['F'].angle >= 2 * Math.PI) {
+                    this.markers['F'].angle -= 2 * Math.PI;
+                }
+                
+                this.updateAreaInfo();
+                this.showNotification('已自动设置相等面积标记点', 'success');
+            }
+            
+            clearMarkers() {
+                this.markers = {};
+                this.updateAreaInfo();
+                this.showNotification('已清除所有标记点', 'info');
+            }
+            
+            showNotification(message, type = 'info') {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 
+                                type === 'warning' ? 'rgba(255, 152, 0, 0.9)' : 
+                                'rgba(33, 150, 243, 0.9)'};
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease-out;
+                    max-width: 300px;
+                    font-weight: 500;
+                `;
+                
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease-in';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+                
+                // 添加动画关键帧
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // 主程序
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隐藏加载界面
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 500);
+            }, 1000);
+            
+            const canvas = document.getElementById('orbitCanvas');
+            const simulator = new KeplerSimulator(canvas);
+            
+            // 初始化Canvas尺寸
+            function updateCanvasSize() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                simulator.centerX = canvas.width / 2;
+                simulator.centerY = canvas.height / 2;
+                simulator.updateOrbitParameters();
+            }
+            
+            window.addEventListener('resize', updateCanvasSize);
+            updateCanvasSize();
+            
+            // 初始化控件
+            function initControls() {
+                // 偏心率控制
+                const eccentricityControl = document.getElementById('eccentricity');
+                eccentricityControl.addEventListener('input', function() {
+                    simulator.updateOrbitParameters();
+                    if (Object.keys(simulator.markers).length > 0) {
+                        simulator.autoSetEqualAreaMarkers();
+                    }
+                });
+                
+                // 速度控制
+                const speedControl = document.getElementById('speedControl');
+                speedControl.addEventListener('input', function() {
+                    const speedValue = parseInt(this.value);
+                    let speedText;
+                    if (speedValue <= 30) speedText = '慢速';
+                    else if (speedValue <= 60) speedText = '中速';
+                    else if (speedValue <= 90) speedText = '快速';
+                    else if (speedValue <= 120) speedText = '超快';
+                    else speedText = '极限';
+                    document.getElementById('speedValue').textContent = speedText;
+                });
+                
+                // 播放/暂停按钮
+                const playPauseBtn = document.getElementById('playPauseBtn');
+                playPauseBtn.addEventListener('click', function() {
+                    simulator.isPlaying = !simulator.isPlaying;
+                    this.innerHTML = simulator.isPlaying ? '<i>⏸</i> 暂停动画' : '<i>▶</i> 播放动画';
+                });
+                
+                // 重置按钮
+                const resetBtn = document.getElementById('resetBtn');
+                resetBtn.addEventListener('click', function() {
+                    simulator.angle = Math.PI * 0.25;
+                    simulator.trailPoints = [];
+                    simulator.showNotification('已重置动画', 'info');
+                });
+                
+                // 加速模式按钮
+                const speedUpBtn = document.getElementById('speedUpBtn');
+                speedUpBtn.addEventListener('click', function() {
+                    simulator.isSpeedUpMode = !simulator.isSpeedUpMode;
+                    this.innerHTML = simulator.isSpeedUpMode ? 
+                        '<i>🐢</i> 正常模式' : '<i>⚡</i> 加速模式';
+                    simulator.showNotification(
+                        simulator.isSpeedUpMode ? '已启用加速模式' : '已恢复正常模式', 
+                        'info'
+                    );
+                });
+                
+                // 自动设置相等面积点按钮
+                const autoSetMarkersBtn = document.getElementById('autoSetMarkersBtn');
+                autoSetMarkersBtn.addEventListener('click', function() {
+                    simulator.autoSetEqualAreaMarkers();
+                });
+                
+                // 清除所有标记按钮
+                const clearMarkersBtn = document.getElementById('clearMarkersBtn');
+                clearMarkersBtn.addEventListener('click', function() {
+                    simulator.clearMarkers();
+                });
+                
+                // 显示相等面积按钮
+                const showEqualAreasBtn = document.getElementById('showEqualAreasBtn');
+                showEqualAreasBtn.addEventListener('click', function() {
+                    simulator.showEqualAreas = !simulator.showEqualAreas;
+                    this.innerHTML = simulator.showEqualAreas ? 
+                        '<i>👁</i> 隐藏相等面积' : '<i>📐</i> 显示相等面积';
+                    
+                    if (simulator.showEqualAreas && Object.keys(simulator.markers).length < 4) {
+                        simulator.showNotification('请先设置至少两组标记点 (如A-B和C-D)', 'warning');
+                    }
+                });
+                
+                // 截图按钮
+                document.getElementById('screenshotBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const link = document.createElement('a');
+                    link.download = '开普勒第二定律演示截图.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    simulator.showNotification('截图已保存', 'success');
+                });
+                
+                // 导出数据按钮
+                document.getElementById('exportDataBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const data = {
+                        角动量: simulator.angularMomentum.toFixed(2),
+                        面积速率: simulator.areaRate.toFixed(2),
+                        行星速度: simulator.planetSpeed.toFixed(2),
+                        距日距离: simulator.distanceToSun.toFixed(2),
+                        轨道偏心率: simulator.eccentricity.toFixed(2),
+                        标记点: simulator.markers
+                    };
+                    
+                    const dataStr = JSON.stringify(data, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const url = URL.createObjectURL(dataBlob);
+                    
+                    const link = document.createElement('a');
+                    link.download = 'kepler_data.json';
+                    link.href = url;
+                    link.click();
+                    
+                    URL.revokeObjectURL(url);
+                    simulator.showNotification('数据已导出为JSON文件', 'success');
+                });
+                
+                // 帮助按钮
+                document.getElementById('helpBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    simulator.showNotification('查看控制台了解更多操作说明', 'info');
+                    console.log('开普勒第二定律演示系统 - 操作指南');
+                    console.log('1. 点击椭圆轨道设置标记点');
+                    console.log('2. 拖动滑块调节轨道参数');
+                    console.log('3. 使用按钮控制动画和标记');
+                    console.log('4. 查看面积验证结果');
+                });
+                
+                // 画布点击事件
+                canvas.addEventListener('click', function(event) {
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = event.clientX - rect.left;
+                    const clickY = event.clientY - rect.top;
+                    
+                    simulator.toggleMarker(clickX, clickY);
+                });
+                
+                // 键盘快捷键
+                document.addEventListener('keydown', function(e) {
+                    switch(e.key) {
+                        case ' ':
+                            e.preventDefault();
+                            simulator.isPlaying = !simulator.isPlaying;
+                            playPauseBtn.innerHTML = simulator.isPlaying ? 
+                                '<i>⏸</i> 暂停动画' : '<i>▶</i> 播放动画';
+                            break;
+                        case 'r':
+                        case 'R':
+                            simulator.angle = Math.PI * 0.25;
+                            simulator.trailPoints = [];
+                            simulator.showNotification('已重置动画 (R键)', 'info');
+                            break;
+                        case 'c':
+                        case 'C':
+                            simulator.clearMarkers();
+                            break;
+                        case 'Escape':
+                            const shortcuts = document.querySelector('.keyboard-shortcuts');
+                            shortcuts.style.display = shortcuts.style.display === 'none' ? 'block' : 'none';
+                            break;
+                    }
+                });
+                
+                // 自动设置示例标记点
+                setTimeout(() => {
+                    simulator.autoSetEqualAreaMarkers();
+                    simulator.showEqualAreas = true;
+                    showEqualAreasBtn.innerHTML = '<i>👁</i> 隐藏相等面积';
+                    simulator.showNotification('欢迎使用开普勒第二定律演示系统！', 'info');
+                }, 1500);
+                
+                // 开始动画
+                simulator.animate();
+            }
+            
+            initControls();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点电荷系统电场线与等势线可视化</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+        canvas {
+            cursor: crosshair;
+            touch-action: none;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        .control-panel {
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">点电荷系统可视化教学互动</h1>
+            <p class="text-slate-500 mt-2">完整对称场线：还原 $q_1, q_2, q_3, q_4$ 线性排列及远端进入场线</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- 侧边控制栏 -->
+            <div class="lg:col-span-1 space-y-6 control-panel p-6 rounded-xl border border-slate-200">
+                <section>
+                    <h2 class="font-bold text-slate-700 mb-4 border-b pb-2">显示选项</h2>
+                    <div class="space-y-3 text-sm">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="showEquipotentials" checked class="w-4 h-4 text-blue-600">
+                            <span class="text-slate-600 font-semibold">等势线 (Equipotentials)</span>
+                        </label>
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="showFieldLines" checked class="w-4 h-4 text-blue-600">
+                            <span class="text-slate-600">电场线 (Field Lines)</span>
+                        </label>
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="showIntensity" class="w-4 h-4 text-blue-600">
+                            <span class="text-slate-600">场强分布 (Heatmap)</span>
+                        </label>
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="showZeroLine" checked class="w-4 h-4 text-blue-600">
+                            <span class="text-red-500 font-bold">零电势线 (Zero Potential)</span>
+                        </label>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="font-bold text-slate-700 mb-4 border-b pb-2">电荷属性</h2>
+                    <div id="chargeControls" class="space-y-4 text-xs text-slate-600">
+                        <!-- 动态生成的电荷列表 -->
+                    </div>
+                </section>
+                
+                <button id="resetBtn" class="w-full py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition">
+                    重置对称布局
+                </button>
+            </div>
+
+            <!-- 主画布区 -->
+            <div class="lg:col-span-3 relative">
+                <canvas id="simCanvas" class="w-full h-[600px]"></canvas>
+                
+                <!-- 图例说明 -->
+                <div class="absolute bottom-4 right-4 bg-white/90 p-3 rounded-lg text-[10px] text-slate-500 border border-slate-200 shadow-sm pointer-events-none">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <div class="w-20 h-2 bg-gradient-to-r from-blue-500 via-gray-200 to-red-500 rounded"></div>
+                        <span>电势 (低 → 高)</span>
+                    </div>
+                    <div class="text-slate-400 mt-1 italic">提示：电场线从正电荷出发，终止于负电荷或远端</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+/**
+ * 物理仿真核心逻辑 - 对称与远端场线优化版
+ */
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const K = 60000; 
+
+let charges = [
+    { x: -150, y: 0, q: 2, id: 'q1', color: '#ef4444' },
+    { x: -50,  y: 0, q: -2, id: 'q2', color: '#3b82f6' },
+    { x: 50,   y: 0, q: 2, id: 'q3', color: '#ef4444' },
+    { x: 150,  y: 0, q: -2, id: 'q4', color: '#3b82f6' }
+];
+
+let selectedCharge = null;
+let isDragging = false;
+
+const settings = {
+    fieldLines: true,
+    equipotentials: true,
+    intensity: false,
+    zeroLine: true
+};
+
+function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+}
+
+function getPotential(x, y) {
+    let v = 0;
+    for (let c of charges) {
+        const dx = x - c.x;
+        const dy = y - c.y;
+        const r = Math.sqrt(dx * dx + dy * dy);
+        if (r > 8) v += K * c.q / r;
+    }
+    return v;
+}
+
+function getField(x, y) {
+    let ex = 0, ey = 0;
+    for (let c of charges) {
+        const dx = x - c.x;
+        const dy = y - c.y;
+        const r2 = dx * dx + dy * dy;
+        const r = Math.sqrt(r2);
+        if (r > 8) {
+            const f = (K * c.q) / r2;
+            ex += f * (dx / r);
+            ey += f * (dy / r);
+        }
+    }
+    return { ex, ey, mag: Math.sqrt(ex*ex + ey*ey) };
+}
+
+function drawArrow(x, y, angle, color = 'rgba(51, 65, 85, 0.4)') {
+    const size = 5;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(-size, -size/1.5);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(-size, size/1.5);
+    ctx.stroke();
+    ctx.restore();
+}
+
+/**
+ * 电场线追踪绘制
+ * @param startX 起点X
+ * @param startY 起点Y
+ * @param reverse 是否反向追踪（用于负电荷入线）
+ */
+function traceFieldLine(startX, startY, reverse = false, cx, cy) {
+    let currX = startX;
+    let currY = startY;
+    let points = [{x: currX, y: currY}];
+    const sign = reverse ? -1 : 1;
+
+    for (let step = 0; step < 200; step++) {
+        const f = getField(currX, currY);
+        if (f.mag < 0.03) break;
+        
+        const dl = 4.5;
+        currX += sign * (f.ex / f.mag) * dl;
+        currY += sign * (f.ey / f.mag) * dl;
+        
+        points.push({x: currX, y: currY, ex: f.ex, ey: f.ey});
+        
+        // 碰撞检测：正向碰负电荷，反向碰正电荷
+        let hit = false;
+        for (let target of charges) {
+            const isTargetEnding = reverse ? target.q > 0 : target.q < 0;
+            if (isTargetEnding) {
+                const d = Math.sqrt((currX-target.x)**2 + (currY-target.y)**2);
+                if (d < 12) { hit = true; break; }
+            }
+        }
+        if (hit) break;
+        if (Math.abs(currX) > cx + 50 || Math.abs(currY) > cy + 50) break;
+    }
+
+    if (points.length < 2) return;
+
+    // 绘制线段
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.stroke();
+
+    // 绘制箭头
+    if (points.length > 25) {
+        [0.3, 0.6, 0.85].forEach(ratio => {
+            const idx = Math.floor(points.length * ratio);
+            const p = points[idx];
+            // 箭头方向始终为电场矢量方向
+            const f = getField(p.x, p.y);
+            const a = Math.atan2(f.ey, f.ex);
+            drawArrow(p.x, p.y, a);
+        });
+    }
+}
+
+function draw() {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+    const cx = w / 2;
+    const cy = h / 2;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // 1. 等势线背景
+    if (settings.equipotentials || settings.intensity || settings.zeroLine) {
+        const step = 4;
+        for (let x = -cx; x < cx; x += step) {
+            for (let y = -cy; y < cy; y += step) {
+                const v = getPotential(x, y);
+                if (settings.zeroLine && Math.abs(v) < 18) {
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.85)';
+                    ctx.fillRect(x, y, step, step);
+                    continue;
+                }
+                if (settings.equipotentials) {
+                    const vAbs = Math.abs(v);
+                    if (vAbs > 50 && vAbs % 220 < 30) {
+                        const alpha = Math.min(vAbs / 3500, 0.35);
+                        ctx.fillStyle = v > 0 ? `rgba(220, 38, 38, ${alpha})` : `rgba(37, 99, 235, ${alpha})`;
+                        ctx.fillRect(x, y, step-1, step-1);
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. 电场线绘制
+    if (settings.fieldLines) {
+        ctx.strokeStyle = 'rgba(71, 85, 105, 0.2)';
+        ctx.lineWidth = 1;
+        
+        charges.forEach(c => {
+            const numLines = 24;
+            // 如果是正电荷：正向发射（出线）
+            if (c.q > 0) {
+                for (let i = 0; i < numLines; i++) {
+                    const angle = (i * Math.PI * 2) / numLines;
+                    traceFieldLine(c.x + Math.cos(angle)*14, c.y + Math.sin(angle)*14, false, cx, cy);
+                }
+            } 
+            // 如果是负电荷：反向发射（捕获入线），特别是 $q_4$
+            else {
+                for (let i = 0; i < numLines; i++) {
+                    const angle = (i * Math.PI * 2) / numLines;
+                    // 只有当这条线不是从某个正电荷过来的时候，我们才需要补全它（模拟来自远端的线）
+                    // 为了简化并保证视觉对称，我们对 $q_1$ 和 $q_4$ 这样的边缘电荷增加远端线探测
+                    if (c.id === 'q4' || c.id === 'q1') {
+                         // 针对 q4，主要补全右侧入线
+                         const isRightSide = Math.cos(angle) > 0.3;
+                         if (c.id === 'q4' && isRightSide) {
+                            traceFieldLine(c.x + Math.cos(angle)*14, c.y + Math.sin(angle)*14, true, cx, cy);
+                         }
+                         // 针对 q1，如果它变成负电荷的话，同理补全左侧
+                         const isLeftSide = Math.cos(angle) < -0.3;
+                         if (c.id === 'q1' && c.q < 0 && isLeftSide) {
+                            traceFieldLine(c.x + Math.cos(angle)*14, c.y + Math.sin(angle)*14, true, cx, cy);
+                         }
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. 电荷节点
+    charges.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
+        ctx.fillStyle = c.color;
+        ctx.fill();
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(c.q > 0 ? '+' : '-', c.x, c.y + 5);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '10px Arial';
+        ctx.fillText(`${c.id}`, c.x, c.y - 22);
+    });
+
+    ctx.restore();
+}
+
+function handleMouseDown(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    for (let c of charges) {
+        if (Math.sqrt((x - c.x)**2 + (y - c.y)**2) < 25) {
+            selectedCharge = c;
+            isDragging = true;
+            break;
+        }
+    }
+}
+
+function handleMouseMove(e) {
+    if (isDragging && selectedCharge) {
+        const rect = canvas.getBoundingClientRect();
+        selectedCharge.x = e.clientX - rect.left - rect.width / 2;
+        selectedCharge.y = e.clientY - rect.top - rect.height / 2;
+        draw();
+    }
+}
+
+function handleMouseUp() {
+    isDragging = false;
+    selectedCharge = null;
+}
+
+function initUI() {
+    const container = document.getElementById('chargeControls');
+    container.innerHTML = '';
+    charges.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'p-3 bg-slate-50 rounded border border-slate-100';
+        div.innerHTML = `
+            <div class="flex justify-between mb-1 font-medium">
+                <span>电荷 ${c.id}</span>
+                <span class="${c.q > 0 ? 'text-red-500' : 'text-blue-500'}">${c.q > 0 ? '+' : ''}${c.q}</span>
+            </div>
+            <input type="range" min="-5" max="5" step="1" value="${c.q}" 
+                   class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                   oninput="updateChargeValue('${c.id}', this.value)">
+        `;
+        container.appendChild(div);
+    });
+    document.getElementById('showFieldLines').onchange = (e) => { settings.fieldLines = e.target.checked; draw(); };
+    document.getElementById('showEquipotentials').onchange = (e) => { settings.equipotentials = e.target.checked; draw(); };
+    document.getElementById('showIntensity').onchange = (e) => { settings.intensity = e.target.checked; draw(); };
+    document.getElementById('showZeroLine').onchange = (e) => { settings.zeroLine = e.target.checked; draw(); };
+    document.getElementById('resetBtn').onclick = resetSim;
+}
+
+window.updateChargeValue = (id, val) => {
+    const c = charges.find(ch => ch.id === id);
+    if (c) {
+        c.q = parseInt(val);
+        c.color = c.q >= 0 ? '#ef4444' : '#3b82f6';
+        initUI();
+        draw();
+    }
+};
+
+function resetSim() {
+    charges = [
+        { x: -150, y: 0, q: 2, id: 'q1', color: '#ef4444' },
+        { x: -50,  y: 0, q: -2, id: 'q2', color: '#3b82f6' },
+        { x: 50,   y: 0, q: 2, id: 'q3', color: '#ef4444' },
+        { x: 150,  y: 0, q: -2, id: 'q4', color: '#3b82f6' }
+    ];
+    initUI();
+    draw();
+}
+
+window.addEventListener('resize', () => { resize(); draw(); });
+canvas.addEventListener('mousedown', handleMouseDown);
+window.addEventListener('mousemove', handleMouseMove);
+window.addEventListener('mouseup', handleMouseUp);
+canvas.addEventListener('touchstart', (e) => handleMouseDown(e.touches[0]));
+window.addEventListener('touchmove', (e) => handleMouseMove(e.touches[0]));
+window.addEventListener('touchend', handleMouseUp);
+
+window.onload = () => {
+    resize();
+    initUI();
+    draw();
+};
+</script>
+</body>
+</html>

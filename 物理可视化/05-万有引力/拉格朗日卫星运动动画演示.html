@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拉格朗日卫星运动动画演示 - L3点调整</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 15px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #4facfe;
+        }
+        
+        .highlight {
+            color: #ffd166;
+            font-weight: bold;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .animation-panel {
+            flex: 2;
+            min-width: 300px;
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .info-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .l3-highlight {
+            background: rgba(255, 209, 102, 0.2);
+            border: 2px solid #ffd166;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .point-info {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 4px solid;
+            border-radius: 5px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background: #4facfe;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #3a8fd4;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>拉格朗日点卫星运动动画</h1>
+            <p>特别突出展示<span class="highlight">L3点（位于圆周外侧）</span>的位置和运动特性</p>
+        </header>
+        
+        <div class="content">
+            <div class="animation-panel">
+                <h2>卫星运动模拟</h2>
+                <div class="canvas-container">
+                    <canvas id="spaceCanvas"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="speedUp">加速</button>
+                    <button id="speedDown">减速</button>
+                    <button id="toggleTrails">切换轨迹</button>
+                    <button id="focusL3">聚焦L3</button>
+                    <button id="resetView">重置视图</button>
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h2>拉格朗日点说明</h2>
+                
+                <div class="l3-highlight">
+                    <h3>L3点特别说明</h3>
+                    <p>L3点位于地球轨道的<span class="highlight">圆周外侧</span>，与地球相对，在太阳的另一侧。</p>
+                    <p>L3点已向外侧调整，避免与地球轨道重合，更加清晰地展示其位置。</p>
+                </div>
+                
+                <div class="point-info" style="border-color: #ff6b6b;">
+                    <h3>L1点（地日之间）</h3>
+                    <p>位于地球和太阳之间，适合放置太阳观测卫星。</p>
+                </div>
+                
+                <div class="point-info" style="border-color: #4ecdc4;">
+                    <h3>L2点（地球外侧）</h3>
+                    <p>位于地球背向太阳一侧，是太空望远镜的理想位置。</p>
+                </div>
+                
+                <div class="point-info" style="border-color: #ffd166;">
+                    <h3>L3点（圆周外侧）</h3>
+                    <p>位于太阳另一侧，与地球对称，已向外侧调整避免轨道重合。</p>
+                </div>
+                
+                <div class="point-info" style="border-color: #6a0572;">
+                    <h3>L4点（前方60°）</h3>
+                    <p>位于地球轨道前方60°，与地球和太阳形成等边三角形。</p>
+                </div>
+                
+                <div class="point-info" style="border-color: #1a936f;">
+                    <h3>L5点（后方60°）</h3>
+                    <p>位于地球轨道后方60°，与地球和太阳形成等边三角形。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Canvas
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 动画参数
+        let animationSpeed = 1;
+        let showTrails = true;
+        let isFocusingL3 = false;
+        let trails = [];
+        const maxTrailLength = 100;
+        
+        // 中心点（太阳位置）
+        const center = {
+            x: canvas.width / 2,
+            y: canvas.height / 2
+        };
+        
+        // 地球轨道半径
+        const orbitRadius = Math.min(center.x, center.y) * 0.7;
+        
+        // 地球参数
+        let earthAngle = 0;
+        const earth = {
+            radius: 15,
+            color: '#4a90e2'
+        };
+        
+        // 太阳参数
+        const sun = {
+            radius: 30,
+            color: '#ffcc00'
+        };
+        
+        // 拉格朗日点定义
+        const lagrangePoints = [
+            { name: "L1", color: "#ff6b6b", angleOffset: 0, distanceFactor: 0.9 },
+            { name: "L2", color: "#4ecdc4", angleOffset: 0, distanceFactor: 1.1 },
+            { name: "L3", color: "#ffd166", angleOffset: Math.PI, distanceFactor: 1.2 }, // 调整为1.2，向外侧移动
+            { name: "L4", color: "#6a0572", angleOffset: Math.PI/3, distanceFactor: 1.0 },
+            { name: "L5", color: "#1a936f", angleOffset: -Math.PI/3, distanceFactor: 1.0 }
+        ];
+        
+        // 初始化轨迹
+        lagrangePoints.forEach(point => {
+            trails[point.name] = [];
+        });
+        
+        // 按钮事件
+        document.getElementById('speedUp').addEventListener('click', () => {
+            animationSpeed = Math.min(animationSpeed + 0.2, 3);
+        });
+        
+        document.getElementById('speedDown').addEventListener('click', () => {
+            animationSpeed = Math.max(animationSpeed - 0.2, 0.2);
+        });
+        
+        document.getElementById('toggleTrails').addEventListener('click', () => {
+            showTrails = !showTrails;
+        });
+        
+        document.getElementById('focusL3').addEventListener('click', () => {
+            isFocusingL3 = !isFocusingL3;
+        });
+        
+        document.getElementById('resetView').addEventListener('click', () => {
+            isFocusingL3 = false;
+            animationSpeed = 1;
+        });
+        
+        // 绘制函数
+        function draw() {
+            // 清除画布
+            ctx.fillStyle = 'rgba(5, 10, 20, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 更新地球位置
+            earthAngle += 0.005 * animationSpeed;
+            const earthX = center.x + Math.cos(earthAngle) * orbitRadius;
+            const earthY = center.y + Math.sin(earthAngle) * orbitRadius;
+            
+            // 应用视角变换（如果聚焦L3）
+            if (isFocusingL3) {
+                const l3Angle = earthAngle + Math.PI;
+                const l3X = center.x + Math.cos(l3Angle) * orbitRadius * 1.2; // 使用1.2倍距离
+                const l3Y = center.y + Math.sin(l3Angle) * orbitRadius * 1.2;
+                
+                ctx.save();
+                ctx.translate(center.x - l3X, center.y - l3Y);
+            }
+            
+            // 绘制星空背景
+            drawStars();
+            
+            // 绘制地球轨道
+            drawOrbit();
+            
+            // 绘制太阳
+            drawSun();
+            
+            // 绘制地球
+            drawEarth(earthX, earthY);
+            
+            // 绘制拉格朗日点和卫星
+            lagrangePoints.forEach(point => {
+                drawLagrangePoint(point, earthX, earthY, earthAngle);
+            });
+            
+            if (isFocusingL3) {
+                ctx.restore();
+                
+                // 绘制聚焦指示器
+                ctx.fillStyle = '#ffd166';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('正在聚焦L3点', canvas.width / 2, 30);
+            }
+            
+            // 绘制信息面板
+            drawInfoPanel();
+            
+            // 继续动画
+            requestAnimationFrame(draw);
+        }
+        
+        // 绘制星空
+        function drawStars() {
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 1.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // 绘制轨道
+        function drawOrbit() {
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, orbitRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制L3点的轨道（外侧轨道）
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, orbitRadius * 1.2, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 209, 102, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]); // 虚线表示L3轨道
+            ctx.stroke();
+            ctx.setLineDash([]); // 恢复实线
+        }
+        
+        // 绘制太阳
+        function drawSun() {
+            // 光晕
+            const gradient = ctx.createRadialGradient(
+                center.x, center.y, 0,
+                center.x, center.y, sun.radius * 2
+            );
+            gradient.addColorStop(0, 'rgba(255, 200, 0, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+            
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, sun.radius * 2, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 太阳主体
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, sun.radius, 0, Math.PI * 2);
+            ctx.fillStyle = sun.color;
+            ctx.fill();
+        }
+        
+        // 绘制地球
+        function drawEarth(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, earth.radius, 0, Math.PI * 2);
+            ctx.fillStyle = earth.color;
+            ctx.fill();
+            
+            // 地球标签
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('地球', x, y + earth.radius + 15);
+        }
+        
+        // 绘制拉格朗日点和卫星
+        function drawLagrangePoint(point, earthX, earthY, earthAngle) {
+            // 计算点位置
+            let pointX, pointY;
+            
+            if (point.name === 'L1' || point.name === 'L2') {
+                // L1和L2在地日连线上
+                const dx = earthX - center.x;
+                const dy = earthY - center.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                pointX = center.x + dx/distance * orbitRadius * point.distanceFactor;
+                pointY = center.y + dy/distance * orbitRadius * point.distanceFactor;
+            } else {
+                // L3, L4, L5在轨道上
+                const angle = earthAngle + point.angleOffset;
+                pointX = center.x + Math.cos(angle) * orbitRadius * point.distanceFactor;
+                pointY = center.y + Math.sin(angle) * orbitRadius * point.distanceFactor;
+            }
+            
+            // 绘制轨迹
+            if (showTrails) {
+                trails[point.name].push({x: pointX, y: pointY});
+                if (trails[point.name].length > maxTrailLength) {
+                    trails[point.name].shift();
+                }
+                
+                if (trails[point.name].length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(trails[point.name][0].x, trails[point.name][0].y);
+                    for (let i = 1; i < trails[point.name].length; i++) {
+                        ctx.lineTo(trails[point.name][i].x, trails[point.name][i].y);
+                    }
+                    ctx.strokeStyle = point.color + '66';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+            
+            // 特别突出L3点
+            if (point.name === 'L3') {
+                // L3点光晕
+                const glow = ctx.createRadialGradient(
+                    pointX, pointY, 0,
+                    pointX, pointY, 25
+                );
+                glow.addColorStop(0, point.color + 'cc');
+                glow.addColorStop(1, point.color + '00');
+                
+                ctx.beginPath();
+                ctx.arc(pointX, pointY, 25, 0, Math.PI * 2);
+                ctx.fillStyle = glow;
+                ctx.fill();
+                
+                // 绘制连接线（地球-L3-太阳）
+                ctx.beginPath();
+                ctx.moveTo(earthX, earthY);
+                ctx.lineTo(pointX, pointY);
+                ctx.lineTo(center.x, center.y);
+                ctx.strokeStyle = point.color + '33';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            
+            // 绘制卫星
+            ctx.beginPath();
+            ctx.arc(pointX, pointY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = point.color;
+            ctx.fill();
+            
+            // 卫星标签
+            ctx.fillStyle = point.color;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(point.name, pointX, pointY - 15);
+        }
+        
+        // 绘制信息面板
+        function drawInfoPanel() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(10, 10, 220, 110);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`速度: ${animationSpeed.toFixed(1)}x`, 20, 30);
+            ctx.fillText(`轨迹: ${showTrails ? '开' : '关'}`, 20, 50);
+            ctx.fillText(`聚焦L3: ${isFocusingL3 ? '是' : '否'}`, 20, 70);
+            ctx.fillText('L3位于圆周外侧', 20, 90);
+            ctx.fillText('距离因子: 1.2', 20, 110);
+        }
+        
+        // 开始动画
+        draw();
+    </script>
+</body>
+</html>

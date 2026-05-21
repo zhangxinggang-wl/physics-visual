@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交流电产生原理交互动画 - 全周期显示版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-family: "Source Han Serif CN", "Songti SC", serif;
+            touch-action: manipulation;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        @media (min-width: 1024px) {
+            .canvas-container { height: 600px; }
+        }
+        .info-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .math-font {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-4 md:mb-6 border-b-2 border-red-500 pb-2">
+            <h1 class="text-xl md:text-3xl font-bold text-slate-800">交变电流的产生原理</h1>
+            <p class="text-xs md:text-sm text-slate-600 mt-1">线圈与滑环结构示意 (优化全周期显示)</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+            <!-- 控制面板 -->
+            <div class="lg:col-span-1 order-2 lg:order-1 space-y-4">
+                <div class="info-card p-4 md:p-5 rounded-xl space-y-4">
+                    <h3 class="font-bold text-base md:text-lg border-l-4 border-red-500 pl-2">实验控制</h3>
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="flex justify-between text-sm font-medium">
+                                <span>角速度 <span class="math-font">ω</span></span>
+                                <span id="speedDisplay" class="text-red-600">0.8 rad/s</span>
+                            </label>
+                            <input type="range" id="speedRange" min="0.1" max="2" step="0.1" value="0.8" class="w-full h-6 accent-red-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-1 gap-2 pt-2 border-t">
+                        <button id="playPauseBtn" class="py-3 lg:py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition text-sm">暂停 / 继续</button>
+                        <button id="resetBtn" class="py-3 lg:py-1 text-sm text-slate-500 underline">返回中性面</button>
+                    </div>
+
+                    <div class="pt-2">
+                        <label class="flex items-center gap-2 text-sm cursor-pointer p-2 bg-slate-50 rounded">
+                            <input type="checkbox" id="showLabels" checked class="w-4 h-4 accent-red-500"> <span>显示字母标注</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="hidden lg:block info-card p-5 rounded-xl">
+                    <h3 class="font-bold text-sm mb-2 text-slate-700">物理说明：</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        当线圈平面与磁感线平行时，磁通量为零，但磁通量变化率最大，感应电动势达到峰值 $E_m$。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 中间仿真主图 -->
+            <div class="lg:col-span-2 order-1 lg:order-2">
+                <div class="canvas-container" id="simulationHost">
+                    <canvas id="simCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- 右侧示波器 -->
+            <div class="lg:col-span-1 order-3 space-y-4">
+                <div class="info-card p-3 md:p-4 rounded-xl">
+                    <h3 class="text-xs font-bold mb-2 text-slate-500 uppercase tracking-widest border-b pb-1">电动势 $e$ 实时图像</h3>
+                    <div class="relative w-full h-[200px]">
+                        <canvas id="waveCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="info-card p-4 md:p-5 rounded-xl">
+                    <h3 class="font-bold text-sm mb-2">物理参数</h3>
+                    <div id="dashboard" class="text-xs font-mono bg-slate-50 p-3 rounded border border-slate-100 flex justify-around lg:flex-col lg:space-y-2">
+                        <div>相位: <span id="phaseVal" class="text-red-600 font-bold">0</span>°</div>
+                        <div>瞬时值: <span id="emfVal" class="text-red-600 font-bold">0.00</span> V</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let canvas, ctx, waveCanvas, wCtx;
+        let width, height;
+        let angle = 0;
+        let isRunning = true;
+        let speedMult = 0.8;
+        let magStrength = 1.2; 
+        let history = [];
+
+        function id(name) { return document.getElementById(name); }
+
+        function resize() {
+            const container = id('simulationHost');
+            if (!container || !canvas || !waveCanvas) return;
+            
+            width = canvas.width = container.offsetWidth;
+            height = canvas.height = container.offsetHeight;
+            
+            const waveContainer = waveCanvas.parentElement;
+            waveCanvas.width = waveContainer.offsetWidth;
+            waveCanvas.height = waveContainer.offsetHeight;
+        }
+
+        function drawGenerator() {
+            if (!ctx) return 0;
+            ctx.clearRect(0, 0, width, height);
+            
+            const isMobile = width < 640;
+            const centerX = width / 2;
+            const centerY = isMobile ? height / 2 - 30 : height / 2 - 50; 
+            const coilW = isMobile ? 100 : 140; 
+            const coilH = isMobile ? 140 : 180; 
+            
+            const emf = Math.sin(angle) * magStrength; 
+
+            // 磁极
+            const magDist = isMobile ? 90 : 140; 
+            const magW = isMobile ? 40 : 60;
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(centerX - magDist - magW, centerY - 100, magW, 200);
+            ctx.fillStyle = '#3b82f6'; ctx.fillRect(centerX + magDist, centerY - 100, magW, 200);
+            ctx.fillStyle = '#fff'; ctx.font = isMobile ? 'bold 18px serif' : 'bold 24px serif';
+            ctx.fillText("N", centerX - magDist - magW/2 - 8, centerY + 8); 
+            ctx.fillText("S", centerX + magDist + magW/2 - 8, centerY + 8);
+
+            // 线圈转动逻辑保持不变...
+            const cosA = Math.cos(angle); 
+            const p = [
+                { x: -coilW/2 * cosA, y: -coilH/2 },
+                { x: coilW/2 * cosA, y: -coilH/2 },
+                { x: coilW/2 * cosA, y: coilH/2 },
+                { x: -coilW/2 * cosA, y: coilH/2 }
+            ];
+
+            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(centerX, centerY - 140); ctx.lineTo(centerX, centerY + 240); ctx.stroke();
+
+            ctx.lineJoin = 'round'; ctx.lineWidth = isMobile ? 3 : 5; ctx.strokeStyle = '#d97706'; 
+            ctx.beginPath(); ctx.moveTo(centerX + p[0].x, centerY + p[0].y); ctx.lineTo(centerX + p[1].x, centerY + p[1].y); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(centerX + p[1].x, centerY + p[1].y); ctx.lineTo(centerX + p[2].x, centerY + p[2].y); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(centerX + p[0].x, centerY + p[0].y); ctx.lineTo(centerX + p[3].x, centerY + p[3].y); ctx.stroke(); 
+
+            const midCX = centerX + (p[2].x + p[3].x)/2;
+            const midCY = centerY + (p[2].y + p[3].y)/2;
+            const lineOffset = 5 * cosA; 
+
+            ctx.beginPath(); ctx.moveTo(centerX + p[2].x, centerY + p[2].y); ctx.lineTo(midCX + lineOffset, midCY); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(centerX + p[3].x, centerY + p[3].y); ctx.lineTo(midCX - lineOffset, midCY); ctx.stroke(); 
+
+            const ring1Y = centerY + (isMobile ? 150 : 180);
+            const ring2Y = centerY + (isMobile ? 190 : 220);
+
+            ctx.lineWidth = 2; ctx.strokeStyle = '#d97706';
+            ctx.beginPath(); ctx.moveTo(midCX - lineOffset, midCY); ctx.lineTo(centerX - 3 * cosA, ring2Y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(midCX + lineOffset, midCY); ctx.lineTo(centerX + 3 * cosA, ring1Y); ctx.stroke();
+
+            ctx.lineWidth = isMobile ? 5 : 8; ctx.strokeStyle = '#b45309';
+            ctx.beginPath(); ctx.arc(centerX, ring1Y, 10, 0, Math.PI * 2); ctx.stroke(); 
+            ctx.beginPath(); ctx.arc(centerX, ring2Y, 10, 0, Math.PI * 2); ctx.stroke(); 
+            
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(centerX + 12, ring1Y - 3, 15, 6); 
+            ctx.fillRect(centerX - 27, ring2Y - 3, 15, 6); 
+
+            if (id('showLabels') && id('showLabels').checked) {
+                ctx.fillStyle = '#1e293b'; ctx.font = isMobile ? 'italic 12px serif' : 'italic bold 16px serif';
+                ctx.fillText("a", centerX + p[0].x - 12, centerY + p[0].y - 5);
+                ctx.fillText("b", centerX + p[1].x + 5, centerY + p[1].y - 5);
+                ctx.fillText("c", centerX + p[2].x + 5, centerY + p[2].y + 12);
+                ctx.fillText("d", centerX + p[3].x - 12, centerY + p[3].y + 12);
+            }
+
+            if (id('phaseVal')) id('phaseVal').innerText = Math.round((angle * 180 / Math.PI) % 360);
+            if (id('emfVal')) id('emfVal').innerText = emf.toFixed(2);
+
+            return emf;
+        }
+
+        function drawWave(currentEMF) {
+            if (!wCtx) return;
+            const w = waveCanvas.width;
+            const h = waveCanvas.height;
+            const midY = h / 2;
+            const padding = 25;
+            
+            wCtx.clearRect(0, 0, w, h);
+            
+            // 1. 绘制坐标轴
+            wCtx.strokeStyle = '#94a3b8';
+            wCtx.lineWidth = 1;
+            wCtx.beginPath(); wCtx.moveTo(padding, midY); wCtx.lineTo(w - padding, midY); wCtx.stroke();
+            wCtx.beginPath(); wCtx.moveTo(padding, padding); wCtx.lineTo(padding, h - padding); wCtx.stroke();
+            
+            wCtx.fillStyle = '#94a3b8';
+            wCtx.beginPath(); wCtx.moveTo(w-padding, midY); wCtx.lineTo(w-padding-8, midY-4); wCtx.lineTo(w-padding-8, midY+4); wCtx.fill();
+            wCtx.beginPath(); wCtx.moveTo(padding, padding); wCtx.lineTo(padding-4, padding+8); wCtx.lineTo(padding+4, padding+8); wCtx.fill();
+            
+            wCtx.font = "10px Arial";
+            wCtx.fillText("t", w - 15, midY + 15);
+            wCtx.fillText("e", padding + 8, padding + 5);
+            wCtx.fillText("0", padding - 12, midY + 12);
+
+            // 2. 动态计算滚动速度，确保至少显示一个周期
+            // 一个周期 2PI 对应的步数大约是 (2PI / (0.02 * speedMult))
+            // 我们希望这个长度适配画布宽度 w-padding*2
+            // 所以 scrollSpeed 应该大约是 (w-padding*2) / (2PI / 0.02*speedMult)
+            const stepsInPeriod = (2 * Math.PI) / (0.02 * speedMult);
+            const scrollSpeed = (w - 2 * padding) / stepsInPeriod;
+
+            if (isRunning) {
+                history.unshift(currentEMF);
+                // 限制历史记录，使其正好填满画布
+                if (history.length > (w - 2 * padding) / scrollSpeed) history.pop();
+            }
+            
+            wCtx.beginPath(); 
+            wCtx.lineWidth = 2; 
+            wCtx.strokeStyle = '#ef4444';
+            for(let i = 0; i < history.length; i++) {
+                const x = (w - padding) - i * scrollSpeed;
+                const y = midY - history[i] * 50; 
+                if (x < padding) break;
+                if(i === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
+            }
+            wCtx.stroke();
+        }
+
+        function animate() {
+            if (isRunning) angle += 0.02 * speedMult;
+            const emf = drawGenerator();
+            drawWave(emf);
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = () => {
+            canvas = id('simCanvas'); 
+            if (canvas) ctx = canvas.getContext('2d');
+            waveCanvas = id('waveCanvas'); 
+            if (waveCanvas) wCtx = waveCanvas.getContext('2d');
+            
+            resize();
+            
+            const speedRange = id('speedRange');
+            if (speedRange) {
+                speedRange.oninput = (e) => {
+                    speedMult = parseFloat(e.target.value);
+                    id('speedDisplay').innerText = speedMult.toFixed(1) + ' rad/s';
+                };
+            }
+            
+            id('playPauseBtn').onclick = () => isRunning = !isRunning;
+            id('resetBtn').onclick = () => { angle = 0; history = []; };
+            
+            window.addEventListener('resize', resize);
+            animate();
+        };
+    </script>
+</body>
+</html>

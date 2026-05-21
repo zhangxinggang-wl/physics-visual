@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配速法演示：带电粒子在复合场中的运动</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; font-family: sans-serif; overflow-x: hidden; }
+        canvas { background: #fff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); touch-action: none; }
+        .control-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); }
+        .btn-active { @apply bg-blue-600 text-white border-blue-600; }
+        .btn-inactive { @apply bg-white text-slate-600 border-slate-200; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-slate-800">配速法：全功能复合场演示</h1>
+            <p class="text-slate-600 mt-2 italic">
+                原理提示：任何初速度 $\vec{v}_0$ 都可以看作是 <span class="text-green-600 font-bold">漂移速度 $\vec{v}_d$</span> 与 <span class="text-red-600 font-bold">相对速度 $\vec{v}_r = \vec{v}_0 - \vec{v}_d$</span> 的矢量合成。
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- 控件区 -->
+            <div class="lg:col-span-1 space-y-4 control-panel p-5 rounded-xl border border-slate-200 shadow-sm overflow-y-auto max-h-[85vh]">
+                <!-- 场强设置 -->
+                <div class="space-y-3 pb-3 border-b">
+                    <h3 class="font-bold text-slate-700 text-sm italic">1. 场强度与方向</h3>
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase">电场 E (向下为正)</label>
+                        <input type="range" id="eField" min="-100" max="100" value="50" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase">磁感应强度 B</label>
+                        <input type="range" id="bField" min="0.5" max="3" step="0.1" value="1.5" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="bOut" class="flex-1 py-1 text-xs border-2 rounded-md transition-all">磁场 B ⊙</button>
+                        <button id="bIn" class="flex-1 py-1 text-xs border-2 rounded-md transition-all">磁场 B ⊗</button>
+                    </div>
+                </div>
+
+                <!-- 初速度设置 -->
+                <div class="space-y-4 pb-3 border-b">
+                    <h3 class="font-bold text-slate-700 text-sm italic">2. 初速度控制 ($n \cdot v_d$)</h3>
+                    
+                    <div>
+                        <label class="text-[10px] text-slate-500 block mb-1">横向速度 $v_{x0}$ 倍数</label>
+                        <div class="grid grid-cols-6 gap-1">
+                            <button onclick="setVxFactor(0)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">0</button>
+                            <button onclick="setVxFactor(1)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100 border-blue-300 border">1</button>
+                            <button onclick="setVxFactor(2)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">2</button>
+                            <button onclick="setVxFactor(3)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">3</button>
+                            <button onclick="setVxFactor(4)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">4</button>
+                            <button onclick="setVxFactor(5)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">5</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-slate-500 block mb-1">纵向速度 $v_{y0}$ 倍数</label>
+                        <div class="grid grid-cols-6 gap-1">
+                            <button onclick="setVyFactor(0)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100 border-blue-300 border">0</button>
+                            <button onclick="setVyFactor(1)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">1</button>
+                            <button onclick="setVyFactor(2)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">2</button>
+                            <button onclick="setVyFactor(3)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">3</button>
+                            <button onclick="setVyFactor(4)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">4</button>
+                            <button onclick="setVyFactor(5)" class="v-btn py-1 text-[10px] bg-slate-100 rounded hover:bg-blue-100">5</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 运行状态 -->
+                <div class="pt-2 space-y-2">
+                    <button id="pauseBtn" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium shadow-md">暂停 / 继续</button>
+                    <button id="resetBtn" class="w-full border border-slate-300 text-slate-600 py-2 rounded-lg hover:bg-slate-50 transition">重置轨迹</button>
+                </div>
+
+                <!-- 数据反馈 -->
+                <div class="bg-slate-800 p-4 rounded-lg text-xs font-mono text-blue-300 shadow-inner">
+                    <p>漂移 $v_d$: <span id="vdDisplay">0.0</span></p>
+                    <p>初速 $v_{x0}: <span id="vxDisplay">0.0</span></p>
+                    <p>初速 $v_{y0}: <span id="vyDisplay">0.0</span></p>
+                    <p>半径 $R$: <span id="rDisplay">0.0</span></p>
+                </div>
+            </div>
+
+            <!-- 画布区 -->
+            <div class="lg:col-span-3 relative bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+                <canvas id="canvas"></canvas>
+                
+                <!-- 浮动信息 -->
+                <div class="absolute top-4 left-4 bg-white/90 p-3 rounded-lg shadow-sm border border-slate-200 text-xs space-y-1">
+                    <div id="eInfo" class="flex items-center gap-2"></div>
+                    <div id="bInfo" class="flex items-center gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const eInput = document.getElementById('eField');
+        const bInput = document.getElementById('bField');
+        const vdDisplay = document.getElementById('vdDisplay');
+        const vxDisplay = document.getElementById('vxDisplay');
+        const vyDisplay = document.getElementById('vyDisplay');
+        const rDisplay = document.getElementById('rDisplay');
+        const bOutBtn = document.getElementById('bOut');
+        const bInBtn = document.getElementById('bIn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+
+        let width, height;
+        let time = 0;
+        let isPaused = false;
+        let points = [];
+        let bDirection = 1; // 1: 外, -1: 内
+        let vx0 = 0;
+        let vy0 = 0;
+        const qm = 1.0; 
+
+        function resize() {
+            const container = canvas.parentElement;
+            width = container.clientWidth;
+            height = Math.min(window.innerHeight * 0.75, 600);
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 快捷倍数设置
+        function setVxFactor(n) {
+            const E = parseFloat(eInput.value);
+            const B = parseFloat(bInput.value);
+            vx0 = Math.abs(E / B) * n;
+            reset();
+        }
+        function setVyFactor(n) {
+            const E = parseFloat(eInput.value);
+            const B = parseFloat(bInput.value);
+            vy0 = Math.abs(E / B) * n;
+            reset();
+        }
+
+        function updateUI() {
+            bOutBtn.className = bDirection === 1 ? "flex-1 py-1 text-xs border-2 border-blue-500 bg-blue-50 rounded-md" : "flex-1 py-1 text-xs border-2 border-slate-200 rounded-md bg-white text-slate-400";
+            bInBtn.className = bDirection === -1 ? "flex-1 py-1 text-xs border-2 border-blue-500 bg-blue-50 rounded-md" : "flex-1 py-1 text-xs border-2 border-slate-200 rounded-md bg-white text-slate-400";
+            
+            const E = parseFloat(eInput.value);
+            document.getElementById('eInfo').innerHTML = `<span class="w-2 h-2 rounded-full ${E>=0?'bg-red-500':'bg-orange-500'}"></span> 电场 E: ${E>=0?'向下':'向上'} (${Math.abs(E)})`;
+            document.getElementById('bInfo').innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500"></span> 磁场 B: ${bDirection===1?'垂直向外 ⊙':'垂直向内 ⊗'} (${bInput.value})`;
+        }
+
+        bOutBtn.onclick = () => { bDirection = 1; reset(); };
+        bInBtn.onclick = () => { bDirection = -1; reset(); };
+        resetBtn.onclick = reset;
+        pauseBtn.onclick = () => isPaused = !isPaused;
+
+        function reset() {
+            time = 0;
+            points = [];
+            updateUI();
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 1;
+            for(let i=0; i<width; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke(); }
+            for(let j=0; j<height; j+=50) { ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(width, j); ctx.stroke(); }
+        }
+
+        function animate() {
+            if(!isPaused) {
+                const E = parseFloat(eInput.value);
+                const B = parseFloat(bInput.value);
+                
+                // 1. 计算漂移速度 vd (方向根据 E 和 B 定)
+                // 洛伦兹力 F = q(E + v x B) = 0 -> E = -(v x B)
+                // 如果 E 为向下 (+y), B 为向外 (+z), 则 v_drift 必须向右 (+x) 以抵消 E。
+                // 如果 E 反向, v_drift 反向; 如果 B 反向, v_drift 反向。
+                const v_drift_mag = E / B;
+                const v_drift_x = v_drift_mag * bDirection; // 核心物理逻辑：漂移方向由 E_y 和 B_z 决定
+
+                // 2. 计算回旋参数
+                const omega = qm * B * bDirection; 
+                // 相对初速度矢量 vr = (vx0 - v_drift_x, vy0 - 0)
+                const vrx = vx0 - v_drift_x;
+                const vry = vy0;
+                const Vr_mag = Math.sqrt(vrx*vrx + vry*vry);
+                const R = Math.abs(Vr_mag / (qm * B));
+
+                // 初始相位 phi (基于相对速度矢量)
+                // 在随动系中，初速度决定了圆周运动的相位。
+                // v_rx = -omega * R * sin(phi)
+                // v_ry = omega * R * cos(phi)
+                const phi = Math.atan2(-vrx * bDirection, vry * bDirection);
+
+                // 更新显示
+                vdDisplay.innerText = v_drift_x.toFixed(1);
+                vxDisplay.innerText = vx0.toFixed(1);
+                vyDisplay.innerText = vy0.toFixed(1);
+                rDisplay.innerText = R.toFixed(1);
+
+                ctx.clearRect(0, 0, width, height);
+                drawGrid();
+
+                const t = time;
+                const startX = width / 2 - 150;
+                const startY = height / 2;
+
+                // 3. 计算实时位置 (合成公式)
+                // 圆心轨迹
+                const cx = startX + v_drift_x * t;
+                const cy = startY;
+
+                // 相对旋转位移 (考虑到 Canvas 的 y 轴向下为正)
+                const rx = R * Math.cos(omega * t + phi);
+                const ry = R * Math.sin(omega * t + phi);
+
+                // 在 t=0 时，粒子应在 (startX, startY)
+                // 因此需要减去初始的相对位移以对齐
+                const rx0 = R * Math.cos(phi);
+                const ry0 = R * Math.sin(phi);
+
+                const x = cx + (rx - rx0);
+                const y = cy + (ry - ry0);
+
+                points.push({x, y});
+                if(points.length > 1500) points.shift();
+
+                // 绘制
+                ctx.beginPath();
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2.5;
+                for(let i=0; i<points.length; i++) {
+                    if(i===0) ctx.moveTo(points[i].x, points[i].y);
+                    else ctx.lineTo(points[i].x, points[i].y);
+                }
+                ctx.stroke();
+
+                // 绘制滚圆
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.arc(cx - rx0, cy - ry0, R, 0, Math.PI*2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // 绘制半径向量 (相对中心)
+                ctx.beginPath();
+                ctx.strokeStyle = '#ef4444';
+                ctx.moveTo(cx - rx0, cy - ry0);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // 绘制漂移矢量
+                drawArrow(x, y, v_drift_x * 0.5, 0, '#10b981');
+
+                // 粒子本体
+                ctx.beginPath();
+                ctx.fillStyle = '#1e293b';
+                ctx.arc(x, y, 6, 0, Math.PI*2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.stroke();
+
+                time += 0.05;
+                if (x > width + 200 || x < -200 || y > height + 200 || y < -200) {
+                    reset();
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function drawArrow(x, y, vx, vy, color) {
+            if(Math.abs(vx) < 1 && Math.abs(vy) < 1) return;
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + vx, y + vy);
+            ctx.stroke();
+            const angle = Math.atan2(vy, vx);
+            ctx.beginPath();
+            ctx.moveTo(x + vx, y + vy);
+            ctx.lineTo(x + vx - 6 * Math.cos(angle - 0.5), y + vy - 6 * Math.sin(angle - 0.5));
+            ctx.moveTo(x + vx, y + vy);
+            ctx.lineTo(x + vx - 6 * Math.cos(angle + 0.5), y + vy - 6 * Math.sin(angle + 0.5));
+            ctx.stroke();
+        }
+
+        updateUI();
+        animate();
+    </script>
+</body>
+</html>

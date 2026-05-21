@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光的干涉教学互动动画 - 燕赵名师张兴刚工作室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+            color: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            color: #bb86fc;
+            text-shadow: 0 2px 10px rgba(187, 134, 252, 0.5);
+        }
+        
+        .header h2 {
+            font-size: 1.3rem;
+            font-weight: normal;
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: #b0b0b0;
+            margin-top: 10px;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .simulation-panel {
+            flex: 3;
+            min-width: 300px;
+            background: rgba(30, 30, 46, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 280px;
+            background: rgba(30, 30, 46, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #bb86fc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-title i {
+            font-size: 1.3rem;
+        }
+        
+        .simulation-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #121212;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #interferenceCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-title i {
+            color: #bb86fc;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label span {
+            font-size: 0.95rem;
+        }
+        
+        .slider-value {
+            color: #bb86fc;
+            font-weight: bold;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #bb86fc;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(187, 134, 252, 0.7);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #bb86fc;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(187, 134, 252, 0.7);
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #7c4dff 0%, #651fff 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(101, 31, 255, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #424242 0%, #212121 100%);
+        }
+        
+        .btn-reset:hover {
+            box-shadow: 0 7px 15px rgba(33, 33, 33, 0.4);
+        }
+        
+        .explanation {
+            background: rgba(30, 30, 46, 0.85);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .explanation h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #bb86fc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .explanation-content {
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+        
+        .explanation-content p {
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #bb86fc;
+            font-family: 'Cambria', 'Times New Roman', serif;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+        
+        .footer a {
+            color: #bb86fc;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .highlight {
+            color: #bb86fc;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .simulation-container {
+                height: 350px;
+            }
+        }
+        
+        .info-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #bb86fc;
+            margin-top: 5px;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+        
+        .interference-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+        }
+        
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .canvas-label {
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-lightbulb"></i> 光的干涉教学互动动画</h1>
+            <h2>杨氏双缝干涉实验模拟</h2>
+            <p class="subtitle">燕赵名师张兴刚工作室 荣誉出品</p>
+        </div>
+        
+        <div class="content">
+            <div class="simulation-panel">
+                <h2 class="panel-title"><i class="fas fa-sliders-h"></i> 干涉模拟实验区</h2>
+                <div class="simulation-container">
+                    <canvas id="interferenceCanvas"></canvas>
+                </div>
+                <div class="info-display">
+                    <div class="info-box">
+                        <div class="info-label">条纹间距 (Δx)</div>
+                        <div class="info-value" id="fringeSpacing">4.75 mm</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">明纹条件</div>
+                        <div class="info-value" id="brightCondition">kλ</div>
+                    </div>
+                </div>
+                <div class="interference-info" id="interferenceInfo">
+                    调整参数观察干涉条纹的变化。当双缝间距减小或波长增大时，条纹间距变大。
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <h2 class="panel-title"><i class="fas fa-tools"></i> 实验参数控制</h2>
+                
+                <div class="control-group">
+                    <div class="control-title"><i class="fas fa-wave-square"></i> 光波波长</div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>波长 (λ)</span>
+                            <span class="slider-value" id="wavelengthValue">632.8 nm</span>
+                        </div>
+                        <input type="range" min="400" max="700" step="10" value="632.8" class="slider" id="wavelengthSlider">
+                        <div class="slider-label">
+                            <span>紫色</span>
+                            <span>红色</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title"><i class="fas fa-ruler-horizontal"></i> 双缝间距</div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>缝距 (d)</span>
+                            <span class="slider-value" id="slitDistanceValue">0.20 mm</span>
+                        </div>
+                        <input type="range" min="50" max="500" step="10" value="200" class="slider" id="slitDistanceSlider">
+                        <div class="slider-label">
+                            <span>较小</span>
+                            <span>较大</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title"><i class="fas fa-tv"></i> 屏幕距离</div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>屏距 (L)</span>
+                            <span class="slider-value" id="screenDistanceValue">1.50 m</span>
+                        </div>
+                        <input type="range" min="50" max="300" step="10" value="150" class="slider" id="screenDistanceSlider">
+                        <div class="slider-label">
+                            <span>较近</span>
+                            <span>较远</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn" id="resetBtn">
+                        <i class="fas fa-redo-alt"></i> 重置参数
+                    </button>
+                    <button class="btn" id="showTheoryBtn">
+                        <i class="fas fa-graduation-cap"></i> 干涉原理
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation" id="theorySection">
+            <h3><i class="fas fa-book-open"></i> 光的干涉原理</h3>
+            <div class="explanation-content">
+                <p>杨氏双缝干涉实验是证明光具有波动性的关键实验。当一束单色光通过两个相距很近的狭缝后，会在屏幕上形成明暗相间的干涉条纹。</p>
+                
+                <div class="formula">
+                    Δx = λ·L / d
+                </div>
+                
+                <p>其中：</p>
+                <ul>
+                    <li><span class="highlight">Δx</span> 为相邻明纹或暗纹的间距</li>
+                    <li><span class="highlight">λ</span> 为入射光的波长</li>
+                    <li><span class="highlight">L</span> 为双缝到屏幕的距离</li>
+                    <li><span class="highlight">d</span> 为双缝之间的距离</li>
+                </ul>
+                
+                <p>当两束光的光程差为波长的整数倍时，产生明纹（相长干涉）：</p>
+                <p class="formula">Δ = k·λ (k = 0, ±1, ±2, ...)</p>
+                
+                <p>当两束光的光程差为半波长的奇数倍时，产生暗纹（相消干涉）：</p>
+                <p class="formula">Δ = (2k+1)·λ/2 (k = 0, ±1, ±2, ...)</p>
+                
+                <p>通过调整上方参数，可以观察不同条件下干涉条纹的变化规律。</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 燕赵名师张兴刚工作室 | 设计：物理教学创新团队</p>
+            <p>本动画用于演示光的干涉原理，参数已按比例缩放以便于观察</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('interferenceCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 初始参数
+        let wavelength = 632.8; // 波长，单位nm
+        let slitDistance = 0.2; // 双缝间距，单位mm
+        let screenDistance = 1.5; // 屏幕距离，单位m
+        
+        // 获取DOM元素
+        const wavelengthSlider = document.getElementById('wavelengthSlider');
+        const wavelengthValue = document.getElementById('wavelengthValue');
+        const slitDistanceSlider = document.getElementById('slitDistanceSlider');
+        const slitDistanceValue = document.getElementById('slitDistanceValue');
+        const screenDistanceSlider = document.getElementById('screenDistanceSlider');
+        const screenDistanceValue = document.getElementById('screenDistanceValue');
+        const fringeSpacing = document.getElementById('fringeSpacing');
+        const brightCondition = document.getElementById('brightCondition');
+        const resetBtn = document.getElementById('resetBtn');
+        const showTheoryBtn = document.getElementById('showTheoryBtn');
+        const theorySection = document.getElementById('theorySection');
+        const interferenceInfo = document.getElementById('interferenceInfo');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawInterference();
+        }
+        
+        // 初始化显示
+        updateDisplays();
+        
+        // 调整窗口大小时重新绘制
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 滑块事件监听
+        wavelengthSlider.addEventListener('input', function() {
+            wavelength = parseFloat(this.value);
+            updateDisplays();
+            drawInterference();
+        });
+        
+        slitDistanceSlider.addEventListener('input', function() {
+            slitDistance = parseFloat(this.value) / 1000; // 转换为mm
+            updateDisplays();
+            drawInterference();
+        });
+        
+        screenDistanceSlider.addEventListener('input', function() {
+            screenDistance = parseFloat(this.value) / 100; // 转换为m
+            updateDisplays();
+            drawInterference();
+        });
+        
+        // 重置按钮
+        resetBtn.addEventListener('click', function() {
+            wavelengthSlider.value = 632.8;
+            slitDistanceSlider.value = 200;
+            screenDistanceSlider.value = 150;
+            
+            wavelength = 632.8;
+            slitDistance = 0.2;
+            screenDistance = 1.5;
+            
+            updateDisplays();
+            drawInterference();
+        });
+        
+        // 显示/隐藏理论部分
+        showTheoryBtn.addEventListener('click', function() {
+            if (theorySection.style.display === 'none') {
+                theorySection.style.display = 'block';
+                showTheoryBtn.innerHTML = '<i class="fas fa-graduation-cap"></i> 隐藏原理';
+            } else {
+                theorySection.style.display = 'none';
+                showTheoryBtn.innerHTML = '<i class="fas fa-graduation-cap"></i> 干涉原理';
+            }
+        });
+        
+        // 更新显示值
+        function updateDisplays() {
+            // 更新数值显示
+            wavelengthValue.textContent = wavelength + ' nm';
+            slitDistanceValue.textContent = slitDistance.toFixed(2) + ' mm';
+            screenDistanceValue.textContent = screenDistance.toFixed(2) + ' m';
+            
+            // 计算条纹间距 Δx = λL/d
+            // 注意单位转换：λ(m) = wavelength * 1e-9, d(m) = slitDistance * 1e-3
+            const lambdaM = wavelength * 1e-9;
+            const dM = slitDistance * 1e-3;
+            const deltaXM = (lambdaM * screenDistance) / dM;
+            
+            // 转换为毫米显示
+            const deltaXMM = deltaXM * 1000;
+            
+            // 更新条纹间距显示
+            fringeSpacing.textContent = deltaXMM.toFixed(3) + ' mm';
+            
+            // 更新明纹条件显示
+            brightCondition.textContent = `k·${wavelength}nm`;
+            
+            // 更新干涉信息
+            interferenceInfo.textContent = `当前条纹间距: ${deltaXMM.toFixed(3)} mm。当双缝间距减小或波长增大时，条纹间距变大。`;
+        }
+        
+        // 绘制干涉图案
+        function drawInterference() {
+            // 确保Canvas已正确设置尺寸
+            if (canvas.width === 0 || canvas.height === 0) {
+                resizeCanvas();
+                return;
+            }
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清空画布
+            ctx.fillStyle = '#121212';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制实验装置
+            drawExperimentSetup(width, height);
+            
+            // 绘制干涉条纹
+            drawInterferencePattern(width, height);
+        }
+        
+        // 绘制实验装置
+        function drawExperimentSetup(width, height) {
+            // 绘制激光光源
+            const laserX = width * 0.1;
+            const laserY = height * 0.5;
+            
+            // 激光器
+            ctx.fillStyle = '#d32f2f';
+            ctx.fillRect(laserX - 15, laserY - 8, 30, 16);
+            ctx.fillStyle = '#f44336';
+            ctx.fillRect(laserX + 15, laserY - 6, 10, 12);
+            
+            // 激光束
+            ctx.strokeStyle = '#ff5252';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(laserX + 25, laserY);
+            ctx.lineTo(width * 0.25, laserY);
+            ctx.stroke();
+            
+            // 绘制双缝挡板
+            const slitX = width * 0.3;
+            const slitY = height * 0.5;
+            const slitHeight = height * 0.3;
+            
+            ctx.fillStyle = '#555';
+            ctx.fillRect(slitX - 8, slitY - slitHeight/2, 16, slitHeight);
+            
+            // 计算双缝间距（像素）
+            const dPixels = (slitDistance / 0.2) * 40; // 基准0.2mm对应40像素
+            
+            // 绘制双缝
+            ctx.fillStyle = '#121212';
+            const slitWidth = 4;
+            
+            // 上缝
+            ctx.fillRect(
+                slitX - slitWidth/2, 
+                slitY - dPixels/2 - 15, 
+                slitWidth, 
+                30
+            );
+            
+            // 下缝
+            ctx.fillRect(
+                slitX - slitWidth/2, 
+                slitY + dPixels/2 - 15, 
+                slitWidth, 
+                30
+            );
+            
+            // 标注双缝
+            ctx.fillStyle = '#bb86fc';
+            ctx.font = '14px Arial';
+            ctx.fillText(`双缝间距: ${slitDistance.toFixed(2)} mm`, slitX + 20, slitY);
+            
+            // 绘制屏幕
+            const screenX = width * 0.75;
+            ctx.fillStyle = '#777';
+            ctx.fillRect(screenX, height * 0.1, 8, height * 0.8);
+            
+            // 标注屏幕
+            ctx.fillStyle = '#4caf50';
+            ctx.fillText(`屏幕`, screenX - 30, height * 0.95);
+            
+            // 绘制光路
+            ctx.strokeStyle = 'rgba(255, 82, 82, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 3]);
+            
+            // 从每个缝到屏幕的光线
+            for (let i = -1; i <= 1; i += 2) {
+                const slitPosY = slitY + i * dPixels/2;
+                
+                ctx.beginPath();
+                ctx.moveTo(slitX, slitPosY);
+                ctx.lineTo(screenX, height * 0.5);
+                ctx.stroke();
+                
+                // 绘制波前
+                for (let r = 20; r < 120; r += 30) {
+                    ctx.beginPath();
+                    ctx.arc(slitX, slitPosY, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.setLineDash([]);
+            
+            // 标注实验组件
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.fillText('激光光源', laserX - 25, laserY - 20);
+            ctx.fillText('双缝', slitX - 15, slitY - slitHeight/2 - 10);
+            ctx.fillText('干涉屏幕', screenX - 40, height * 0.08);
+        }
+        
+        // 绘制干涉条纹
+        function drawInterferencePattern(width, height) {
+            const screenX = width * 0.75;
+            const screenY = height * 0.1;
+            const screenHeight = height * 0.8;
+            
+            // 计算条纹间距（像素）
+            const lambdaM = wavelength * 1e-9;
+            const dM = slitDistance * 1e-3;
+            const deltaXM = (lambdaM * screenDistance) / dM; // 实际条纹间距(m)
+            
+            // 转换为像素：假设1mm对应5像素
+            const deltaXPixels = deltaXM * 1000 * 5;
+            
+            // 条纹中心位置（屏幕中央）
+            const centerY = height * 0.5;
+            
+            // 绘制干涉条纹
+            const numFringes = 9; // 绘制9条条纹（中心+上下各4条）
+            
+            for (let i = -numFringes; i <= numFringes; i++) {
+                const fringeY = centerY + i * deltaXPixels;
+                
+                // 跳过屏幕外的条纹
+                if (fringeY < screenY || fringeY > screenY + screenHeight) continue;
+                
+                // 条纹亮度（干涉公式简化）
+                const phase = Math.PI * i;
+                const intensity = Math.pow(Math.cos(phase), 2);
+                
+                // 条纹宽度和颜色
+                const fringeWidth = 5 + intensity * 25;
+                
+                // 根据波长确定颜色
+                let r, g, b;
+                if (wavelength < 450) {
+                    r = 100; g = 100; b = 255; // 蓝紫色
+                } else if (wavelength < 500) {
+                    r = 100; g = 200; b = 255; // 青色
+                } else if (wavelength < 550) {
+                    r = 100; g = 255; b = 100; // 绿色
+                } else if (wavelength < 600) {
+                    r = 255; g = 255; b = 100; // 黄色
+                } else if (wavelength < 650) {
+                    r = 255; g = 200; b = 100; // 橙色
+                } else {
+                    r = 255; g = 100; b = 100; // 红色
+                }
+                
+                // 绘制条纹
+                const alpha = 0.3 + intensity * 0.7;
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.fillRect(screenX - fringeWidth, fringeY - 3, fringeWidth, 6);
+                
+                // 为明纹添加光晕效果
+                if (intensity > 0.8) {
+                    const glow = ctx.createRadialGradient(
+                        screenX - fringeWidth/2, fringeY, 0,
+                        screenX - fringeWidth/2, fringeY, fringeWidth
+                    );
+                    glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+                    glow.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+                    
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(screenX - fringeWidth/2, fringeY, fringeWidth/2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 标注中央明纹
+                if (i === 0) {
+                    ctx.fillStyle = '#ffeb3b';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.fillText('中央明纹', screenX - 100, fringeY - 15);
+                }
+            }
+            
+            // 绘制光强分布图
+            drawIntensityGraph(width, height, centerY, screenX);
+        }
+        
+        // 绘制光强分布图
+        function drawIntensityGraph(width, height, centerY, screenX) {
+            const graphX = screenX + 20;
+            const graphWidth = 100;
+            const graphHeight = height * 0.5;
+            const graphY = centerY - graphHeight/2;
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(graphX, graphY);
+            ctx.lineTo(graphX, graphY + graphHeight);
+            ctx.moveTo(graphX, centerY);
+            ctx.lineTo(graphX + graphWidth, centerY);
+            ctx.stroke();
+            
+            // 绘制光强曲线
+            ctx.strokeStyle = '#ff9800';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const points = 200;
+            for (let i = 0; i <= points; i++) {
+                const x = i / points;
+                const yPos = graphY + graphHeight/2;
+                
+                // 计算该位置的光强
+                const position = (i - points/2) * 0.15;
+                const intensity = Math.pow(Math.cos(position * Math.PI), 2);
+                
+                const graphPointX = graphX + x * graphWidth;
+                const graphPointY = yPos - intensity * graphHeight/2;
+                
+                if (i === 0) {
+                    ctx.moveTo(graphPointX, graphPointY);
+                } else {
+                    ctx.lineTo(graphPointX, graphPointY);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 填充曲线下方区域
+            ctx.fillStyle = 'rgba(255, 152, 0, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(graphX, centerY);
+            for (let i = 0; i <= points; i++) {
+                const x = i / points;
+                const yPos = graphY + graphHeight/2;
+                const position = (i - points/2) * 0.15;
+                const intensity = Math.pow(Math.cos(position * Math.PI), 2);
+                
+                const graphPointX = graphX + x * graphWidth;
+                const graphPointY = yPos - intensity * graphHeight/2;
+                
+                ctx.lineTo(graphPointX, graphPointY);
+            }
+            ctx.lineTo(graphX + graphWidth, centerY);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 标注
+            ctx.fillStyle = '#ff9800';
+            ctx.font = '12px Arial';
+            ctx.fillText('光强分布', graphX + graphWidth/2 - 30, graphY - 10);
+        }
+        
+        // 初始化Canvas并绘制
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            drawInterference();
+        });
+        
+        // 初始隐藏理论部分
+        theorySection.style.display = 'none';
+        showTheoryBtn.innerHTML = '<i class="fas fa-graduation-cap"></i> 干涉原理';
+        
+        // 确保Canvas正确初始化
+        setTimeout(resizeCanvas, 100);
+    </script>
+</body>
+</html>

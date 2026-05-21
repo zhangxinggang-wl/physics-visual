@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>追击相遇问题教学动画（含v-t图）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .animation-area {
+            flex: 2;
+            min-width: 500px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .scene-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .scene-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .scene-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .scene-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 8px;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .start-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .start-btn:hover {
+            background: #45a049;
+        }
+        
+        .reset-btn {
+            background: #f44336;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: #da190b;
+        }
+        
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        canvas {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            width: 100%;
+        }
+        
+        #animationCanvas {
+            height: 300px;
+        }
+        
+        #vtCanvas {
+            height: 200px;
+        }
+        
+        .info-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .explanation {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .animation-area, .control-panel {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>追击相遇问题教学动画（含v-t图）</h1>
+            <p class="subtitle">通过交互式动画和v-t图直观理解物理中的追击与相遇问题</p>
+        </header>
+        
+        <div class="content">
+            <div class="control-panel">
+                <div class="scene-selector">
+                    <button class="scene-btn active" data-scene="straight">直线追击</button>
+                    <button class="scene-btn" data-scene="circular">环形跑道</button>
+                    <button class="scene-btn" data-scene="acceleration">匀加速追击</button>
+                    <button class="scene-btn" data-scene="headstart">领先追击</button>
+                </div>
+                
+                <div class="control-group">
+                    <h2>物体参数</h2>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>物体A速度: </span>
+                            <span id="speedAValue">5 m/s</span>
+                        </div>
+                        <input type="range" id="speedA" min="1" max="20" value="5" step="0.5">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>物体B速度: </span>
+                            <span id="speedBValue">8 m/s</span>
+                        </div>
+                        <input type="range" id="speedB" min="1" max="20" value="8" step="0.5">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>初始距离: </span>
+                            <span id="distanceValue">100 m</span>
+                        </div>
+                        <input type="range" id="distance" min="10" max="200" value="100" step="5">
+                    </div>
+                    
+                    <div class="slider-container" id="accelerationContainer" style="display: none;">
+                        <div class="slider-label">
+                            <span>物体B加速度: </span>
+                            <span id="accelerationValue">1 m/s²</span>
+                        </div>
+                        <input type="range" id="acceleration" min="0" max="5" value="1" step="0.1">
+                    </div>
+                    
+                    <div class="slider-container" id="headstartContainer" style="display: none;">
+                        <div class="slider-label">
+                            <span>领先时间: </span>
+                            <span id="headstartValue">2 s</span>
+                        </div>
+                        <input type="range" id="headstart" min="0" max="10" value="2" step="0.5">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="start-btn" id="startBtn">开始动画</button>
+                    <button class="reset-btn" id="resetBtn">重置</button>
+                </div>
+            </div>
+            
+            <div class="animation-area">
+                <div class="canvas-container">
+                    <canvas id="animationCanvas"></canvas>
+                    <canvas id="vtCanvas"></canvas>
+                </div>
+                <div class="info-panel">
+                    <div class="info-item">
+                        <span>已用时间:</span>
+                        <span id="timeDisplay">0.0 s</span>
+                    </div>
+                    <div class="info-item">
+                        <span>物体A位置:</span>
+                        <span id="posADisplay">0 m</span>
+                    </div>
+                    <div class="info-item">
+                        <span>物体B位置:</span>
+                        <span id="posBDisplay">100 m</span>
+                    </div>
+                    <div class="info-item">
+                        <span>物体A速度:</span>
+                        <span id="speedADisplay">5 m/s</span>
+                    </div>
+                    <div class="info-item">
+                        <span>物体B速度:</span>
+                        <span id="speedBDisplay">8 m/s</span>
+                    </div>
+                    <div class="info-item">
+                        <span>预计相遇时间:</span>
+                        <span id="meetTimeDisplay">33.3 s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h2>追击相遇问题解析</h2>
+            <div id="explanationContent">
+                <p><strong>直线追击问题：</strong>两个物体沿同一直线运动，后方的物体追赶前方的物体。当两物体速度不同时，追击能否成功取决于它们的相对速度。</p>
+                <p>相遇时间公式：t = 初始距离 / (V<sub>B</sub> - V<sub>A</sub>)</p>
+                <p>其中 V<sub>B</sub> 是追击者的速度，V<sub>A</sub> 是被追者的速度。</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>物理教学工具 | 追击相遇问题动画演示（含v-t图）</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const canvas = document.getElementById('animationCanvas');
+        const vtCanvas = document.getElementById('vtCanvas');
+        const ctx = canvas.getContext('2d');
+        const vtCtx = vtCanvas.getContext('2d');
+        const sceneBtns = document.querySelectorAll('.scene-btn');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // 参数控制元素
+        const speedASlider = document.getElementById('speedA');
+        const speedBSlider = document.getElementById('speedB');
+        const distanceSlider = document.getElementById('distance');
+        const accelerationSlider = document.getElementById('acceleration');
+        const accelerationContainer = document.getElementById('accelerationContainer');
+        const headstartSlider = document.getElementById('headstart');
+        const headstartContainer = document.getElementById('headstartContainer');
+        
+        // 显示元素
+        const speedAValue = document.getElementById('speedAValue');
+        const speedBValue = document.getElementById('speedBValue');
+        const distanceValue = document.getElementById('distanceValue');
+        const accelerationValue = document.getElementById('accelerationValue');
+        const headstartValue = document.getElementById('headstartValue');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const posADisplay = document.getElementById('posADisplay');
+        const posBDisplay = document.getElementById('posBDisplay');
+        const speedADisplay = document.getElementById('speedADisplay');
+        const speedBDisplay = document.getElementById('speedBDisplay');
+        const meetTimeDisplay = document.getElementById('meetTimeDisplay');
+        const explanationContent = document.getElementById('explanationContent');
+        
+        // 初始化Canvas尺寸
+        function initCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            vtCanvas.width = container.clientWidth;
+        }
+        
+        // 动画状态
+        let animationId = null;
+        let isAnimating = false;
+        let currentScene = 'straight';
+        let time = 0;
+        
+        // 物体参数
+        let params = {
+            speedA: 5,
+            speedB: 8,
+            distance: 100,
+            accelerationB: 1,
+            headstart: 2
+        };
+        
+        // 物体状态
+        let objects = {
+            A: { x: 0, y: 0 },
+            B: { x: 0, y: 0 }
+        };
+        
+        // 速度-时间数据记录
+        let vtData = {
+            timePoints: [],
+            speedAPoints: [],
+            speedBPoints: []
+        };
+        
+        // 场景描述
+        const scenes = {
+            straight: {
+                name: "直线追击",
+                description: "两个物体沿同一直线运动，后方的物体追赶前方的物体。",
+                formula: "t = 初始距离 / (V<sub>B</sub> - V<sub>A</sub>)"
+            },
+            circular: {
+                name: "环形跑道",
+                description: "两个物体在环形跑道上运动，追击者需要多跑一圈才能追上。",
+                formula: "t = 跑道周长 / (V<sub>B</sub> - V<sub>A</sub>)"
+            },
+            acceleration: {
+                name: "匀加速追击",
+                description: "被追者匀速运动，追击者以匀加速运动追赶。",
+                formula: "V<sub>A</sub>t = 初始距离 + ½a<sub>B</sub>t²"
+            },
+            headstart: {
+                name: "领先追击",
+                description: "被追者有一定的时间领先，追击者随后开始追赶。",
+                formula: "V<sub>B</sub>t = 初始距离 + V<sub>A</sub>(t + 领先时间)"
+            }
+        };
+        
+        // 初始化
+        function init() {
+            initCanvas();
+            updateDisplays();
+            drawScene();
+            drawVtGraph();
+            setupEventListeners();
+        }
+        
+        // 设置事件监听
+        function setupEventListeners() {
+            window.addEventListener('resize', initCanvas);
+            
+            // 场景切换
+            sceneBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sceneBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentScene = btn.dataset.scene;
+                    
+                    // 更新说明
+                    updateExplanation();
+                    
+                    // 重置动画
+                    resetAnimation();
+                });
+            });
+            
+            // 控制按钮
+            startBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetAnimation);
+            
+            // 参数滑块
+            speedASlider.addEventListener('input', updateParams);
+            speedBSlider.addEventListener('input', updateParams);
+            distanceSlider.addEventListener('input', updateParams);
+            accelerationSlider.addEventListener('input', updateParams);
+            headstartSlider.addEventListener('input', updateParams);
+        }
+        
+        // 更新参数
+        function updateParams() {
+            params.speedA = parseFloat(speedASlider.value);
+            params.speedB = parseFloat(speedBSlider.value);
+            params.distance = parseFloat(distanceSlider.value);
+            params.accelerationB = parseFloat(accelerationSlider.value);
+            params.headstart = parseFloat(headstartSlider.value);
+            
+            // 更新显示
+            speedAValue.textContent = `${params.speedA} m/s`;
+            speedBValue.textContent = `${params.speedB} m/s`;
+            distanceValue.textContent = `${params.distance} m`;
+            accelerationValue.textContent = `${params.accelerationB} m/s²`;
+            headstartValue.textContent = `${params.headstart} s`;
+            
+            // 根据场景显示/隐藏控制
+            if (currentScene === 'acceleration') {
+                accelerationContainer.style.display = 'block';
+                headstartContainer.style.display = 'none';
+            } else if (currentScene === 'headstart') {
+                accelerationContainer.style.display = 'none';
+                headstartContainer.style.display = 'block';
+            } else {
+                accelerationContainer.style.display = 'none';
+                headstartContainer.style.display = 'none';
+            }
+            
+            // 更新预计相遇时间
+            updateMeetTime();
+            
+            // 重绘画布
+            if (!isAnimating) {
+                drawScene();
+                drawVtGraph();
+            }
+        }
+        
+        // 更新显示
+        function updateDisplays() {
+            speedADisplay.textContent = `${params.speedA} m/s`;
+            speedBDisplay.textContent = `${params.speedB} m/s`;
+            
+            updateMeetTime();
+        }
+        
+        // 更新预计相遇时间
+        function updateMeetTime() {
+            let meetTime = 0;
+            
+            switch(currentScene) {
+                case 'straight':
+                case 'circular':
+                    meetTime = params.distance / (params.speedB - params.speedA);
+                    break;
+                case 'acceleration':
+                    // 解方程: params.speedA * t = params.distance + 0.5 * params.accelerationB * t * t
+                    // 0.5 * params.accelerationB * t^2 - params.speedA * t + params.distance = 0
+                    const a = 0.5 * params.accelerationB;
+                    const b = -params.speedA;
+                    const c = params.distance;
+                    const discriminant = b*b - 4*a*c;
+                    
+                    if (discriminant >= 0) {
+                        const t1 = (-b + Math.sqrt(discriminant)) / (2*a);
+                        const t2 = (-b - Math.sqrt(discriminant)) / (2*a);
+                        meetTime = Math.min(t1, t2);
+                    } else {
+                        meetTime = NaN;
+                    }
+                    break;
+                case 'headstart':
+                    meetTime = params.distance / (params.speedB - params.speedA) + params.headstart;
+                    break;
+            }
+            
+            if (isNaN(meetTime) || !isFinite(meetTime) || meetTime < 0) {
+                meetTimeDisplay.textContent = "无法相遇";
+            } else {
+                meetTimeDisplay.textContent = `${meetTime.toFixed(1)} s`;
+            }
+        }
+        
+        // 更新说明
+        function updateExplanation() {
+            const scene = scenes[currentScene];
+            explanationContent.innerHTML = `
+                <p><strong>${scene.name}：</strong>${scene.description}</p>
+                <p>相遇时间公式：${scene.formula}</p>
+            `;
+        }
+        
+        // 切换动画状态
+        function toggleAnimation() {
+            if (isAnimating) {
+                stopAnimation();
+                startBtn.textContent = "开始动画";
+            } else {
+                startAnimation();
+                startBtn.textContent = "暂停动画";
+            }
+        }
+        
+        // 开始动画
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            const startTime = Date.now() - time * 1000;
+            
+            function animate() {
+                if (!isAnimating) return;
+                
+                time = (Date.now() - startTime) / 1000;
+                updateObjects();
+                recordVtData();
+                drawScene();
+                drawVtGraph();
+                updateDisplaysDuringAnimation();
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        // 停止动画
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            stopAnimation();
+            time = 0;
+            startBtn.textContent = "开始动画";
+            vtData = { timePoints: [], speedAPoints: [], speedBPoints: [] };
+            updateObjects();
+            drawScene();
+            drawVtGraph();
+            updateDisplays();
+        }
+        
+        // 更新物体位置
+        function updateObjects() {
+            switch(currentScene) {
+                case 'straight':
+                    objects.A.x = params.speedA * time;
+                    objects.B.x = params.speedB * time - params.distance;
+                    break;
+                case 'circular':
+                    // 环形跑道，假设周长为200
+                    const circumference = 200;
+                    objects.A.x = (params.speedA * time) % circumference;
+                    objects.B.x = (params.speedB * time - params.distance) % circumference;
+                    if (objects.B.x < 0) objects.B.x += circumference;
+                    break;
+                case 'acceleration':
+                    objects.A.x = params.speedA * time;
+                    objects.B.x = 0.5 * params.accelerationB * time * time;
+                    break;
+                case 'headstart':
+                    objects.A.x = params.speedA * (time + params.headstart);
+                    objects.B.x = params.speedB * time;
+                    break;
+            }
+            
+            // 更新Y坐标用于可视化
+            objects.A.y = canvas.height / 2 - 30;
+            objects.B.y = canvas.height / 2 + 30;
+        }
+        
+        // 记录v-t数据
+        function recordVtData() {
+            // 每0.1秒记录一次数据
+            if (vtData.timePoints.length === 0 || time - vtData.timePoints[vtData.timePoints.length-1] >= 0.1) {
+                vtData.timePoints.push(time);
+                
+                // 记录物体A的速度
+                let speedA = params.speedA;
+                if (currentScene === 'headstart' && time < params.headstart) {
+                    speedA = 0; // 领先时间内A尚未开始运动
+                }
+                vtData.speedAPoints.push(speedA);
+                
+                // 记录物体B的速度
+                let speedB = params.speedB;
+                if (currentScene === 'acceleration') {
+                    speedB = params.accelerationB * time; // 匀加速运动
+                }
+                vtData.speedBPoints.push(speedB);
+                
+                // 限制数据点数量，避免性能问题
+                if (vtData.timePoints.length > 200) {
+                    vtData.timePoints.shift();
+                    vtData.speedAPoints.shift();
+                    vtData.speedBPoints.shift();
+                }
+            }
+        }
+        
+        // 动画过程中更新显示
+        function updateDisplaysDuringAnimation() {
+            timeDisplay.textContent = `${time.toFixed(1)} s`;
+            posADisplay.textContent = `${objects.A.x.toFixed(1)} m`;
+            
+            if (currentScene === 'circular') {
+                posBDisplay.textContent = `${objects.B.x.toFixed(1)} m (环形)`;
+            } else {
+                posBDisplay.textContent = `${objects.B.x.toFixed(1)} m`;
+            }
+            
+            // 更新速度显示
+            let displaySpeedA = params.speedA;
+            let displaySpeedB = params.speedB;
+            
+            if (currentScene === 'acceleration') {
+                displaySpeedB = params.accelerationB * time;
+            } else if (currentScene === 'headstart' && time < params.headstart) {
+                displaySpeedA = 0;
+            }
+            
+            speedADisplay.textContent = `${displaySpeedA.toFixed(1)} m/s`;
+            speedBDisplay.textContent = `${displaySpeedB.toFixed(1)} m/s`;
+        }
+        
+        // 绘制场景
+        function drawScene() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景
+            drawBackground();
+            
+            // 绘制物体
+            drawObject(objects.A, 'A', '#FF6B6B');
+            drawObject(objects.B, 'B', '#4ECDC4');
+            
+            // 绘制轨迹
+            drawTrajectory();
+            
+            // 绘制距离标记
+            drawDistanceMarkers();
+        }
+        
+        // 绘制v-t图
+        function drawVtGraph() {
+            // 清除画布
+            vtCtx.clearRect(0, 0, vtCanvas.width, vtCanvas.height);
+            
+            // 绘制背景和坐标轴
+            drawVtBackground();
+            
+            // 如果没有数据，直接返回
+            if (vtData.timePoints.length === 0) return;
+            
+            // 计算坐标比例
+            const maxTime = Math.max(40, time + 5); // 至少显示40秒，或当前时间+5秒
+            const maxSpeed = Math.max(20, params.speedA, params.speedB, ...vtData.speedAPoints, ...vtData.speedBPoints) + 2;
+            
+            const xScale = (vtCanvas.width - 60) / maxTime;
+            const yScale = (vtCanvas.height - 60) / maxSpeed;
+            
+            // 绘制物体A的v-t曲线
+            vtCtx.strokeStyle = '#FF6B6B';
+            vtCtx.lineWidth = 2;
+            vtCtx.beginPath();
+            
+            for (let i = 0; i < vtData.timePoints.length; i++) {
+                const x = 50 + vtData.timePoints[i] * xScale;
+                const y = vtCanvas.height - 30 - vtData.speedAPoints[i] * yScale;
+                
+                if (i === 0) {
+                    vtCtx.moveTo(x, y);
+                } else {
+                    vtCtx.lineTo(x, y);
+                }
+            }
+            
+            vtCtx.stroke();
+            
+            // 绘制物体B的v-t曲线
+            vtCtx.strokeStyle = '#4ECDC4';
+            vtCtx.lineWidth = 2;
+            vtCtx.beginPath();
+            
+            for (let i = 0; i < vtData.timePoints.length; i++) {
+                const x = 50 + vtData.timePoints[i] * xScale;
+                const y = vtCanvas.height - 30 - vtData.speedBPoints[i] * yScale;
+                
+                if (i === 0) {
+                    vtCtx.moveTo(x, y);
+                } else {
+                    vtCtx.lineTo(x, y);
+                }
+            }
+            
+            vtCtx.stroke();
+            
+            // 绘制当前时间点
+            if (time > 0) {
+                const currentX = 50 + time * xScale;
+                
+                // 垂直线表示当前时间
+                vtCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                vtCtx.setLineDash([5, 5]);
+                vtCtx.beginPath();
+                vtCtx.moveTo(currentX, 30);
+                vtCtx.lineTo(currentX, vtCanvas.height - 30);
+                vtCtx.stroke();
+                vtCtx.setLineDash([]);
+                
+                // 标记当前速度值
+                const currentSpeedA = vtData.speedAPoints[vtData.speedAPoints.length-1] || params.speedA;
+                const currentSpeedB = vtData.speedBPoints[vtData.speedBPoints.length-1] || params.speedB;
+                
+                vtCtx.fillStyle = '#FF6B6B';
+                vtCtx.fillText(`A: ${currentSpeedA.toFixed(1)} m/s`, currentX + 5, vtCanvas.height - 30 - currentSpeedA * yScale - 5);
+                
+                vtCtx.fillStyle = '#4ECDC4';
+                vtCtx.fillText(`B: ${currentSpeedB.toFixed(1)} m/s`, currentX + 5, vtCanvas.height - 30 - currentSpeedB * yScale + 15);
+            }
+        }
+        
+        // 绘制v-t图背景和坐标轴
+        function drawVtBackground() {
+            // 绘制背景
+            vtCtx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            vtCtx.fillRect(0, 0, vtCanvas.width, vtCanvas.height);
+            
+            // 绘制坐标轴
+            vtCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            vtCtx.lineWidth = 2;
+            
+            // 横轴 (时间)
+            vtCtx.beginPath();
+            vtCtx.moveTo(50, vtCanvas.height - 30);
+            vtCtx.lineTo(vtCanvas.width - 10, vtCanvas.height - 30);
+            vtCtx.stroke();
+            
+            // 纵轴 (速度)
+            vtCtx.beginPath();
+            vtCtx.moveTo(50, 30);
+            vtCtx.lineTo(50, vtCanvas.height - 30);
+            vtCtx.stroke();
+            
+            // 坐标轴标签
+            vtCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            vtCtx.font = '14px Arial';
+            vtCtx.textAlign = 'center';
+            vtCtx.fillText('时间 (s)', vtCanvas.width / 2, vtCanvas.height - 5);
+            
+            vtCtx.save();
+            vtCtx.translate(15, vtCanvas.height / 2);
+            vtCtx.rotate(-Math.PI / 2);
+            vtCtx.fillText('速度 (m/s)', 0, 0);
+            vtCtx.restore();
+            
+            // 绘制网格和刻度
+            vtCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            vtCtx.lineWidth = 1;
+            
+            // 横轴刻度 (每10秒)
+            for (let t = 0; t <= 40; t += 10) {
+                const x = 50 + t * (vtCanvas.width - 60) / 40;
+                
+                vtCtx.beginPath();
+                vtCtx.moveTo(x, vtCanvas.height - 30);
+                vtCtx.lineTo(x, 30);
+                vtCtx.stroke();
+                
+                vtCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                vtCtx.fillText(t.toString(), x, vtCanvas.height - 10);
+            }
+            
+            // 纵轴刻度 (每5 m/s)
+            for (let v = 0; v <= 20; v += 5) {
+                const y = vtCanvas.height - 30 - v * (vtCanvas.height - 60) / 20;
+                
+                vtCtx.beginPath();
+                vtCtx.moveTo(50, y);
+                vtCtx.lineTo(vtCanvas.width - 10, y);
+                vtCtx.stroke();
+                
+                vtCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                vtCtx.fillText(v.toString(), 35, y + 4);
+            }
+            
+            // 图例
+            vtCtx.fillStyle = '#FF6B6B';
+            vtCtx.fillRect(vtCanvas.width - 150, 15, 20, 3);
+            vtCtx.fillText('物体A', vtCanvas.width - 120, 20);
+            
+            vtCtx.fillStyle = '#4ECDC4';
+            vtCtx.fillRect(vtCanvas.width - 150, 35, 20, 3);
+            vtCtx.fillText('物体B', vtCanvas.width - 120, 40);
+        }
+        
+        // 绘制背景
+        function drawBackground() {
+            // 绘制网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制中心线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+            
+            // 绘制起点和方向
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '14px Arial';
+            ctx.fillText('起点', 10, canvas.height / 2 - 10);
+            ctx.fillText('→ 运动方向', canvas.width - 80, canvas.height / 2 - 10);
+        }
+        
+        // 绘制物体
+        function drawObject(obj, label, color) {
+            // 绘制物体
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(obj.x % canvas.width, obj.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制标签
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, obj.x % canvas.width, obj.y);
+            
+            // 绘制速度矢量
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(obj.x % canvas.width, obj.y);
+            
+            let speed = 0;
+            if (label === 'A') {
+                speed = params.speedA;
+                if (currentScene === 'headstart' && time < params.headstart) {
+                    speed = 0; // 领先时间内A尚未开始运动
+                }
+            } else {
+                speed = params.speedB;
+                if (currentScene === 'acceleration') {
+                    speed = params.accelerationB * time;
+                }
+            }
+            
+            ctx.lineTo((obj.x + speed * 5) % canvas.width, obj.y);
+            ctx.stroke();
+            
+            // 绘制速度箭头
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo((obj.x + speed * 5) % canvas.width, obj.y);
+            ctx.lineTo((obj.x + speed * 5 - 5) % canvas.width, obj.y - 3);
+            ctx.lineTo((obj.x + speed * 5 - 5) % canvas.width, obj.y + 3);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
+        // 绘制轨迹
+        function drawTrajectory() {
+            // 物体A的轨迹
+            ctx.strokeStyle = 'rgba(255, 107, 107, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, objects.A.y);
+            ctx.lineTo(objects.A.x % canvas.width, objects.A.y);
+            ctx.stroke();
+            
+            // 物体B的轨迹
+            ctx.strokeStyle = 'rgba(78, 205, 196, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(0, objects.B.y);
+            ctx.lineTo(objects.B.x % canvas.width, objects.B.y);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+        }
+        
+        // 绘制距离标记
+        function drawDistanceMarkers() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            
+            // 初始距离标记
+            if (currentScene !== 'headstart') {
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2 - 50);
+                ctx.lineTo(0, canvas.height / 2 + 50);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(params.distance, canvas.height / 2 - 50);
+                ctx.lineTo(params.distance, canvas.height / 2 + 50);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+            
+            // 距离标签
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            if (currentScene !== 'headstart') {
+                ctx.fillText('初始距离', params.distance / 2, canvas.height / 2 - 60);
+                ctx.fillText(`${params.distance}m`, params.distance / 2, canvas.height / 2 - 45);
+            }
+        }
+        
+        // 初始化
+        window.onload = init;
+    </script>
+</body>
+</html>

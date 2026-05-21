@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电磁感应双棒模型 - 燕赵名师张兴刚工作室</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .simulation-panel {
+            flex: 1;
+            min-width: 650px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+        }
+        .controls-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-title {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 1.3em;
+        }
+        #simulation-canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .control-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        .control-title i {
+            margin-right: 8px;
+            color: #3498db;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .slider-container label {
+            min-width: 140px;
+            font-size: 0.95em;
+        }
+        .slider-container input[type="range"] {
+            flex: 1;
+            margin: 0 15px;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 3px;
+            outline: none;
+        }
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        .start-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .start-btn:hover {
+            background-color: #27ae60;
+        }
+        .pause-btn {
+            background-color: #f39c12;
+            color: white;
+        }
+        .pause-btn:hover {
+            background-color: #d68910;
+        }
+        .reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        .chart-container {
+            margin-top: 25px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+        }
+        #velocity-chart {
+            width: 100%;
+            height: 300px;
+            border-radius: 6px;
+        }
+        .formula-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #9b59b6;
+        }
+        .formula-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .formula {
+            font-family: 'Cambria Math', serif;
+            font-size: 1.1em;
+            color: #2c3e50;
+            padding: 8px;
+            background-color: white;
+            border-radius: 4px;
+            margin: 5px 0;
+            text-align: center;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .explanation h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .explanation p {
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .color-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            margin-right: 6px;
+        }
+        @media (max-width: 1100px) {
+            .container {
+                flex-direction: column;
+            }
+            .simulation-panel, .controls-panel {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>电磁感应双棒模型教学演示</h1>
+        <div class="subtitle">燕赵名师张兴刚工作室 · 高中物理电磁学互动教学工具</div>
+    </div>
+    
+    <div class="container">
+        <div class="simulation-panel">
+            <h2 class="panel-title">双棒模型模拟</h2>
+            <canvas id="simulation-canvas" width="800" height="400"></canvas>
+            <div class="color-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3498db;"></div>
+                    <span>棒A (受安培力作用)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #e74c3c;"></div>
+                    <span>棒B (受外力F作用)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #2ecc71;"></div>
+                    <span>磁场方向 (垂直纸面向内)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-panel">
+            <h2 class="panel-title">参数控制</h2>
+            
+            <div class="control-group">
+                <div class="control-title">
+                    <i>⚙️</i> 外力参数
+                </div>
+                
+                <div class="slider-container">
+                    <label for="force-slider">外力F大小 (N):</label>
+                    <input type="range" id="force-slider" min="0.1" max="20" step="0.1" value="5">
+                    <div class="slider-value" id="force-value">5.0</div>
+                </div>
+                
+                <div class="slider-container">
+                    <label for="massA-slider">棒A质量 (kg):</label>
+                    <input type="range" id="massA-slider" min="0.1" max="5" step="0.1" value="0.5">
+                    <div class="slider-value" id="massA-value">0.5</div>
+                </div>
+                
+                <div class="slider-container">
+                    <label for="massB-slider">棒B质量 (kg):</label>
+                    <input type="range" id="massB-slider" min="0.1" max="5" step="0.1" value="0.5">
+                    <div class="slider-value" id="massB-value">0.5</div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="control-title">
+                    <i>📏</i> 物理参数
+                </div>
+                
+                <div class="slider-container">
+                    <label for="resistance-slider">每棒电阻 (Ω):</label>
+                    <input type="range" id="resistance-slider" min="0.1" max="5" step="0.1" value="1">
+                    <div class="slider-value" id="resistance-value">1.0</div>
+                </div>
+                
+                <div class="slider-container">
+                    <label for="induction-slider">磁感应强度B (T):</label>
+                    <input type="range" id="induction-slider" min="0.1" max="5" step="0.1" value="1">
+                    <div class="slider-value" id="induction-value">1.0</div>
+                </div>
+                
+                <div class="slider-container">
+                    <label for="length-slider">导轨宽度L (m):</label>
+                    <input type="range" id="length-slider" min="0.5" max="3" step="0.1" value="1.5">
+                    <div class="slider-value" id="length-value">1.5</div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="control-title">
+                    <i>⏱️</i> 模拟控制
+                </div>
+                
+                <div class="button-group">
+                    <button id="start-btn" class="start-btn">开始模拟</button>
+                    <button id="pause-btn" class="pause-btn">暂停/继续</button>
+                    <button id="reset-btn" class="reset-btn">重置模拟</button>
+                </div>
+                
+                <div class="slider-container" style="margin-top: 15px;">
+                    <label for="speed-slider">模拟速度:</label>
+                    <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1">
+                    <div class="slider-value" id="speed-value">1.0</div>
+                </div>
+            </div>
+            
+            <div class="formula-panel">
+                <div class="formula-title">核心物理公式</div>
+                <div class="formula">感应电动势: ε = BL(v₂ - v₁)</div>
+                <div class="formula">感应电流: I = ε / (R₁ + R₂)</div>
+                <div class="formula">安培力: Fₐ = BIL = B²L²(v₂ - v₁) / (R₁ + R₂)</div>
+                <div class="formula">运动方程: m₁a₁ = Fₐ, m₂a₂ = F - Fₐ</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <h2 class="panel-title">速度-时间图像 (0-4秒, 0-20 m/s)</h2>
+        <canvas id="velocity-chart" width="1200" height="300"></canvas>
+    </div>
+    
+    <div class="explanation">
+        <h3>电磁感应双棒模型教学说明</h3>
+        <p><strong>模型描述：</strong>两根平行金属导轨水平放置，间距为L，导轨电阻不计。两根质量分别为m₁和m₂、电阻均为R的金属棒A和B垂直放置在导轨上，导体棒长度与导轨宽度相同。整个装置处于磁感应强度为B的匀强磁场中，磁场方向垂直纸面向内。</p>
+        <p><strong>初始条件：</strong>初始时，两根金属棒均静止在导轨上。某时刻起，对右侧的棒B施加一个水平向右的恒力F。</p>
+        <p><strong>物理过程：</strong>棒B在外力F作用下开始向右加速运动，由于切割磁感线产生感应电动势，在回路中产生感应电流。该电流使棒B受到向左的安培力，棒A受到向右的安培力，因此棒A也开始向右运动。</p>
+        <p><strong>最终状态：</strong>当两根棒的速度差稳定时，回路中的磁通量变化率为常数，感应电流恒定，两根棒以相同的加速度运动，速度差保持恒定。</p>
+        <p><strong>教学要点：</strong>通过调整外力F、质量、电阻、磁感应强度等参数，观察双棒速度变化规律，理解电磁感应中的能量转化、动量守恒以及安培力的作用效果。</p>
+    </div>
+    
+    <div class="footer">
+        <p>燕赵名师张兴刚工作室 · 高中物理电磁学教学资源</p>
+        <p>本模拟工具用于演示电磁感应双棒模型，帮助学生理解电磁感应与动力学综合问题</p>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const simCanvas = document.getElementById('simulation-canvas');
+        const simCtx = simCanvas.getContext('2d');
+        const chartCanvas = document.getElementById('velocity-chart');
+        const chartCtx = chartCanvas.getContext('2d');
+        
+        // 模拟状态
+        let simulation = {
+            running: false,
+            time: 0,
+            timeStep: 0.016, // 约60FPS
+            speedFactor: 1,
+            rodA: {
+                x: 100,
+                v: 0,
+                a: 0,
+                mass: 0.5,
+                color: '#3498db'
+            },
+            rodB: {
+                x: 200,
+                v: 0,
+                a: 0,
+                mass: 0.5,
+                color: '#e74c3c'
+            },
+            params: {
+                force: 5.0, // 增加默认外力，使速度更容易达到较高值
+                resistance: 1.0,
+                induction: 1.0,
+                length: 1.5
+            },
+            history: {
+                time: [],
+                velocityA: [],
+                velocityB: []
+            }
+        };
+        
+        // 图表配置 - 固定时间轴和速度轴
+        const chartConfig = {
+            padding: { top: 20, right: 30, bottom: 40, left: 60 },
+            colors: { rodA: '#3498db', rodB: '#e74c3c', grid: '#e0e0e0', axis: '#333' },
+            maxTime: 4, // 固定时间轴范围为4秒
+            maxVelocity: 20 // 固定速度轴范围为20 m/s
+        };
+        
+        // 初始化滑块显示
+        function initializeSliders() {
+            const sliders = [
+                { id: 'force-slider', valueId: 'force-value', param: 'force', format: v => v.toFixed(1) },
+                { id: 'massA-slider', valueId: 'massA-value', param: 'rodA.mass', format: v => v.toFixed(1) },
+                { id: 'massB-slider', valueId: 'massB-value', param: 'rodB.mass', format: v => v.toFixed(1) },
+                { id: 'resistance-slider', valueId: 'resistance-value', param: 'resistance', format: v => v.toFixed(1) },
+                { id: 'induction-slider', valueId: 'induction-value', param: 'induction', format: v => v.toFixed(1) },
+                { id: 'length-slider', valueId: 'length-value', param: 'length', format: v => v.toFixed(1) },
+                { id: 'speed-slider', valueId: 'speed-value', param: 'speedFactor', format: v => v.toFixed(1) }
+            ];
+            
+            sliders.forEach(slider => {
+                const sliderEl = document.getElementById(slider.id);
+                const valueEl = document.getElementById(slider.valueId);
+                
+                // 设置初始值
+                let value;
+                if (slider.param.includes('.')) {
+                    const [obj, prop] = slider.param.split('.');
+                    value = simulation[obj][prop];
+                } else if (slider.param === 'speedFactor') {
+                    value = simulation.speedFactor;
+                } else {
+                    value = simulation.params[slider.param];
+                }
+                
+                sliderEl.value = value;
+                valueEl.textContent = slider.format(value);
+                
+                // 添加事件监听
+                sliderEl.addEventListener('input', function() {
+                    const newValue = parseFloat(this.value);
+                    valueEl.textContent = slider.format(newValue);
+                    
+                    if (slider.param.includes('.')) {
+                        const [obj, prop] = slider.param.split('.');
+                        simulation[obj][prop] = newValue;
+                    } else if (slider.param === 'speedFactor') {
+                        simulation.speedFactor = newValue;
+                    } else {
+                        simulation.params[slider.param] = newValue;
+                    }
+                    
+                    // 如果模拟正在运行，更新图表
+                    if (simulation.running) {
+                        updateChart();
+                    }
+                });
+            });
+        }
+        
+        // 初始化按钮
+        function initializeButtons() {
+            document.getElementById('start-btn').addEventListener('click', function() {
+                if (!simulation.running) {
+                    simulation.running = true;
+                    runSimulation();
+                }
+            });
+            
+            document.getElementById('pause-btn').addEventListener('click', function() {
+                simulation.running = !simulation.running;
+                if (simulation.running) {
+                    runSimulation();
+                }
+            });
+            
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                resetSimulation();
+            });
+        }
+        
+        // 重置模拟
+        function resetSimulation() {
+            simulation.running = false;
+            simulation.time = 0;
+            simulation.rodA.x = 100;
+            simulation.rodA.v = 0;
+            simulation.rodA.a = 0;
+            simulation.rodB.x = 200;
+            simulation.rodB.v = 0;
+            simulation.rodB.a = 0;
+            
+            // 清空历史数据
+            simulation.history.time = [];
+            simulation.history.velocityA = [];
+            simulation.history.velocityB = [];
+            
+            // 确保初始速度为0被记录
+            simulation.history.time.push(0);
+            simulation.history.velocityA.push(0);
+            simulation.history.velocityB.push(0);
+            
+            // 重新绘制
+            drawSimulation();
+            drawChart();
+        }
+        
+        // 计算物理过程
+        function calculatePhysics() {
+            const { force, resistance, induction, length } = simulation.params;
+            const { rodA, rodB } = simulation;
+            
+            // 计算感应电动势和电流（棒B速度减去棒A速度）
+            const epsilon = induction * length * (rodB.v - rodA.v);
+            const current = epsilon / (2 * resistance);
+            
+            // 计算安培力
+            const ampereForce = induction * current * length;
+            
+            // 计算加速度（棒A受安培力，棒B受外力减去安培力）
+            rodA.a = ampereForce / rodA.mass;
+            rodB.a = (force - ampereForce) / rodB.mass;
+            
+            // 更新速度
+            rodA.v += rodA.a * simulation.timeStep;
+            rodB.v += rodB.a * simulation.timeStep;
+            
+            // 确保速度不为负
+            rodA.v = Math.max(0, rodA.v);
+            rodB.v = Math.max(0, rodB.v);
+            
+            // 更新位置（限制在导轨范围内）
+            rodA.x += rodA.v * simulation.timeStep * 50; // 缩放因子使运动更明显
+            rodB.x += rodB.v * simulation.timeStep * 50;
+            
+            // 限制棒的位置
+            const minX = 80;
+            const maxX = simCanvas.width - 80;
+            rodA.x = Math.max(minX, Math.min(maxX, rodA.x));
+            rodB.x = Math.max(minX, Math.min(maxX, rodB.x));
+            
+            // 确保棒B在棒A的右侧
+            if (rodA.x > rodB.x - 20) {
+                rodA.x = rodB.x - 20;
+            }
+            
+            // 更新时间
+            simulation.time += simulation.timeStep;
+            
+            // 记录历史数据（每0.02秒记录一次，确保数据点足够）
+            if (simulation.time % 0.02 < simulation.timeStep) {
+                simulation.history.time.push(simulation.time);
+                simulation.history.velocityA.push(rodA.v);
+                simulation.history.velocityB.push(rodB.v);
+                
+                // 保持时间在固定范围内
+                while (simulation.history.time.length > 0 && simulation.history.time[simulation.history.time.length - 1] > chartConfig.maxTime) {
+                    simulation.history.time.shift();
+                    simulation.history.velocityA.shift();
+                    simulation.history.velocityB.shift();
+                }
+                
+                // 确保最多400个数据点
+                if (simulation.history.time.length > 400) {
+                    simulation.history.time.shift();
+                    simulation.history.velocityA.shift();
+                    simulation.history.velocityB.shift();
+                }
+            }
+        }
+        
+        // 绘制模拟场景
+        function drawSimulation() {
+            // 清除画布
+            simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+            
+            // 绘制背景
+            simCtx.fillStyle = '#f8f9fa';
+            simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
+            
+            // 绘制磁感线（垂直纸面向内）
+            drawMagneticFieldLines();
+            
+            // 绘制导轨
+            const railYTop = 150;
+            const railYBottom = 250;
+            const railHeight = railYBottom - railYTop;
+            
+            simCtx.strokeStyle = '#7f8c8d';
+            simCtx.lineWidth = 3;
+            
+            // 上导轨
+            simCtx.beginPath();
+            simCtx.moveTo(50, railYTop);
+            simCtx.lineTo(simCanvas.width - 50, railYTop);
+            simCtx.stroke();
+            
+            // 下导轨
+            simCtx.beginPath();
+            simCtx.moveTo(50, railYBottom);
+            simCtx.lineTo(simCanvas.width - 50, railYBottom);
+            simCtx.stroke();
+            
+            // 绘制导轨宽度标注
+            simCtx.strokeStyle = '#95a5a6';
+            simCtx.lineWidth = 1;
+            simCtx.setLineDash([5, 3]);
+            simCtx.beginPath();
+            simCtx.moveTo(60, railYTop);
+            simCtx.lineTo(60, railYBottom);
+            simCtx.stroke();
+            simCtx.setLineDash([]);
+            
+            simCtx.fillStyle = '#7f8c8d';
+            simCtx.font = '14px Arial';
+            simCtx.fillText(`L = ${simulation.params.length.toFixed(1)} m`, 65, (railYTop + railYBottom) / 2 + 5);
+            
+            // 绘制棒A（左侧棒，受安培力作用）
+            const rodHeight = railHeight;
+            simCtx.fillStyle = simulation.rodA.color;
+            simCtx.fillRect(simulation.rodA.x - 5, railYTop, 10, rodHeight);
+            
+            // 绘制棒B（右侧棒，受外力作用）
+            simCtx.fillStyle = simulation.rodB.color;
+            simCtx.fillRect(simulation.rodB.x - 5, railYTop, 10, rodHeight);
+            
+            // 绘制棒标签
+            simCtx.fillStyle = '#2c3e50';
+            simCtx.font = 'bold 16px Arial';
+            simCtx.textAlign = 'center';
+            simCtx.fillText('A', simulation.rodA.x, railYTop - 10);
+            simCtx.fillText('B', simulation.rodB.x, railYTop - 10);
+            
+            // 绘制外力箭头（作用在棒B上，向右）
+            const forceY = railYTop + rodHeight / 2;
+            drawArrow(simCtx, simulation.rodB.x + 15, forceY, simulation.rodB.x + 35, forceY, '#e67e22', 3);
+            simCtx.fillStyle = '#e67e22';
+            simCtx.font = '14px Arial';
+            simCtx.textAlign = 'left';
+            simCtx.fillText(`F = ${simulation.params.force.toFixed(1)}N`, simulation.rodB.x + 40, forceY - 10);
+            
+            // 绘制安培力箭头（棒A上的安培力向右）
+            drawArrow(simCtx, simulation.rodA.x - 15, forceY, simulation.rodA.x + 5, forceY, '#9b59b6', 3);
+            simCtx.fillStyle = '#9b59b6';
+            simCtx.textAlign = 'right';
+            simCtx.fillText('Fₐ', simulation.rodA.x - 20, forceY - 10);
+            
+            // 绘制安培力箭头（棒B上的安培力向左）
+            drawArrow(simCtx, simulation.rodB.x + 15, forceY, simulation.rodB.x - 5, forceY, '#9b59b6', 3);
+            simCtx.fillStyle = '#9b59b6';
+            simCtx.textAlign = 'left';
+            simCtx.fillText('Fₐ', simulation.rodB.x + 20, forceY - 10);
+            
+            // 绘制磁场方向标记（垂直纸面向内）
+            simCtx.fillStyle = '#2ecc71';
+            simCtx.font = 'bold 20px Arial';
+            simCtx.textAlign = 'center';
+            simCtx.fillText('⨀', simCanvas.width - 30, forceY);
+            simCtx.font = '14px Arial';
+            simCtx.fillText('B', simCanvas.width - 30, forceY + 20);
+            
+            // 绘制物理参数
+            simCtx.fillStyle = '#2c3e50';
+            simCtx.font = '14px Arial';
+            simCtx.textAlign = 'left';
+            simCtx.fillText(`时间: ${simulation.time.toFixed(2)} s`, 20, 30);
+            simCtx.fillText(`棒A速度: ${simulation.rodA.v.toFixed(2)} m/s`, 20, 50);
+            simCtx.fillText(`棒B速度: ${simulation.rodB.v.toFixed(2)} m/s`, 20, 70);
+            simCtx.fillText(`速度差: ${(simulation.rodB.v - simulation.rodA.v).toFixed(2)} m/s`, 20, 90);
+            simCtx.fillText(`感应电流: ${(simulation.params.induction * simulation.params.length * 
+                Math.abs(simulation.rodB.v - simulation.rodA.v) / (2 * simulation.params.resistance)).toFixed(2)} A`, 20, 110);
+            
+            // 绘制当前参数
+            simCtx.textAlign = 'right';
+            simCtx.fillText(`磁感应强度: ${simulation.params.induction.toFixed(1)} T`, simCanvas.width - 20, 30);
+            simCtx.fillText(`导轨宽度: ${simulation.params.length.toFixed(1)} m`, simCanvas.width - 20, 50);
+            simCtx.fillText(`每棒电阻: ${simulation.params.resistance.toFixed(1)} Ω`, simCanvas.width - 20, 70);
+            simCtx.fillText(`棒B外力: ${simulation.params.force.toFixed(1)} N`, simCanvas.width - 20, 90);
+        }
+        
+        // 绘制磁感线
+        function drawMagneticFieldLines() {
+            const railYTop = 150;
+            const railYBottom = 250;
+            const fieldLeft = 60;
+            const fieldRight = simCanvas.width - 60;
+            
+            simCtx.strokeStyle = 'rgba(46, 204, 113, 0.4)';
+            simCtx.lineWidth = 1;
+            simCtx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+            
+            // 绘制磁感线（垂直纸面向内，用圆圈表示）
+            const spacing = 25;
+            for (let x = fieldLeft; x < fieldRight; x += spacing) {
+                for (let y = railYTop + 10; y < railYBottom; y += spacing) {
+                    // 绘制圆圈表示垂直纸面向内的磁场
+                    simCtx.beginPath();
+                    simCtx.arc(x, y, 4, 0, Math.PI * 2);
+                    simCtx.fill();
+                    
+                    // 在圆圈中心添加点表示箭头尖端
+                    simCtx.fillStyle = '#2ecc71';
+                    simCtx.beginPath();
+                    simCtx.arc(x, y, 1, 0, Math.PI * 2);
+                    simCtx.fill();
+                    simCtx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+                }
+            }
+            
+            // 绘制磁场区域边界
+            simCtx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
+            simCtx.lineWidth = 1;
+            simCtx.setLineDash([5, 5]);
+            simCtx.strokeRect(fieldLeft, railYTop, fieldRight - fieldLeft, railYBottom - railYTop);
+            simCtx.setLineDash([]);
+            
+            // 添加磁场方向标注
+            simCtx.fillStyle = '#2ecc71';
+            simCtx.font = '14px Arial';
+            simCtx.textAlign = 'center';
+            simCtx.fillText('磁场区域 (B垂直纸面向内)', (fieldLeft + fieldRight) / 2, railYTop - 10);
+        }
+        
+        // 绘制箭头函数
+        function drawArrow(ctx, fromX, fromY, toX, toY, color, width) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            
+            // 绘制线条
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            // 绘制箭头头部
+            const headLength = 10;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+            
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - headLength * Math.cos(angle - Math.PI / 6),
+                toY - headLength * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(
+                toX - headLength * Math.cos(angle + Math.PI / 6),
+                toY - headLength * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.stroke();
+        }
+        
+        // 绘制速度-时间图表（固定时间轴和速度轴）
+        function drawChart() {
+            // 清除画布
+            chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+            
+            // 绘制背景
+            chartCtx.fillStyle = '#f8f9fa';
+            chartCtx.fillRect(0, 0, chartCanvas.width, chartCanvas.height);
+            
+            // 计算缩放比例（使用固定范围）
+            const xScale = (chartCanvas.width - chartConfig.padding.left - chartConfig.padding.right) / chartConfig.maxTime;
+            const yScale = (chartCanvas.height - chartConfig.padding.top - chartConfig.padding.bottom) / chartConfig.maxVelocity;
+            
+            // 绘制网格线
+            chartCtx.strokeStyle = chartConfig.colors.grid;
+            chartCtx.lineWidth = 1;
+            
+            // 水平网格线（速度轴，每4 m/s一条线）
+            const ySteps = 5; // 20/4 = 5条水平线
+            for (let i = 0; i <= ySteps; i++) {
+                const y = chartCanvas.height - chartConfig.padding.bottom - (i / ySteps) * (chartCanvas.height - chartConfig.padding.top - chartConfig.padding.bottom);
+                chartCtx.beginPath();
+                chartCtx.moveTo(chartConfig.padding.left, y);
+                chartCtx.lineTo(chartCanvas.width - chartConfig.padding.right, y);
+                chartCtx.stroke();
+                
+                // Y轴标签
+                chartCtx.fillStyle = '#666';
+                chartCtx.font = '12px Arial';
+                chartCtx.textAlign = 'right';
+                chartCtx.fillText((i * 4).toString(), chartConfig.padding.left - 10, y + 4);
+            }
+            
+            // 垂直网格线（时间轴，每0.5秒一条线）
+            const xSteps = 8; // 4/0.5 = 8条垂直线
+            for (let i = 0; i <= xSteps; i++) {
+                const x = chartConfig.padding.left + (i / xSteps) * (chartCanvas.width - chartConfig.padding.left - chartConfig.padding.right);
+                chartCtx.beginPath();
+                chartCtx.moveTo(x, chartConfig.padding.top);
+                chartCtx.lineTo(x, chartCanvas.height - chartConfig.padding.bottom);
+                chartCtx.stroke();
+                
+                // X轴标签
+                chartCtx.fillStyle = '#666';
+                chartCtx.font = '12px Arial';
+                chartCtx.textAlign = 'center';
+                chartCtx.fillText((i * 0.5).toString(), x, chartCanvas.height - chartConfig.padding.bottom + 20);
+            }
+            
+            // 绘制坐标轴
+            chartCtx.strokeStyle = chartConfig.colors.axis;
+            chartCtx.lineWidth = 2;
+            
+            // Y轴
+            chartCtx.beginPath();
+            chartCtx.moveTo(chartConfig.padding.left, chartConfig.padding.top);
+            chartCtx.lineTo(chartConfig.padding.left, chartCanvas.height - chartConfig.padding.bottom);
+            chartCtx.stroke();
+            
+            // X轴
+            chartCtx.beginPath();
+            chartCtx.moveTo(chartConfig.padding.left, chartCanvas.height - chartConfig.padding.bottom);
+            chartCtx.lineTo(chartCanvas.width - chartConfig.padding.right, chartCanvas.height - chartConfig.padding.bottom);
+            chartCtx.stroke();
+            
+            // 绘制原点标记
+            chartCtx.fillStyle = '#333';
+            chartCtx.font = '12px Arial';
+            chartCtx.textAlign = 'right';
+            chartCtx.fillText('0', chartConfig.padding.left - 5, chartCanvas.height - chartConfig.padding.bottom + 15);
+            
+            // 绘制轴标签
+            chartCtx.fillStyle = '#333';
+            chartCtx.font = '14px Arial';
+            chartCtx.textAlign = 'center';
+            chartCtx.fillText('时间 (s)', chartCanvas.width / 2, chartCanvas.height - 10);
+            
+            chartCtx.save();
+            chartCtx.translate(20, chartCanvas.height / 2);
+            chartCtx.rotate(-Math.PI / 2);
+            chartCtx.textAlign = 'center';
+            chartCtx.fillText('速度 (m/s)', 0, 0);
+            chartCtx.restore();
+            
+            // 如果有历史数据，绘制速度曲线
+            if (simulation.history.time.length > 0) {
+                // 绘制棒A速度曲线
+                chartCtx.strokeStyle = chartConfig.colors.rodA;
+                chartCtx.lineWidth = 3;
+                chartCtx.beginPath();
+                
+                // 从原点开始
+                chartCtx.moveTo(chartConfig.padding.left, chartCanvas.height - chartConfig.padding.bottom);
+                
+                for (let i = 0; i < simulation.history.time.length; i++) {
+                    const time = Math.min(simulation.history.time[i], chartConfig.maxTime);
+                    const x = chartConfig.padding.left + time * xScale;
+                    const velocityA = Math.min(simulation.history.velocityA[i], chartConfig.maxVelocity);
+                    const y = chartCanvas.height - chartConfig.padding.bottom - velocityA * yScale;
+                    
+                    chartCtx.lineTo(x, y);
+                }
+                
+                chartCtx.stroke();
+                
+                // 绘制棒B速度曲线
+                chartCtx.strokeStyle = chartConfig.colors.rodB;
+                chartCtx.lineWidth = 3;
+                chartCtx.beginPath();
+                
+                // 从原点开始
+                chartCtx.moveTo(chartConfig.padding.left, chartCanvas.height - chartConfig.padding.bottom);
+                
+                for (let i = 0; i < simulation.history.time.length; i++) {
+                    const time = Math.min(simulation.history.time[i], chartConfig.maxTime);
+                    const x = chartConfig.padding.left + time * xScale;
+                    const velocityB = Math.min(simulation.history.velocityB[i], chartConfig.maxVelocity);
+                    const y = chartCanvas.height - chartConfig.padding.bottom - velocityB * yScale;
+                    
+                    chartCtx.lineTo(x, y);
+                }
+                
+                chartCtx.stroke();
+                
+                // 绘制图例
+                chartCtx.fillStyle = chartConfig.colors.rodA;
+                chartCtx.fillRect(chartCanvas.width - 150, 30, 20, 10);
+                chartCtx.fillStyle = '#333';
+                chartCtx.font = '14px Arial';
+                chartCtx.textAlign = 'left';
+                chartCtx.fillText('棒A速度', chartCanvas.width - 125, 40);
+                
+                chartCtx.fillStyle = chartConfig.colors.rodB;
+                chartCtx.fillRect(chartCanvas.width - 150, 55, 20, 10);
+                chartCtx.fillStyle = '#333';
+                chartCtx.fillText('棒B速度', chartCanvas.width - 125, 65);
+            } else {
+                // 没有数据时，显示提示
+                chartCtx.fillStyle = '#999';
+                chartCtx.font = '16px Arial';
+                chartCtx.textAlign = 'center';
+                chartCtx.fillText('点击"开始模拟"以显示速度曲线', chartCanvas.width / 2, chartCanvas.height / 2);
+            }
+            
+            // 绘制当前时间标记（如果模拟正在运行且时间在范围内）
+            if (simulation.running && simulation.time <= chartConfig.maxTime) {
+                const currentX = chartConfig.padding.left + Math.min(simulation.time, chartConfig.maxTime) * xScale;
+                
+                chartCtx.strokeStyle = '#e74c3c';
+                chartCtx.lineWidth = 2;
+                chartCtx.setLineDash([5, 5]);
+                chartCtx.beginPath();
+                chartCtx.moveTo(currentX, chartConfig.padding.top);
+                chartCtx.lineTo(currentX, chartCanvas.height - chartConfig.padding.bottom);
+                chartCtx.stroke();
+                chartCtx.setLineDash([]);
+                
+                // 标记当前速度值
+                if (simulation.history.time.length > 0) {
+                    // 找到最接近当前时间的数据点
+                    let closestIndex = 0;
+                    let minDiff = Math.abs(simulation.history.time[0] - simulation.time);
+                    
+                    for (let i = 1; i < simulation.history.time.length; i++) {
+                        const diff = Math.abs(simulation.history.time[i] - simulation.time);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            closestIndex = i;
+                        }
+                    }
+                    
+                    if (closestIndex < simulation.history.velocityA.length) {
+                        const vA = Math.min(simulation.history.velocityA[closestIndex], chartConfig.maxVelocity);
+                        const vB = Math.min(simulation.history.velocityB[closestIndex], chartConfig.maxVelocity);
+                        
+                        chartCtx.fillStyle = chartConfig.colors.rodA;
+                        chartCtx.beginPath();
+                        chartCtx.arc(currentX, chartCanvas.height - chartConfig.padding.bottom - vA * yScale, 5, 0, Math.PI * 2);
+                        chartCtx.fill();
+                        
+                        chartCtx.fillStyle = chartConfig.colors.rodB;
+                        chartCtx.beginPath();
+                        chartCtx.arc(currentX, chartCanvas.height - chartConfig.padding.bottom - vB * yScale, 5, 0, Math.PI * 2);
+                        chartCtx.fill();
+                    }
+                }
+            }
+        }
+        
+        // 更新图表
+        function updateChart() {
+            drawChart();
+        }
+        
+        // 运行模拟
+        function runSimulation() {
+            if (!simulation.running) return;
+            
+            // 计算物理过程
+            calculatePhysics();
+            
+            // 绘制模拟场景和图表
+            drawSimulation();
+            drawChart();
+            
+            // 如果时间超过最大时间，停止模拟
+            if (simulation.time > chartConfig.maxTime) {
+                simulation.running = false;
+                return;
+            }
+            
+            // 根据模拟速度调整帧率
+            setTimeout(() => {
+                requestAnimationFrame(runSimulation);
+            }, 1000 / (60 * simulation.speedFactor));
+        }
+        
+        // 初始化
+        function init() {
+            initializeSliders();
+            initializeButtons();
+            
+            // 确保初始速度为0被记录
+            simulation.history.time.push(0);
+            simulation.history.velocityA.push(0);
+            simulation.history.velocityB.push(0);
+            
+            drawSimulation();
+            drawChart();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

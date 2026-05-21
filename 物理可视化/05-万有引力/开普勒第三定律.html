@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开普勒第三定律教学互动动画 - 燕赵名师张兴刚工作室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1a2d 0%, #1a3a5f 100%);
+            color: #e0f0ff;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(16, 42, 88, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            color: #4da6ff;
+        }
+        
+        h1 {
+            font-size: 2.4rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a3d5ff;
+            margin-bottom: 15px;
+        }
+        
+        .studio-name {
+            font-size: 1.5rem;
+            color: #ffcc00;
+            font-weight: bold;
+            padding: 8px 20px;
+            background: rgba(25, 55, 99, 0.8);
+            border-radius: 30px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .simulation-panel {
+            flex: 3;
+            min-width: 300px;
+            background: rgba(16, 42, 88, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .control-panel {
+            flex: 2;
+            min-width: 300px;
+            background: rgba(16, 42, 88, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        h2 {
+            color: #4da6ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(64, 156, 255, 0.3);
+            font-size: 1.8rem;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #0a1525;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(64, 156, 255, 0.3);
+        }
+        
+        #orbitCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .law-equation {
+            text-align: center;
+            font-size: 1.8rem;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(10, 30, 60, 0.8);
+            border-radius: 10px;
+            border: 1px dashed rgba(64, 156, 255, 0.4);
+        }
+        
+        .equation {
+            color: #ffcc00;
+            font-family: 'Cambria', 'Times New Roman', serif;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #a3d5ff;
+        }
+        
+        .control-icon {
+            color: #4da6ff;
+            font-size: 1.2rem;
+        }
+        
+        .slider-container {
+            margin-bottom: 10px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label span:last-child {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(10, 30, 60, 0.8);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #4da6ff;
+            cursor: pointer;
+            border: 2px solid #e0f0ff;
+            box-shadow: 0 0 10px rgba(77, 166, 255, 0.8);
+        }
+        
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .preset-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            background: rgba(25, 55, 99, 0.8);
+            color: #e0f0ff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            border: 1px solid rgba(64, 156, 255, 0.3);
+        }
+        
+        .preset-btn:hover {
+            background: rgba(64, 156, 255, 0.8);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(64, 156, 255, 0.4);
+        }
+        
+        .data-panel {
+            background: rgba(10, 30, 60, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .data-label {
+            color: #a3d5ff;
+        }
+        
+        .data-value {
+            color: #ffcc00;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .explanation {
+            background: rgba(16, 42, 88, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .explanation h2 {
+            margin-bottom: 15px;
+        }
+        
+        .explanation p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .highlight {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #a3d5ff;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(to right, #1a5fb4, #4da6ff);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(77, 166, 255, 0.6);
+        }
+        
+        .action-btn.reset {
+            background: linear-gradient(to right, #b43e1a, #ff7b4d);
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .law-equation {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-star-and-crescent logo-icon"></i>
+                <div>
+                    <h1>开普勒第三定律教学互动动画</h1>
+                    <div class="subtitle">行星运动定律可视化教学工具</div>
+                </div>
+            </div>
+            <div class="studio-name">燕赵名师张兴刚工作室</div>
+        </header>
+        
+        <div class="content">
+            <div class="simulation-panel">
+                <h2><i class="fas fa-globe-americas"></i> 行星轨道模拟（太阳在左侧焦点）</h2>
+                <div class="canvas-container">
+                    <canvas id="orbitCanvas"></canvas>
+                </div>
+                
+                <div class="law-equation">
+                    开普勒第三定律：<span class="equation">T² ∝ a³</span>
+                    <div style="font-size: 1rem; margin-top: 10px; color: #a3d5ff;">
+                        行星公转周期的平方与轨道半长轴的立方成正比
+                    </div>
+                </div>
+                
+                <div class="data-panel">
+                    <div class="data-item">
+                        <span class="data-label">轨道半长轴 (a):</span>
+                        <span id="semiMajorAxisValue" class="data-value">1.00 AU</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">公转周期 (T):</span>
+                        <span id="orbitalPeriodValue" class="data-value">1.00 年</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">T² / a³ 比值:</span>
+                        <span id="ratioValue" class="data-value">1.00</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">轨道偏心率:</span>
+                        <span id="eccentricityValue" class="data-value">0.10</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-panel">
+                <h2><i class="fas fa-sliders-h"></i> 轨道参数控制</h2>
+                
+                <div class="control-group">
+                    <div class="control-title">
+                        <i class="fas fa-ruler-horizontal control-icon"></i>
+                        <span>轨道半长轴 (a)</span>
+                    </div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>0.5 AU</span>
+                            <span id="semiMajorAxisDisplay">1.00 AU</span>
+                            <span>3.0 AU</span>
+                        </div>
+                        <input type="range" id="semiMajorAxisSlider" min="0.5" max="3.0" step="0.1" value="1.0">
+                    </div>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-a="0.39">水星 (0.39 AU)</button>
+                        <button class="preset-btn" data-a="1.00">地球 (1.00 AU)</button>
+                        <button class="preset-btn" data-a="1.52">火星 (1.52 AU)</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-title">
+                        <i class="fas fa-compress-arrows-alt control-icon"></i>
+                        <span>轨道偏心率 (e)</span>
+                    </div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>0.00 (圆形)</span>
+                            <span id="eccentricityDisplay">0.10</span>
+                            <span>0.70 (椭圆)</span>
+                        </div>
+                        <input type="range" id="eccentricitySlider" min="0.00" max="0.70" step="0.05" value="0.10">
+                    </div>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" data-e="0.00">圆形轨道</button>
+                        <button class="preset-btn" data-e="0.21">水星轨道</button>
+                        <button class="preset-btn" data-e="0.41">冥王星轨道</button>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="action-btn" id="startBtn">
+                        <i class="fas fa-play"></i> 开始/暂停动画
+                    </button>
+                    <button class="action-btn reset" id="resetBtn">
+                        <i class="fas fa-redo"></i> 重置参数
+                    </button>
+                </div>
+                
+                <div class="control-group" style="margin-top: 25px;">
+                    <div class="control-title">
+                        <i class="fas fa-info-circle control-icon"></i>
+                        <span>操作说明</span>
+                    </div>
+                    <ul style="padding-left: 20px; color: #a3d5ff;">
+                        <li>调整半长轴滑块，观察周期变化</li>
+                        <li>调整偏心率滑块，改变轨道形状</li>
+                        <li>点击预设按钮，查看不同行星的参数</li>
+                        <li>太阳位于椭圆轨道的左侧焦点</li>
+                        <li>开普勒第三定律：T² ∝ a³ (T为周期，a为半长轴)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h2><i class="fas fa-lightbulb"></i> 开普勒第三定律详解</h2>
+            <p>开普勒第三定律，也称为<span class="highlight">调和定律</span>，指出：<span class="highlight">所有行星绕太阳公转周期的平方与它们轨道半长轴的立方成正比</span>。</p>
+            <p>数学表达式为：<span class="highlight">T²/a³ = k</span>，其中T是行星公转周期，a是轨道半长轴，k是一个常数，对于太阳系中的所有行星都相同。</p>
+            <p>在本模拟中，我们设定地球的轨道半长轴为1个天文单位(AU)，公转周期为1年。因此常数k=1。当您改变轨道半长轴时，公转周期会根据T² = a³的关系自动计算。</p>
+            <p>例如：如果轨道半长轴增加到2 AU（地球轨道的2倍），那么公转周期将增加到√(2³) = √8 ≈ 2.83年。</p>
+            <p><span class="highlight">注意</span>：在椭圆轨道中，太阳位于椭圆的一个焦点上。本模拟中太阳位于左侧焦点，这是符合开普勒第一定律的。</p>
+            <p>开普勒第三定律揭示了行星运动的统一规律，为后来牛顿发现万有引力定律奠定了基础。</p>
+        </div>
+        
+        <footer>
+            <p>© 2023 燕赵名师张兴刚工作室 | 天文物理教学工具 | 开普勒行星运动定律</p>
+            <p>本交互式动画用于教学演示，帮助学生直观理解开普勒第三定律</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        // 初始化变量
+        let animationId = null;
+        let isAnimating = true;
+        let time = 0;
+        
+        // 轨道参数
+        let semiMajorAxis = 1.0; // 半长轴 (AU)
+        let eccentricity = 0.1;   // 偏心率
+        let orbitalPeriod = 1.0; // 公转周期 (年)，根据开普勒第三定律计算
+        
+        // 更新轨道参数
+        function updateOrbitalParameters() {
+            // 根据开普勒第三定律计算周期：T² = a³ (其中k=1，以地球为基准)
+            orbitalPeriod = Math.sqrt(Math.pow(semiMajorAxis, 3));
+            
+            // 更新显示值
+            document.getElementById('semiMajorAxisValue').textContent = semiMajorAxis.toFixed(2) + ' AU';
+            document.getElementById('orbitalPeriodValue').textContent = orbitalPeriod.toFixed(2) + ' 年';
+            document.getElementById('ratioValue').textContent = (Math.pow(orbitalPeriod, 2) / Math.pow(semiMajorAxis, 3)).toFixed(2);
+            document.getElementById('eccentricityValue').textContent = eccentricity.toFixed(2);
+            
+            // 更新滑块显示
+            document.getElementById('semiMajorAxisDisplay').textContent = semiMajorAxis.toFixed(2) + ' AU';
+            document.getElementById('eccentricityDisplay').textContent = eccentricity.toFixed(2);
+        }
+        
+        // 绘制太阳和行星轨道（太阳在左侧焦点）
+        function drawSolarSystem() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // 计算缩放比例，使轨道适合画布
+            const scale = Math.min(canvas.width, canvas.height) * 0.35;
+            
+            // 清除画布
+            ctx.fillStyle = '#0a1525';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景网格
+            drawGrid(centerX, centerY, scale);
+            
+            // 计算轨道半短轴
+            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - Math.pow(eccentricity, 2));
+            
+            // 计算焦点位置（太阳在左侧焦点）
+            const focusDistance = eccentricity * semiMajorAxis * scale;
+            const sunX = centerX - focusDistance; // 太阳在左侧
+            const sunY = centerY;
+            
+            // 绘制椭圆轨道
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(64, 156, 255, 0.7)';
+            ctx.lineWidth = 2;
+            // 椭圆中心需要向右偏移focusDistance，使太阳位于左侧焦点
+            ctx.ellipse(
+                centerX, centerY,
+                semiMajorAxis * scale, semiMinorAxis * scale,
+                0, 0, Math.PI * 2
+            );
+            ctx.stroke();
+            
+            // 绘制焦点（太阳在左侧）
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFCC00';
+            ctx.fill();
+            
+            // 绘制太阳光晕
+            const gradient = ctx.createRadialGradient(
+                sunX, sunY, 15,
+                sunX, sunY, 30
+            );
+            gradient.addColorStop(0, 'rgba(255, 204, 0, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 204, 0, 0)');
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 30, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 绘制太阳标签
+            ctx.fillStyle = '#FFCC00';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('太阳', sunX - 20, sunY - 40);
+            
+            // 计算行星当前位置（相对于太阳在左侧焦点）
+            const meanAnomaly = (time * 2 * Math.PI) / orbitalPeriod;
+            const eccentricAnomaly = calculateEccentricAnomaly(meanAnomaly, eccentricity);
+            
+            // 行星在椭圆上的位置（相对于椭圆中心）
+            const planetXRelative = semiMajorAxis * scale * (Math.cos(eccentricAnomaly) - eccentricity);
+            const planetYRelative = semiMinorAxis * scale * Math.sin(eccentricAnomaly);
+            
+            // 转换为画布坐标（椭圆中心在canvas中心）
+            const planetX = centerX + planetXRelative;
+            const planetY = centerY + planetYRelative;
+            
+            // 绘制行星
+            ctx.beginPath();
+            ctx.arc(planetX, planetY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#4da6ff';
+            ctx.fill();
+            
+            // 绘制行星轨道线（从太阳到行星）
+            ctx.beginPath();
+            ctx.moveTo(sunX, sunY);
+            ctx.lineTo(planetX, planetY);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制行星标签
+            ctx.fillStyle = '#4da6ff';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('行星', planetX + 15, planetY - 10);
+            
+            // 绘制轨道参数标注
+            drawOrbitalAnnotations(centerX, centerY, scale, focusDistance, sunX, sunY);
+        }
+        
+        // 计算偏近点角（使用开普勒方程近似解）
+        function calculateEccentricAnomaly(M, e) {
+            // 使用迭代法解开普勒方程：M = E - e*sin(E)
+            let E = M; // 初始值
+            for (let i = 0; i < 10; i++) {
+                E = M + e * Math.sin(E);
+            }
+            return E;
+        }
+        
+        // 绘制网格
+        function drawGrid(centerX, centerY, scale) {
+            ctx.strokeStyle = 'rgba(64, 156, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 水平线
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, centerY + i * scale);
+                ctx.lineTo(canvas.width, centerY + i * scale);
+                ctx.stroke();
+            }
+            
+            // 垂直线
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + i * scale, 0);
+                ctx.lineTo(centerX + i * scale, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 中心十字
+            ctx.strokeStyle = 'rgba(64, 156, 255, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+        }
+        
+        // 绘制轨道参数标注
+        function drawOrbitalAnnotations(centerX, centerY, scale, focusDistance, sunX, sunY) {
+            // 绘制半长轴标注
+            ctx.strokeStyle = '#ffcc00';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            // 半长轴（从椭圆左端点到右端点）
+            const leftEndX = centerX - semiMajorAxis * scale;
+            const rightEndX = centerX + semiMajorAxis * scale;
+            
+            ctx.beginPath();
+            ctx.moveTo(leftEndX, centerY);
+            ctx.lineTo(rightEndX, centerY);
+            ctx.stroke();
+            
+            // 标注文字
+            ctx.fillStyle = '#ffcc00';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(`a = ${semiMajorAxis.toFixed(2)} AU`, centerX, centerY + 25);
+            
+            // 绘制焦距标注（从椭圆中心到太阳）
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(sunX, sunY);
+            ctx.stroke();
+            
+            ctx.fillText(`c = ${(eccentricity * semiMajorAxis).toFixed(2)} AU`, (centerX + sunX) / 2, centerY - 15);
+            
+            // 绘制另一个焦点（右侧焦点）
+            const otherFocusX = centerX + focusDistance;
+            ctx.beginPath();
+            ctx.arc(otherFocusX, centerY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fill();
+            ctx.fillText('另一焦点', otherFocusX - 30, centerY - 20);
+            
+            ctx.setLineDash([]);
+        }
+        
+        // 动画循环
+        function animate() {
+            if (isAnimating) {
+                time += 0.02; // 控制动画速度
+            }
+            
+            drawSolarSystem();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 半长轴滑块
+            const semiMajorAxisSlider = document.getElementById('semiMajorAxisSlider');
+            semiMajorAxisSlider.addEventListener('input', function() {
+                semiMajorAxis = parseFloat(this.value);
+                updateOrbitalParameters();
+            });
+            
+            // 偏心率滑块
+            const eccentricitySlider = document.getElementById('eccentricitySlider');
+            eccentricitySlider.addEventListener('input', function() {
+                eccentricity = parseFloat(this.value);
+                updateOrbitalParameters();
+            });
+            
+            // 预设按钮
+            const presetButtons = document.querySelectorAll('.preset-btn');
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.hasAttribute('data-a')) {
+                        const aValue = parseFloat(this.getAttribute('data-a'));
+                        semiMajorAxis = aValue;
+                        document.getElementById('semiMajorAxisSlider').value = aValue;
+                    }
+                    
+                    if (this.hasAttribute('data-e')) {
+                        const eValue = parseFloat(this.getAttribute('data-e'));
+                        eccentricity = eValue;
+                        document.getElementById('eccentricitySlider').value = eValue;
+                    }
+                    
+                    updateOrbitalParameters();
+                });
+            });
+            
+            // 开始/暂停按钮
+            const startBtn = document.getElementById('startBtn');
+            startBtn.addEventListener('click', function() {
+                isAnimating = !isAnimating;
+                const icon = this.querySelector('i');
+                if (isAnimating) {
+                    icon.className = 'fas fa-pause';
+                } else {
+                    icon.className = 'fas fa-play';
+                }
+            });
+            
+            // 重置按钮
+            const resetBtn = document.getElementById('resetBtn');
+            resetBtn.addEventListener('click', function() {
+                semiMajorAxis = 1.0;
+                eccentricity = 0.1;
+                time = 0;
+                
+                document.getElementById('semiMajorAxisSlider').value = semiMajorAxis;
+                document.getElementById('eccentricitySlider').value = eccentricity;
+                
+                updateOrbitalParameters();
+                isAnimating = true;
+                startBtn.querySelector('i').className = 'fas fa-pause';
+            });
+            
+            // 窗口大小调整时重新设置Canvas尺寸
+            window.addEventListener('resize', function() {
+                resizeCanvas();
+                drawSolarSystem();
+            });
+        }
+        
+        // 初始化
+        function init() {
+            resizeCanvas();
+            updateOrbitalParameters();
+            initEventListeners();
+            animate();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
