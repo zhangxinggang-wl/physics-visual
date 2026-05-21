@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人教版高中物理可视化教学资源</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* 顶部导航栏 */
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #a0aec0;
+      font-size: 1rem;
+    }
+    
+    /* 容器 */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    /* 搜索框 */
+    .search-box {
+      margin-bottom: 30px;
+    }
+    
+    .search-box input {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      display: block;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: white;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      outline: none;
+      transition: box-shadow 0.3s;
+    }
+    
+    .search-box input:focus {
+      box-shadow: 0 4px 20px rgba(26,26,46,0.15);
+    }
+    
+    /* 分册卡片 */
+    .book-section {
+      margin-bottom: 50px;
+    }
+    
+    .book-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+      padding-left: 15px;
+      border-left: 4px solid #4361ee;
+    }
+    
+    /* 章节网格 */
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    
+    /* 章节卡片 */
+    .chapter-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .chapter-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .chapter-card.has-content {
+      border-color: #4361ee;
+    }
+    
+    .chapter-card.empty {
+      border: 2px dashed #d1d5db;
+      background: #fafafa;
+    }
+    
+    .chapter-number {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #4361ee;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    
+    .chapter-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 12px;
+    }
+    
+    /* 小节列表 */
+    .section-list {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 15px;
+      line-height: 1.8;
+    }
+    
+    .section-list span {
+      display: block;
+    }
+    
+    /* 链接按钮 */
+    .chapter-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      background: #4361ee;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .chapter-link:hover {
+      background: #3a56d4;
+      transform: translateX(4px);
+    }
+    
+    /* 空状态占位 */
+    .empty-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .empty-placeholder .icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+    
+    .empty-placeholder p {
+      color: #9ca3af;
+      font-size: 0.9rem;
+    }
+    
+    .add-hint {
+      display: block;
+      margin-top: 15px;
+      padding: 8px 14px;
+      background: #f3f4f6;
+      color: #6b7280;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .add-hint:hover {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    
+    /* 页脚 */
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #9ca3af;
+      font-size: 0.85rem;
+    }
+    
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .chapter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* 隐藏未匹配项 */
+    .hidden {
+      display: none !important;
+    }
+    
+    /* 统计信息 */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .stats span {
+      color: #a0aec0;
+    }
+    
+    .stats strong {
+      color: #4361ee;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📚 人教版高中物理可视化教学资源</h1>
+    <p>张兴刚工作室 · 物理教学动画与互动课件</p>
+    <div class="stats">
+      <span>共 <strong id="total-chapters">0</strong> 章</span>
+      <span>已添加 <strong id="added-chapters">0</strong> 个</span>
+    </div>
+  </div>
+  
+  <div class="container">
+    <!-- 搜索 -->
+    <div class="search-box">
+      <input type="text" id="search" placeholder="🔍 搜索章节名称..." oninput="filterChapters()">
+    </div>
+    
+    <!-- 必修第一册 -->
+    <div class="book-section" data-book="必修第一册">
+      <h2 class="book-title">📖 必修第一册</h2>
+      <div class="chapter-grid">
+        
+        <div class="chapter-card" id="bxiu1-ch1">
+          <div class="chapter-number">第一章</div>
+          <h3>运动的描述</h3>
+          <div class="section-list">
+            <span>§1.1 质点 参考系</span>
+            <span>§1.2 时间 位移</span>
+            <span>§1.3 位置变化快慢的描述——速度</span>
+            <span>§1.4 速度变化快慢的描述——加速度</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu1-ch1', '第一章 运动的描述')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu1-ch2">
+          <div class="chapter-number">第二章</div>
+          <h3>匀变速直线运动的研究</h3>
+          <div class="section-list">
+            <span>§2.1 实验：探究小车速度随时间变化的规律</span>
+            <span>§2.2 匀变速直线运动的速度与时间的关系</span>
+            <span>§2.3 匀变速直线运动的位移与时间的关系</span>
+            <span>§2.4 自由落体运动</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu1-ch2', '第二章 匀变速直线运动的研究')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu1-ch3">
+          <div class="chapter-number">第三章</div>
+          <h3>相互作用——力</h3>
+          <div class="section-list">
+            <span>§3.1 重力与弹力</span>
+            <span>§3.2 摩擦力</span>
+            <span>§3.3 牛顿第三定律</span>
+            <span>§3.4 力的合成与分解</span>
+            <span>§3.5 共点力的平衡</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu1-ch3', '第三章 相互作用——力')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu1-ch4">
+          <div class="chapter-number">第四章</div>
+          <h3>运动和力的关系</h3>
+          <div class="section-list">
+            <span>§4.1 牛顿第一定律</span>
+            <span>§4.2 实验：探究加速度与力、质量的关系</span>
+            <span>§4.3 牛顿第二定律</span>
+            <span>§4.4 力学单位制</span>
+            <span>§4.5 牛顿运动定律的应用</span>
+            <span>§4.6 超重与失重</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu1-ch4', '第四章 运动和力的关系')">+ 添加可视化链接</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- 必修第二册 -->
+    <div class="book-section" data-book="必修第二册">
+      <h2 class="book-title">📖 必修第二册</h2>
+      <div class="chapter-grid">
+        
+        <div class="chapter-card" id="bxiu2-ch5">
+          <div class="chapter-number">第五章</div>
+          <h3>抛体运动</h3>
+          <div class="section-list">
+            <span>§5.1 曲线运动</span>
+            <span>§5.2 运动的合成与分解</span>
+            <span>§5.3 实验：探究平抛运动的特点</span>
+            <span>§5.4 抛体运动的规律</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu2-ch5', '第五章 抛体运动')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu2-ch6">
+          <div class="chapter-number">第六章</div>
+          <h3>圆周运动</h3>
+          <div class="section-list">
+            <span>§6.1 圆周运动</span>
+            <span>§6.2 向心力</span>
+            <span>§6.3 向心加速度</span>
+            <span>§6.4 生活中的圆周运动</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu2-ch6', '第六章 圆周运动')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu2-ch7">
+          <div class="chapter-number">第七章</div>
+          <h3>万有引力与宇宙航行</h3>
+          <div class="section-list">
+            <span>§7.1 行星的运动</span>
+            <span>§7.2 万有引力定律</span>
+            <span>§7.3 万有引力理论的成就</span>
+            <span>§7.4 宇宙航行</span>
+            <span>§7.5 相对论时空观与牛顿力学的局限性</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu2-ch7', '第七章 万有引力与宇宙航行')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu2-ch8">
+          <div class="chapter-number">第八章</div>
+          <h3>机械能守恒定律</h3>
+          <div class="section-list">
+            <span>§8.1 功</span>
+            <span>§8.2 功率</span>
+            <span>§8.3 重力势能</span>
+            <span>§8.4 动能和动能定理</span>
+            <span>§8.5 机械能守恒定律</span>
+            <span>§8.6 实验：验证机械能守恒定律</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu2-ch8', '第八章 机械能守恒定律')">+ 添加可视化链接</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- 必修第三册 -->
+    <div class="book-section" data-book="必修第三册">
+      <h2 class="book-title">📖 必修第三册</h2>
+      <div class="chapter-grid">
+        
+        <div class="chapter-card" id="bxiu3-ch9">
+          <div class="chapter-number">第九章</div>
+          <h3>静电场及其应用</h3>
+          <div class="section-list">
+            <span>§9.1 电荷</span>
+            <span>§9.2 库仑定律</span>
+            <span>§9.3 电场 电场强度</span>
+            <span>§9.4 静电的防止与利用</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu3-ch9', '第九章 静电场及其应用')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu3-ch10">
+          <div class="chapter-number">第十章</div>
+          <h3>静电场中的能量</h3>
+          <div class="section-list">
+            <span>§10.1 电势能和电势</span>
+            <span>§10.2 电势差</span>
+            <span>§10.3 电势差与电场强度的关系</span>
+            <span>§10.4 电容器的电容</span>
+            <span>§10.5 带电粒子在电场中的运动</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu3-ch10', '第十章 静电场中的能量')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu3-ch11">
+          <div class="chapter-number">第十一章</div>
+          <h3>电路及其应用</h3>
+          <div class="section-list">
+            <span>§11.1 电源和电流</span>
+            <span>§11.2 电动势</span>
+            <span>§11.3 电路的欧姆定律</span>
+            <span>§11.4 串联电路和并联电路</span>
+            <span>§11.5 实验：练习使用多用电表</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu3-ch11', '第十一章 电路及其应用')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu3-ch12">
+          <div class="chapter-number">第十二章</div>
+          <h3>电能 能量守恒定律</h3>
+          <div class="section-list">
+            <span>§12.1 电路中的能量</span>
+            <span>§12.2 闭合电路的欧姆定律</span>
+            <span>§12.3 能源与可持续发展</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu3-ch12', '第十二章 电能 能量守恒定律')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="bxiu3-ch13">
+          <div class="chapter-number">第十三章</div>
+          <h3>电磁感应与电磁波初步</h3>
+          <div class="section-list">
+            <span>§13.1 磁场 磁感线</span>
+            <span>§13.2 磁感应强度 磁通量</span>
+            <span>§13.3 电磁感应</span>
+            <span>§13.4 电磁波的发现与应用</span>
+            <span>§13.5 能量量子化</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('bxiu3-ch13', '第十三章 电磁感应与电磁波初步')">+ 添加可视化链接</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- 选择性必修第一册 -->
+    <div class="book-section" data-book="选择性必修第一册">
+      <h2 class="book-title">📖 选择性必修第一册</h2>
+      <div class="chapter-grid">
+        
+        <div class="chapter-card" id="xxbx1-ch1">
+          <div class="chapter-number">第一章</div>
+          <h3>动量守恒定律</h3>
+          <div class="section-list">
+            <span>§1.1 动量</span>
+            <span>§1.2 动量守恒定律</span>
+            <span>§1.3 实验：验证动量守恒定律</span>
+            <span>§1.4 弹性碰撞与非弹性碰撞</span>
+            <span>§1.5 反冲现象 火箭</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx1-ch1', '第一章 动量守恒定律')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx1-ch2">
+          <div class="chapter-number">第二章</div>
+          <h3>机械振动</h3>
+          <div class="section-list">
+            <span>§2.1 简谐运动</span>
+            <span>§2.2 简谐运动的描述</span>
+            <span>§2.3 简谐运动的回复力和能量</span>
+            <span>§2.4 单摆</span>
+            <span>§2.5 实验：用单摆测量重力加速度</span>
+            <span>§2.6 阻尼振动 受迫振动</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx1-ch2', '第二章 机械振动')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx1-ch3">
+          <div class="chapter-number">第三章</div>
+          <h3>机械波</h3>
+          <div class="section-list">
+            <span>§3.1 波的形成</span>
+            <span>§3.2 波的描述</span>
+            <span>§3.3 实验：用双缝干涉测量光的波长</span>
+            <span>§3.4 多普勒效应</span>
+            <span>§3.5 惠更斯原理</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx1-ch3', '第三章 机械波')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx1-ch4">
+          <div class="chapter-number">第四章</div>
+          <h3>光</h3>
+          <div class="section-list">
+            <span>§4.1 光的折射</span>
+            <span>§4.2 全反射</span>
+            <span>§4.3 光的干涉</span>
+            <span>§4.4 实验：用双缝干涉测量光的波长</span>
+            <span>§4.5 光的衍射</span>
+            <span>§4.6 光的偏振 激光</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx1-ch4', '第四章 光')">+ 添加可视化链接</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- 选择性必修第二册 -->
+    <div class="book-section" data-book="选择性必修第二册">
+      <h2 class="book-title">📖 选择性必修第二册</h2>
+      <div class="chapter-grid">
+        
+        <div class="chapter-card" id="xxbx2-ch1">
+          <div class="chapter-number">第一章</div>
+          <h3>安培力与洛伦兹力</h3>
+          <div class="section-list">
+            <span>§1.1 磁场对通电导线的作用力</span>
+            <span>§1.2 磁场对运动电荷的作用力</span>
+            <span>§1.3 带电粒子在匀强磁场中的运动</span>
+            <span>§1.4 质谱仪与回旋加速器</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx2-ch1', '第一章 安培力与洛伦兹力')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx2-ch2">
+          <div class="chapter-number">第二章</div>
+          <h3>电磁感应</h3>
+          <div class="section-list">
+            <span>§2.1 楞次定律</span>
+            <span>§2.2 法拉第电磁感应定律</span>
+            <span>§2.3 涡流 电磁阻尼和电磁驱动</span>
+            <span>§2.4 互感和自感</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx2-ch2', '第二章 电磁感应')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx2-ch3">
+          <div class="chapter-number">第三章</div>
+          <h3>交变电流 传感器</h3>
+          <div class="section-list">
+            <span>§3.1 交变电流</span>
+            <span>§3.2 交变电流的描述</span>
+            <span>§3.3 变压器</span>
+            <span>§3.4 电能的输送</span>
+            <span>§3.5 传感器及其应用</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx2-ch3', '第三章 交变电流 传感器')">+ 添加可视化链接</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- 选择性必修第三册 -->
+    <div class="book-section" data-book="选择性必修第三册">
+      <h2 class="book-title">📖 选择性必修第三册</h2>
+      <div class="chapter-grid">
+        
+        <div class="chapter-card" id="xxbx3-ch1">
+          <div class="chapter-number">第一章</div>
+          <h3>分子动理论</h3>
+          <div class="section-list">
+            <span>§1.1 分子动理论的基本内容</span>
+            <span>§1.2 实验：观察布朗运动</span>
+            <span>§1.3 分子间的作用力</span>
+            <span>§1.4 分子运动的统计规律</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx3-ch1', '第一章 分子动理论')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx3-ch2">
+          <div class="chapter-number">第二章</div>
+          <h3>气体 固体和液体</h3>
+          <div class="section-list">
+            <span>§2.1 气体液化</span>
+            <span>§2.2 理想气体</span>
+            <span>§2.3 气体热现象的微观意义</span>
+            <span>§2.4 固体</span>
+            <span>§2.5 液体</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx3-ch2', '第二章 气体 固体和液体')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx3-ch3">
+          <div class="chapter-number">第三章</div>
+          <h3>热力学定律</h3>
+          <div class="section-list">
+            <span>§3.1 功 热量和内能的改变</span>
+            <span>§3.2 热力学第一定律</span>
+            <span>§3.3 能量守恒定律</span>
+            <span>§3.4 热力学第二定律</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx3-ch3', '第三章 热力学定律')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx3-ch4">
+          <div class="chapter-number">第四章</div>
+          <h3>原子结构和波粒二象性</h3>
+          <div class="section-list">
+            <span>§4.1 原子结构</span>
+            <span>§4.2 原子模型的提出</span>
+            <span>§4.3 氢原子光谱和能级结构</span>
+            <span>§4.4 原子核的组成</span>
+            <span>§4.5 波粒二象性</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx3-ch4', '第四章 原子结构和波粒二象性')">+ 添加可视化链接</div>
+        </div>
+        
+        <div class="chapter-card" id="xxbx3-ch5">
+          <div class="chapter-number">第五章</div>
+          <h3>原子核</h3>
+          <div class="section-list">
+            <span>§5.1 原子核的组成</span>
+            <span>§5.2 放射性元素的衰变</span>
+            <span>§5.3 射线与物质的相互作用</span>
+            <span>§5.4 核裂变与核聚变</span>
+            <span>§5.5 核能的利用</span>
+          </div>
+          <div class="empty-placeholder">
+            <div class="icon">🔬</div>
+            <p>可视化内容制作中...</p>
+          </div>
+          <div class="add-hint" onclick="showAddDialog('xxbx3-ch5', '第五章 原子核')">+ 添加可视化链接</div>
+        </div>
+        
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="footer">
+    <p>📧 张兴刚工作室 · 物理教学资源平台</p>
+    <p style="margin-top: 5px; font-size: 0.8rem;">可持续更新 · 逐步完善</p>
+  </div>
+  
+  <!-- 添加链接弹窗 -->
+  <div id="addDialog" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:16px; padding:30px; max-width:500px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <h3 style="margin-bottom:20px; font-size:1.2rem;">添加可视化链接</h3>
+      <p id="dialog-chapter" style="color:#64748b; margin-bottom:20px; font-size:0.9rem;"></p>
+      <div style="margin-bottom:15px;">
+        <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:#374151;">网页名称：</label>
+        <input type="text" id="linkTitle" placeholder="例如：平抛运动动画" style="width:100%; padding:12px; border:2px solid #e5e7eb; border-radius:8px; font-size:1rem; outline:none;">
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="display:block; margin-bottom:8px; font-size:0.9rem; color:#374151;">网页链接：</label>
+        <input type="url" id="linkUrl" placeholder="https://..." style="width:100%; padding:12px; border:2px solid #e5e7eb; border-radius:8px; font-size:1rem; outline:none;">
+      </div>
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <button onclick="closeDialog()" style="padding:12px 24px; border:none; background:#f3f4f6; color:#374151; border-radius:8px; cursor:pointer; font-size:0.9rem;">取消</button>
+        <button onclick="saveLink()" style="padding:12px 24px; border:none; background:#4361ee; color:white; border-radius:8px; cursor:pointer; font-size:0.9rem;">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 当前编辑的章节ID
+    let currentChapterId = null;
+    
+    // 统计已添加的章节
+    function updateStats() {
+      const total = document.querySelectorAll('.chapter-card').length;
+      const added = document.querySelectorAll('.chapter-card.has-content').length;
+      document.getElementById('total-chapters').textContent = total;
+      document.getElementById('added-chapters').textContent = added;
+    }
+    
+    // 搜索过滤
+    function filterChapters() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const cards = document.querySelectorAll('.chapter-card');
+      const sections = document.querySelectorAll('.book-section');
+      
+      cards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const sections_text = card.querySelector('.section-list').textContent.toLowerCase();
+        if (title.includes(query) || sections_text.includes(query)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      
+      // 隐藏没有匹配项的分册
+      sections.forEach(section => {
+        const visibleCards = section.querySelectorAll('.chapter-card:not(.hidden)');
+        if (visibleCards.length === 0) {
+          section.classList.add('hidden');
+        } else {
+          section.classList.remove('hidden');
+        }
+      });
+    }
+    
+    // 显示添加弹窗
+    function showAddDialog(chapterId, chapterName) {
+      currentChapterId = chapterId;
+      document.getElementById('dialog-chapter').textContent = chapterName;
+      document.getElementById('linkTitle').value = '';
+      document.getElementById('linkUrl').value = '';
+      document.getElementById('addDialog').style.display = 'flex';
+      document.getElementById('linkTitle').focus();
+    }
+    
+    // 关闭弹窗
+    function closeDialog() {
+      document.getElementById('addDialog').style.display = 'none';
+      currentChapterId = null;
+    }
+    
+    // 保存链接
+    function saveLink() {
+      const title = document.getElementById('linkTitle').value.trim();
+      const url = document.getElementById('linkUrl').value.trim();
+      
+      if (!title || !url) {
+        alert('请填写完整的名称和链接');
+        return;
+      }
+      
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        alert('链接必须以 http:// 或 https:// 开头');
+        return;
+      }
+      
+      const card = document.getElementById(currentChapterId);
+      card.classList.add('has-content');
+      card.classList.remove('empty');
+      
+      // 替换内容
+      const placeholder = card.querySelector('.empty-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = '<a href="' + url + '" class="chapter-link" target="_blank">📂 打开可视化 ↗</a>';
+      }
+      
+      // 保存到本地存储
+      const saved = JSON.parse(localStorage.getItem('physics-links') || '{}');
+      saved[currentChapterId] = { title, url, book: card.closest('.book-section').dataset.book };
+      localStorage.setItem('physics-links', JSON.stringify(saved));
+      
+      // 更新统计
+      updateStats();
+      
+      // 关闭弹窗
+      closeDialog();
+    }
+    
+    // 回车键提交
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && document.getElementById('addDialog').style.display === 'flex') {
+        saveLink();
+      }
+      if (e.key === 'Escape') {
+        closeDialog();
+      }
+    });
+    
+    // 初始化：从本地存储恢复数据
+    function initFromStorage() {
+      const saved = JSON.parse(localStorage.getItem('physics-links') || '{}');
+      Object.keys(saved).forEach(id => {
+        const data = saved[id];
+        const card = document.getElementById(id);
+        if (card) {
+          card.classList.add('has-content');
+          card.classList.remove('empty');
+          const placeholder = card.querySelector('.empty-placeholder');
+          if (placeholder) {
+            placeholder.innerHTML = '<a href="' + data.url + '" class="chapter-link" target="_blank">📂 ' + data.title + ' ↗</a>';
+          }
+        }
+      });
+      updateStats();
+    }
+    
+    // 页面加载时初始化
+    initFromStorage();
+  </script>
+</body>
+</html>
