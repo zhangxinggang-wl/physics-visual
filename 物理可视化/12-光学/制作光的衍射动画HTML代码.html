@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光的衍射动画模拟</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #0c1a2d, #1a3a5f);
+            color: #e6f2ff;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4facfe, #00c6ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a3d5ff;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            line-height: 1.5;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .simulation-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(10, 25, 47, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .graph-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(10, 25, 47, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #4facfe;
+            border-bottom: 2px solid rgba(79, 172, 254, 0.3);
+            padding-bottom: 8px;
+        }
+        
+        .controls {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(10, 25, 47, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #a3d5ff;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #0a192f, #4facfe);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00c6ff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 198, 255, 0.7);
+        }
+        
+        .value-display {
+            display: inline-block;
+            min-width: 60px;
+            font-weight: bold;
+            color: #4facfe;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            background: linear-gradient(to right, #4facfe, #00c6ff);
+            border: none;
+            border-radius: 8px;
+            color: #0c1a2d;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 198, 255, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(10, 25, 47, 0.8);
+            border-radius: 15px;
+            max-width: 1200px;
+            line-height: 1.6;
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+        
+        .explanation h3 {
+            color: #4facfe;
+            margin-bottom: 10px;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+        }
+        
+        canvas {
+            display: block;
+            background-color: #0a192f;
+            border-radius: 8px;
+        }
+        
+        .simulation-area {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 8px;
+            background-color: #0a192f;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #a3d5ff;
+            font-size: 0.9rem;
+            padding: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .simulation-container, .graph-container {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>光的衍射动画模拟</h1>
+        <p class="subtitle">本模拟展示了光通过单缝时产生的衍射现象。调整参数观察衍射图案的变化，理解光的波动性质。</p>
+    </div>
+    
+    <div class="container">
+        <div class="simulation-container">
+            <h2 class="panel-title">衍射实验装置</h2>
+            <div class="simulation-area">
+                <canvas id="simulationCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <h2 class="panel-title">衍射强度分布</h2>
+            <div class="simulation-area">
+                <canvas id="graphCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <h2 class="panel-title">实验参数控制</h2>
+        
+        <div class="control-group">
+            <div class="control">
+                <label for="slitWidth">缝宽 (a): <span id="slitWidthValue" class="value-display">0.1 mm</span></label>
+                <input type="range" id="slitWidth" min="0.05" max="0.5" step="0.01" value="0.1">
+            </div>
+            
+            <div class="control">
+                <label for="wavelength">波长 (λ): <span id="wavelengthValue" class="value-display">600 nm</span></label>
+                <input type="range" id="wavelength" min="400" max="800" step="10" value="600">
+            </div>
+            
+            <div class="control">
+                <label for="distance">缝屏距离 (L): <span id="distanceValue" class="value-display">1.0 m</span></label>
+                <input type="range" id="distance" min="0.5" max="3.0" step="0.1" value="1.0">
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="playPauseBtn">暂停动画</button>
+            <button id="resetBtn">重置参数</button>
+            <button id="showInfoBtn">衍射原理</button>
+        </div>
+    </div>
+    
+    <div class="explanation" id="explanation" style="display: none;">
+        <h3>光的衍射原理</h3>
+        <p>衍射是光波遇到障碍物或通过狭缝时，偏离直线传播的现象，是光的波动性的重要证据。</p>
+        <p><strong>单缝衍射公式：</strong> 当波长为 λ 的光通过宽度为 a 的单缝时，在距离为 L 的屏幕上，光强分布为：</p>
+        <p>I(θ) = I₀ [sin(β)/β]²，其中 β = (πa sinθ)/λ</p>
+        <p>其中 θ 是衍射角，I₀ 是中心最大光强。当 β = 0 时，光强最大，对应中央明纹。</p>
+        <p><strong>暗纹位置：</strong> 当 a sinθ = kλ (k = ±1, ±2, ±3, ...) 时，出现暗纹。</p>
+        <p>调整上方参数可以观察到：缝宽越小，衍射越明显；波长越长，衍射条纹间距越大。</p>
+    </div>
+    
+    <div class="footer">
+        <p>光的衍射动画模拟 | 物理光学可视化 | 单缝衍射实验</p>
+        <p>© 2026 物理模拟实验室</p>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const simCanvas = document.getElementById('simulationCanvas');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const simCtx = simCanvas.getContext('2d');
+        const graphCtx = graphCanvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvases() {
+            const containerWidth = document.querySelector('.simulation-area').offsetWidth;
+            const containerHeight = document.querySelector('.simulation-area').offsetHeight;
+            
+            simCanvas.width = containerWidth;
+            simCanvas.height = containerHeight;
+            
+            graphCanvas.width = containerWidth;
+            graphCanvas.height = containerHeight;
+            
+            draw();
+        }
+        
+        // 初始化参数
+        let params = {
+            slitWidth: 0.1,    // 缝宽，单位：mm
+            wavelength: 600,   // 波长，单位：nm
+            distance: 1.0,     // 缝屏距离，单位：m
+            isPlaying: true,
+            time: 0
+        };
+        
+        // 获取DOM元素
+        const slitWidthSlider = document.getElementById('slitWidth');
+        const wavelengthSlider = document.getElementById('wavelength');
+        const distanceSlider = document.getElementById('distance');
+        const slitWidthValue = document.getElementById('slitWidthValue');
+        const wavelengthValue = document.getElementById('wavelengthValue');
+        const distanceValue = document.getElementById('distanceValue');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const showInfoBtn = document.getElementById('showInfoBtn');
+        const explanation = document.getElementById('explanation');
+        
+        // 更新参数显示
+        function updateDisplays() {
+            slitWidthValue.textContent = params.slitWidth.toFixed(2) + " mm";
+            wavelengthValue.textContent = params.wavelength + " nm";
+            distanceValue.textContent = params.distance.toFixed(1) + " m";
+        }
+        
+        // 初始化滑块和显示
+        slitWidthSlider.value = params.slitWidth;
+        wavelengthSlider.value = params.wavelength;
+        distanceSlider.value = params.distance;
+        updateDisplays();
+        
+        // 事件监听
+        slitWidthSlider.addEventListener('input', function() {
+            params.slitWidth = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        wavelengthSlider.addEventListener('input', function() {
+            params.wavelength = parseInt(this.value);
+            updateDisplays();
+        });
+        
+        distanceSlider.addEventListener('input', function() {
+            params.distance = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        playPauseBtn.addEventListener('click', function() {
+            params.isPlaying = !params.isPlaying;
+            this.textContent = params.isPlaying ? "暂停动画" : "播放动画";
+        });
+        
+        resetBtn.addEventListener('click', function() {
+            params.slitWidth = 0.1;
+            params.wavelength = 600;
+            params.distance = 1.0;
+            
+            slitWidthSlider.value = params.slitWidth;
+            wavelengthSlider.value = params.wavelength;
+            distanceSlider.value = params.distance;
+            
+            updateDisplays();
+        });
+        
+        showInfoBtn.addEventListener('click', function() {
+            if (explanation.style.display === "none") {
+                explanation.style.display = "block";
+                this.textContent = "隐藏原理";
+            } else {
+                explanation.style.display = "none";
+                this.textContent = "衍射原理";
+            }
+        });
+        
+        // 绘制模拟场景
+        function drawSimulation() {
+            const width = simCanvas.width;
+            const height = simCanvas.height;
+            
+            // 清除画布
+            simCtx.clearRect(0, 0, width, height);
+            
+            // 绘制光源
+            simCtx.fillStyle = "#FFD700";
+            simCtx.beginPath();
+            simCtx.arc(width * 0.1, height / 2, 20, 0, Math.PI * 2);
+            simCtx.fill();
+            
+            // 绘制光线
+            simCtx.strokeStyle = "rgba(255, 215, 0, 0.7)";
+            simCtx.lineWidth = 2;
+            simCtx.beginPath();
+            simCtx.moveTo(width * 0.1 + 20, height / 2);
+            simCtx.lineTo(width * 0.4, height / 2);
+            simCtx.stroke();
+            
+            // 绘制屏障和缝隙
+            simCtx.fillStyle = "#333";
+            simCtx.fillRect(width * 0.4, height * 0.2, 20, height * 0.6);
+            
+            // 绘制缝隙
+            const slitHeight = (params.slitWidth * 0.5) * 100; // 缩放因子
+            const slitY = height / 2 - slitHeight / 2;
+            
+            simCtx.fillStyle = "#FFA500";
+            simCtx.fillRect(width * 0.4, slitY, 20, slitHeight);
+            
+            // 绘制衍射光线
+            simCtx.strokeStyle = "rgba(255, 215, 0, 0.5)";
+            simCtx.lineWidth = 1;
+            
+            // 从缝隙发出多条光线
+            const numRays = 9;
+            for (let i = 0; i < numRays; i++) {
+                const t = (i / (numRays - 1)) * 2 - 1; // -1 到 1
+                const startY = slitY + slitHeight / 2 + t * slitHeight * 0.4;
+                const endY = height / 2 + t * height * 0.2;
+                
+                simCtx.beginPath();
+                simCtx.moveTo(width * 0.4 + 20, startY);
+                simCtx.lineTo(width * 0.8, endY);
+                simCtx.stroke();
+                
+                // 绘制波前效果
+                if (params.isPlaying) {
+                    const waveOffset = (params.time * 0.05 + i * 0.3) % 1;
+                    const waveX = width * 0.4 + 20 + (width * 0.4 - 20) * waveOffset;
+                    const waveY = startY + (endY - startY) * waveOffset;
+                    
+                    simCtx.fillStyle = "#00FFFF";
+                    simCtx.beginPath();
+                    simCtx.arc(waveX, waveY, 4, 0, Math.PI * 2);
+                    simCtx.fill();
+                }
+            }
+            
+            // 绘制屏幕
+            simCtx.fillStyle = "#666";
+            simCtx.fillRect(width * 0.8, 0, 5, height);
+            
+            // 在屏幕上绘制衍射图案预览
+            const patternHeight = height * 0.6;
+            const patternY = height / 2 - patternHeight / 2;
+            
+            // 绘制屏幕上的衍射图案
+            const patternCtx = simCtx;
+            patternCtx.save();
+            patternCtx.clip();
+            patternCtx.globalCompositeOperation = "lighter";
+            
+            for (let y = 0; y < patternHeight; y++) {
+                const t = (y / patternHeight) * 2 - 1; // -1 到 1
+                const screenPos = patternY + y;
+                
+                // 计算该位置的光强
+                const theta = Math.atan(t * 0.5 / params.distance);
+                const beta = (Math.PI * params.slitWidth * 1000 * Math.sin(theta)) / (params.wavelength * 1e-6);
+                
+                let intensity = 1;
+                if (Math.abs(beta) > 0.001) {
+                    intensity = Math.pow(Math.sin(beta) / beta, 2);
+                }
+                
+                // 添加时间动画效果
+                const timeFactor = params.isPlaying ? 0.5 + 0.5 * Math.sin(params.time * 0.05 + y * 0.05) : 1;
+                intensity *= timeFactor;
+                
+                // 限制强度在0-1之间
+                intensity = Math.max(0, Math.min(1, intensity));
+                
+                // 根据强度设置颜色
+                const hue = 60 - intensity * 20; // 从黄色到红色
+                const saturation = 80 + intensity * 20;
+                const lightness = 30 + intensity * 40;
+                
+                patternCtx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                patternCtx.fillRect(width * 0.8, screenPos, 5, 1);
+            }
+            
+            patternCtx.restore();
+            
+            // 绘制标签
+            simCtx.fillStyle = "#FFF";
+            simCtx.font = "16px Arial";
+            simCtx.fillText("光源", width * 0.1 - 25, height / 2 - 30);
+            simCtx.fillText("单缝", width * 0.4 + 10, height * 0.15);
+            simCtx.fillText("屏幕", width * 0.8 + 10, height * 0.15);
+            
+            // 绘制参数标注
+            simCtx.fillStyle = "#4facfe";
+            simCtx.font = "14px Arial";
+            simCtx.fillText(`缝宽 a = ${params.slitWidth} mm`, width * 0.4, slitY - 10);
+            simCtx.fillText(`波长 λ = ${params.wavelength} nm`, width * 0.1, height * 0.1);
+            simCtx.fillText(`距离 L = ${params.distance} m`, width * 0.7, height * 0.9);
+        }
+        
+        // 绘制衍射图案
+        function drawDiffractionPattern() {
+            const width = graphCanvas.width;
+            const height = graphCanvas.height;
+            
+            // 清除画布
+            graphCtx.clearRect(0, 0, width, height);
+            
+            // 绘制坐标轴
+            graphCtx.strokeStyle = "#4facfe";
+            graphCtx.lineWidth = 2;
+            
+            // Y轴
+            graphCtx.beginPath();
+            graphCtx.moveTo(width * 0.1, height * 0.1);
+            graphCtx.lineTo(width * 0.1, height * 0.9);
+            graphCtx.stroke();
+            
+            // X轴
+            graphCtx.beginPath();
+            graphCtx.moveTo(width * 0.1, height * 0.5);
+            graphCtx.lineTo(width * 0.9, height * 0.5);
+            graphCtx.stroke();
+            
+            // 绘制箭头
+            // Y轴箭头
+            graphCtx.beginPath();
+            graphCtx.moveTo(width * 0.1, height * 0.1);
+            graphCtx.lineTo(width * 0.08, height * 0.12);
+            graphCtx.lineTo(width * 0.12, height * 0.12);
+            graphCtx.closePath();
+            graphCtx.fillStyle = "#4facfe";
+            graphCtx.fill();
+            
+            // X轴箭头
+            graphCtx.beginPath();
+            graphCtx.moveTo(width * 0.9, height * 0.5);
+            graphCtx.lineTo(width * 0.88, height * 0.48);
+            graphCtx.lineTo(width * 0.88, height * 0.52);
+            graphCtx.closePath();
+            graphCtx.fill();
+            
+            // 坐标轴标签
+            graphCtx.fillStyle = "#a3d5ff";
+            graphCtx.font = "16px Arial";
+            graphCtx.fillText("光强 I", width * 0.05, height * 0.05);
+            graphCtx.fillText("位置 x", width * 0.85, height * 0.55);
+            
+            // 绘制衍射图案
+            const centerX = width * 0.1;
+            const centerY = height * 0.5;
+            const graphWidth = width * 0.8;
+            const graphHeight = height * 0.4;
+            
+            // 绘制多个点来创建平滑曲线
+            graphCtx.beginPath();
+            graphCtx.moveTo(centerX, centerY - graphHeight * 0.5);
+            
+            for (let i = 0; i <= 200; i++) {
+                // x从-1到1
+                const x = (i / 200) * 2 - 1;
+                
+                // 计算衍射角
+                const theta = Math.atan(x * 0.5 / params.distance);
+                
+                // 计算β参数
+                const beta = (Math.PI * params.slitWidth * 1000 * Math.sin(theta)) / (params.wavelength * 1e-6);
+                
+                // 计算相对光强
+                let intensity = 1;
+                if (Math.abs(beta) > 0.001) {
+                    intensity = Math.pow(Math.sin(beta) / beta, 2);
+                }
+                
+                // 添加时间动画效果
+                if (params.isPlaying) {
+                    const timeFactor = 0.8 + 0.2 * Math.sin(params.time * 0.05 + i * 0.1);
+                    intensity *= timeFactor;
+                }
+                
+                // 限制强度在0-1之间
+                intensity = Math.max(0, Math.min(1, intensity));
+                
+                // 计算绘制点
+                const plotX = centerX + (x + 1) * 0.5 * graphWidth;
+                const plotY = centerY - intensity * graphHeight;
+                
+                // 如果是第一个点，移动到该位置
+                if (i === 0) {
+                    graphCtx.moveTo(plotX, plotY);
+                } else {
+                    graphCtx.lineTo(plotX, plotY);
+                }
+            }
+            
+            // 设置线条样式并绘制
+            graphCtx.strokeStyle = "#00C6FF";
+            graphCtx.lineWidth = 3;
+            graphCtx.stroke();
+            
+            // 填充曲线下方区域
+            graphCtx.lineTo(centerX + graphWidth, centerY);
+            graphCtx.lineTo(centerX, centerY);
+            graphCtx.closePath();
+            
+            const gradient = graphCtx.createLinearGradient(0, centerY - graphHeight, 0, centerY);
+            gradient.addColorStop(0, "rgba(0, 198, 255, 0.5)");
+            gradient.addColorStop(1, "rgba(0, 198, 255, 0.1)");
+            
+            graphCtx.fillStyle = gradient;
+            graphCtx.fill();
+            
+            // 绘制峰值点
+            graphCtx.fillStyle = "#FF4500";
+            
+            // 中央主极大
+            graphCtx.beginPath();
+            graphCtx.arc(centerX + graphWidth * 0.5, centerY - graphHeight, 5, 0, Math.PI * 2);
+            graphCtx.fill();
+            
+            // 计算并绘制前几个极小值位置
+            for (let k = 1; k <= 3; k++) {
+                // 暗纹条件: a sinθ = kλ
+                const sinTheta = (k * params.wavelength * 1e-6) / (params.slitWidth * 1000);
+                if (Math.abs(sinTheta) < 1) {
+                    const theta = Math.asin(sinTheta);
+                    const x = Math.tan(theta) * params.distance * 2; // 转换为-1到1的范围
+                    
+                    if (Math.abs(x) <= 1) {
+                        const plotX = centerX + (x + 1) * 0.5 * graphWidth;
+                        
+                        graphCtx.beginPath();
+                        graphCtx.arc(plotX, centerY, 5, 0, Math.PI * 2);
+                        graphCtx.fillStyle = "#FF6347";
+                        graphCtx.fill();
+                        
+                        // 标记极小值
+                        graphCtx.fillStyle = "#FF6347";
+                        graphCtx.font = "12px Arial";
+                        graphCtx.fillText(`k=${k}`, plotX - 10, centerY + 20);
+                    }
+                }
+            }
+            
+            // 绘制标题
+            graphCtx.fillStyle = "#4facfe";
+            graphCtx.font = "18px Arial";
+            graphCtx.fillText("单缝衍射光强分布", width * 0.5 - 80, height * 0.1);
+            
+            // 绘制公式
+            graphCtx.fillStyle = "#a3d5ff";
+            graphCtx.font = "14px Arial";
+            graphCtx.fillText("I(θ) = I₀ [sin(β)/β]²", width * 0.5 - 60, height * 0.15);
+            graphCtx.fillText("β = (πa sinθ)/λ", width * 0.5 - 50, height * 0.18);
+        }
+        
+        // 绘制函数
+        function draw() {
+            drawSimulation();
+            drawDiffractionPattern();
+        }
+        
+        // 动画循环
+        function animate() {
+            if (params.isPlaying) {
+                params.time += 1;
+            }
+            
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        // 初始化和启动
+        window.addEventListener('load', function() {
+            resizeCanvases();
+            animate();
+        });
+        
+        window.addEventListener('resize', function() {
+            resizeCanvases();
+        });
+    </script>
+</body>
+</html>

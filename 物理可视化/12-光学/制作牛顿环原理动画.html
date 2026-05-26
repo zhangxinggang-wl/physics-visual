@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛顿环形成原理动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #64b5f6;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #90caf9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .simulation-container {
+            width: 100%;
+            max-width: 900px;
+            height: 500px;
+            background: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        canvas {
+            display: block;
+            background: #1e1e1e;
+        }
+        
+        .controls {
+            width: 100%;
+            max-width: 900px;
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #bbdefb;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #0d47a1, #2196f3);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff9800;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(255, 152, 0, 0.7);
+        }
+        
+        .value-display {
+            display: inline-block;
+            min-width: 60px;
+            font-weight: bold;
+            color: #ff9800;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(to right, #2196f3, #00bcd4);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(33, 150, 243, 0.4);
+        }
+        
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background: #2d2d2d;
+            border-radius: 10px;
+            max-width: 900px;
+            line-height: 1.6;
+        }
+        
+        .explanation h3 {
+            color: #64b5f6;
+            margin-bottom: 15px;
+        }
+        
+        .explanation p {
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #90caf9;
+            font-size: 0.9rem;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>牛顿环形成原理动画</h1>
+        <p class="subtitle">本模拟展示了牛顿环干涉现象的形成原理，包括空气薄膜干涉和牛顿环图案的生成</p>
+    </div>
+    
+    <div class="simulation-container">
+        <canvas id="simulationCanvas"></canvas>
+    </div>
+    
+    <div class="controls">
+        <h2 class="panel-title">实验参数控制</h2>
+        
+        <div class="control-group">
+            <div class="control">
+                <label for="wavelength">光波长 (nm): <span id="wavelengthValue" class="value-display">589</span></label>
+                <input type="range" id="wavelength" min="400" max="700" step="10" value="589">
+            </div>
+            
+            <div class="control">
+                <label for="radius">透镜曲率半径 (m): <span id="radiusValue" class="value-display">5.0</span></label>
+                <input type="range" id="radius" min="1" max="20" step="0.5" value="5.0">
+            </div>
+            
+            <div class="control">
+                <label for="pressure">压力系数: <span id="pressureValue" class="value-display">1.0</span></label>
+                <input type="range" id="pressure" min="0.5" max="2.0" step="0.1" value="1.0">
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="playPauseBtn">暂停动画</button>
+            <button id="resetBtn">重置参数</button>
+            <button id="showInfoBtn">显示原理</button>
+        </div>
+    </div>
+    
+    <div class="explanation" id="explanation" style="display: none;">
+        <h3>牛顿环形成原理</h3>
+        <p>牛顿环是一种等厚干涉现象，由凸透镜和平玻璃板之间的空气薄膜产生。</p>
+        
+        <p><strong>形成原理：</strong></p>
+        <p>1. 当一束单色光垂直入射时，在空气薄膜的上表面（透镜下表面）和下表面（玻璃板上表面）分别反射</p>
+        <p>2. 两束反射光产生干涉，干涉条纹的明暗取决于光程差：</p>
+        <p>   2h + λ/2 = mλ (m=1,2,3...暗纹)</p>
+        <p>   2h = (2m-1)λ/2 (m=1,2,3...亮纹)</p>
+        
+        <p><strong>牛顿环特点：</strong></p>
+        <p>1. 中心为暗斑（接触点处厚度为零，有半波损失）</p>
+        <p>2. 干涉条纹为同心圆环，内疏外密</p>
+        <p>3. 第k级明环半径：r_k = √[kRλ]</p>
+        <p>4. 第k级暗环半径：r_k = √[(k-½)Rλ]</p>
+    </div>
+    
+    <div class="footer">
+        <p>牛顿环形成原理动画 | 物理光学可视化 | © 2026 物理模拟实验室</p>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = document.querySelector('.simulation-container');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+        
+        // 初始化参数
+        let params = {
+            wavelength: 589,      // 波长，单位：nm
+            radius: 5.0,          // 透镜曲率半径，单位：m
+            pressure: 1.0,        // 压力系数
+            isPlaying: true,
+            time: 0,
+            waves: [],
+            lastWaveTime: 0
+        };
+        
+        // 获取DOM元素
+        const wavelengthSlider = document.getElementById('wavelength');
+        const radiusSlider = document.getElementById('radius');
+        const pressureSlider = document.getElementById('pressure');
+        const wavelengthValue = document.getElementById('wavelengthValue');
+        const radiusValue = document.getElementById('radiusValue');
+        const pressureValue = document.getElementById('pressureValue');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const showInfoBtn = document.getElementById('showInfoBtn');
+        const explanation = document.getElementById('explanation');
+        
+        // 更新参数显示
+        function updateDisplays() {
+            wavelengthValue.textContent = params.wavelength;
+            radiusValue.textContent = params.radius.toFixed(1);
+            pressureValue.textContent = params.pressure.toFixed(1);
+        }
+        
+        // 初始化滑块和显示
+        wavelengthSlider.value = params.wavelength;
+        radiusSlider.value = params.radius;
+        pressureSlider.value = params.pressure;
+        updateDisplays();
+        
+        // 事件监听
+        wavelengthSlider.addEventListener('input', function() {
+            params.wavelength = parseInt(this.value);
+            updateDisplays();
+        });
+        
+        radiusSlider.addEventListener('input', function() {
+            params.radius = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        pressureSlider.addEventListener('input', function() {
+            params.pressure = parseFloat(this.value);
+            updateDisplays();
+        });
+        
+        playPauseBtn.addEventListener('click', function() {
+            params.isPlaying = !params.isPlaying;
+            this.textContent = params.isPlaying ? "暂停动画" : "继续动画";
+        });
+        
+        resetBtn.addEventListener('click', function() {
+            params.wavelength = 589;
+            params.radius = 5.0;
+            params.pressure = 1.0;
+            
+            wavelengthSlider.value = params.wavelength;
+            radiusSlider.value = params.radius;
+            pressureSlider.value = params.pressure;
+            
+            updateDisplays();
+            params.waves = [];
+        });
+        
+        showInfoBtn.addEventListener('click', function() {
+            if (explanation.style.display === "none") {
+                explanation.style.display = "block";
+                this.textContent = "隐藏原理";
+            } else {
+                explanation.style.display = "none";
+                this.textContent = "显示原理";
+            }
+        });
+        
+        // 获取光的颜色
+        function getLightColor(wavelength) {
+            if (wavelength < 440) return 'rgb(150, 0, 255)'; // 紫色
+            if (wavelength < 490) return 'rgb(0, 0, 255)';    // 蓝色
+            if (wavelength < 510) return 'rgb(0, 255, 255)'; // 青色
+            if (wavelength < 580) return 'rgb(0, 255, 0)';   // 绿色
+            if (wavelength < 645) return 'rgb(255, 255, 0)';  // 黄色
+            return 'rgb(255, 0, 0)';                         // 红色
+        }
+        
+        // 创建新光波
+        function createWave() {
+            return {
+                x: Math.random() * canvas.width * 0.3 + 20,
+                y: Math.random() * canvas.height * 0.6 + 20,
+                phase: Math.random() * Math.PI * 2,
+                speed: 2 + Math.random() * 2,
+                color: getLightColor(params.wavelength)
+            };
+        }
+        
+        // 计算空气薄膜厚度
+        function calculateFilmThickness(x, y) {
+            const centerX = canvas.width * 0.5;
+            const centerY = canvas.height * 0.5;
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // 计算空气薄膜厚度（h = R - √(R² - r²)）
+            const R = params.radius * 100; // 缩放曲率半径
+            const r = distance * params.pressure;
+            
+            if (r < R) {
+                return R - Math.sqrt(R * R - r * r);
+            }
+            return 0;
+        }
+        
+        // 计算干涉强度
+        function calculateInterferenceIntensity(x, y) {
+            const thickness = calculateFilmThickness(x, y);
+            
+            // 光程差 = 2h + λ/2（考虑半波损失）
+            const opticalPathDifference = 2 * thickness + params.wavelength * 0.001 / 2;
+            
+            // 相位差
+            const phaseDifference = 2 * Math.PI * opticalPathDifference / (params.wavelength * 0.001);
+            
+            // 干涉强度 I = 4I₀cos²(δ/2)
+            const intensity = Math.pow(Math.cos(phaseDifference / 2), 2);
+            
+            return Math.min(1, Math.max(0, intensity));
+        }
+        
+        // 绘制实验装置
+        function drawApparatus() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清除画布
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制光源
+            ctx.fillStyle = getLightColor(params.wavelength);
+            ctx.beginPath();
+            ctx.arc(width * 0.8, height * 0.2, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制分光镜
+            ctx.strokeStyle = '#90caf9';
+            ctx.lineWidth = 3;
+            ctx.save();
+            ctx.translate(width * 0.6, height * 0.4);
+            ctx.rotate(Math.PI / 4);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(-30, -30, 60, 60);
+            ctx.strokeRect(-30, -30, 60, 60);
+            ctx.restore();
+            
+            // 绘制入射光路
+            ctx.strokeStyle = `${getLightColor(params.wavelength)}80`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(width * 0.8, height * 0.2);
+            ctx.lineTo(width * 0.6, height * 0.4);
+            ctx.stroke();
+            
+            // 绘制反射光路
+            ctx.beginPath();
+            ctx.moveTo(width * 0.6, height * 0.4);
+            ctx.lineTo(width * 0.4, height * 0.4);
+            ctx.stroke();
+            
+            // 绘制凸透镜
+            const lensCenterX = width * 0.4;
+            const lensCenterY = height * 0.4;
+            const lensRadius = 100;
+            
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(lensCenterX, lensCenterY, lensRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // 绘制玻璃板
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fillRect(lensCenterX - 150, lensCenterY + 80, 300, 20);
+            
+            // 绘制观察屏
+            ctx.fillStyle = '#666';
+            ctx.fillRect(width * 0.2, 0, 5, height);
+            
+            // 绘制标签
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.fillText('光源', width * 0.8 - 20, height * 0.2 - 20);
+            ctx.fillText('分光镜', width * 0.6 - 30, height * 0.4 - 40);
+            ctx.fillText('凸透镜', lensCenterX - 30, lensCenterY - 120);
+            ctx.fillText('玻璃板', lensCenterX - 30, lensCenterY + 120);
+            ctx.fillText('观察屏', width * 0.2 + 10, height * 0.1);
+            
+            // 绘制参数标注
+            ctx.fillStyle = '#4facfe';
+            ctx.font = '14px Arial';
+            ctx.fillText(`波长: ${params.wavelength} nm`, width * 0.1, height * 0.1);
+            ctx.fillText(`曲率半径: ${params.radius} m`, width * 0.1, height * 0.15);
+            ctx.fillText(`压力: ${params.pressure.toFixed(1)}`, width * 0.1, height * 0.2);
+        }
+        
+        // 绘制光波
+        function drawWaves() {
+            params.waves.forEach(wave => {
+                wave.x -= wave.speed;
+                wave.phase += 0.1;
+                
+                // 绘制入射光波
+                if (wave.x > canvas.width * 0.6) {
+                    const alpha = 0.8;
+                    ctx.fillStyle = `${wave.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
+                    
+                    const radius = 4 + Math.sin(wave.phase) * 2;
+                    ctx.beginPath();
+                    ctx.arc(wave.x, wave.y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 绘制反射光波
+                if (wave.x <= canvas.width * 0.6 && wave.x > canvas.width * 0.4) {
+                    const alpha = 0.8;
+                    ctx.fillStyle = `${wave.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
+                    
+                    const radius = 4 + Math.sin(wave.phase) * 2;
+                    ctx.beginPath();
+                    ctx.arc(wave.x, wave.y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        // 绘制牛顿环干涉图案
+        function drawNewtonRings() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const screenX = width * 0.2;
+            
+            // 在观察屏上绘制牛顿环
+            for (let y = 0; y < height; y += 2) {
+                for (let x = screenX - 150; x < screenX; x += 2) {
+                    // 映射到牛顿环坐标系
+                    const ringX = (x - (screenX - 150)) - 75;
+                    const ringY = (y - height / 2) - 75;
+                    const distance = Math.sqrt(ringX * ringX + ringY * ringY);
+                    
+                    if (distance < 150) {
+                        // 计算干涉强度
+                        const intensity = calculateInterferenceIntensity(
+                            canvas.width * 0.4 + ringX * 0.5,
+                            canvas.height * 0.4 + ringY * 0.5
+                        );
+                        
+                        if (intensity > 0.01) {
+                            const colorValue = Math.floor(intensity * 255);
+                            ctx.fillStyle = `rgb(${colorValue}, ${colorValue}, ${colorValue})`;
+                            ctx.fillRect(x, y, 2, 2);
+                        }
+                    }
+                }
+            }
+            
+            // 绘制牛顿环轮廓
+            ctx.strokeStyle = '#ff9800';
+            ctx.lineWidth = 1;
+            
+            // 绘制前几个亮环
+            for (let k = 1; k <= 8; k++) {
+                // 计算第k级明环半径
+                const wavelengthM = params.wavelength * 1e-9; // 转换为米
+                const radiusM = params.radius; // 曲率半径
+                const ringRadius = Math.sqrt((k - 0.5) * radiusM * wavelengthM) * 10000 * params.pressure;
+                
+                if (ringRadius < 150) {
+                    ctx.beginPath();
+                    ctx.arc(screenX - 75, height / 2, ringRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            // 标记中心暗斑
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(screenX - 75, height / 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 添加观察屏标签
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.fillText('牛顿环', screenX - 100, height / 2 - 160);
+        }
+        
+        // 绘制空气薄膜厚度示意图
+        function drawFilmThickness() {
+            const centerX = canvas.width * 0.4;
+            const centerY = canvas.height * 0.4;
+            const radius = 100;
+            
+            // 绘制空气薄膜
+            for (let angle = 0; angle < Math.PI * 2; angle += 0.1) {
+                const r = radius;
+                const x = centerX + r * Math.cos(angle);
+                const y = centerY + r * Math.sin(angle);
+                
+                const thickness = calculateFilmThickness(x, y) * 1000;
+                
+                if (thickness > 0) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x, y + thickness);
+                    ctx.stroke();
+                }
+            }
+            
+            // 添加薄膜厚度标注
+            const maxThickness = calculateFilmThickness(centerX + radius, centerY) * 1000;
+            ctx.fillStyle = '#ff9800';
+            ctx.font = '12px Arial';
+            ctx.fillText(`薄膜厚度: ${maxThickness.toFixed(1)}μm`, centerX + radius + 10, centerY + 50);
+        }
+        
+        // 更新光波
+        function updateWaves() {
+            if (params.isPlaying && params.time - params.lastWaveTime > 20) {
+                for (let i = 0; i < 3; i++) {
+                    params.waves.push(createWave());
+                }
+                params.lastWaveTime = params.time;
+                
+                // 移除超出屏幕的光波
+                params.waves = params.waves.filter(wave => wave.x > 0);
+            }
+        }
+        
+        // 绘制函数
+        function draw() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制组件
+            drawApparatus();
+            drawFilmThickness();
+            drawWaves();
+            drawNewtonRings();
+            
+            // 更新物理状态
+            updateWaves();
+        }
+        
+        // 动画循环
+        function animate() {
+            if (params.isPlaying) {
+                params.time++;
+            }
+            
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        // 初始化和启动
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            animate();
+        });
+        
+        window.addEventListener('resize', function() {
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
