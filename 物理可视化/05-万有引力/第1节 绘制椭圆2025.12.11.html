@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绘制椭圆</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .title-footer {
+            position: absolute;
+            right: 0;
+            bottom: 5px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
+        .content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            min-width: 600px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .controls {
+            width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        label {
+            font-weight: 500;
+            color: #444;
+        }
+        
+        input[type="range"] {
+            width: 70%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            outline: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .value-display {
+            width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(50, 150, 250, 0.2);
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(50, 150, 250, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.reset {
+            background-color: #e74c3c;
+            box-shadow: 0 4px 6px rgba(231, 76, 60, 0.2);
+        }
+        
+        button.reset:hover {
+            background-color: #c0392b;
+            box-shadow: 0 6px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        #canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #fefefe;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #2ecc71;
+        }
+        
+        .explanation h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .explanation p {
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 1000px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .canvas-container, .controls {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            .title-footer {
+                position: relative;
+                right: auto;
+                bottom: auto;
+                text-align: center;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>绘制椭圆</h1>
+            <div class="title-footer">制作：耿春辉</div>
+        </header>
+        
+        <div class="content-wrapper">
+            <div class="canvas-container">
+                <canvas id="canvas" width="700" height="500"></canvas>
+                <div class="explanation">
+                    <h3>椭圆绘制原理</h3>
+                    <p>椭圆是平面上到两个固定点（焦点）距离之和为常数的点的轨迹。在此动画中，细绳长度固定，铅笔拉紧细绳移动时，其轨迹就是椭圆。当两个焦点靠近时，椭圆变得更圆；当焦点重合时，椭圆变成圆（半长轴变为半径）。</p>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <h2>椭圆参数调节</h2>
+                    
+                    <div class="control-row">
+                        <label for="ropeLength">绳子长度：</label>
+                        <input type="range" id="ropeLength" min="400" max="800" value="600">
+                        <span id="ropeLengthValue" class="value-display">600</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <label for="majorAxis">长轴长度：</label>
+                        <input type="range" id="majorAxis" min="150" max="400" value="300">
+                        <span id="majorAxisValue" class="value-display">300</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <label for="minorAxis">短轴长度：</label>
+                        <input type="range" id="minorAxis" min="100" max="300" value="200">
+                        <span id="minorAxisValue" class="value-display">200</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <label for="fociDistance">两焦点间距：</label>
+                        <input type="range" id="fociDistance" min="0" max="300" value="150">
+                        <span id="fociDistanceValue" class="value-display">150</span>
+                    </div>
+                    
+                    <div class="control-row">
+                        <label for="animationSpeed">动画速度：</label>
+                        <input type="range" id="animationSpeed" min="1" max="10" value="5">
+                        <span id="animationSpeedValue" class="value-display">5</span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="startBtn">开始绘制</button>
+                    <button id="resetBtn" class="reset">重置</button>
+                    <button id="pauseBtn">暂停/继续</button>
+                </div>
+                
+                <div class="control-group">
+                    <h2>椭圆特性</h2>
+                    <div class="control-row">
+                        <label>椭圆周长：</label>
+                        <span id="ellipsePerimeter" class="value-display">1632</span>
+                    </div>
+                    <div class="control-row">
+                        <label>离心率：</label>
+                        <span id="eccentricity" class="value-display">0.5</span>
+                    </div>
+                    <div class="control-row">
+                        <label>当前状态：</label>
+                        <span id="status" class="value-display">就绪</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取控制元素
+        const ropeLengthSlider = document.getElementById('ropeLength');
+        const majorAxisSlider = document.getElementById('majorAxis');
+        const minorAxisSlider = document.getElementById('minorAxis');
+        const fociDistanceSlider = document.getElementById('fociDistance');
+        const animationSpeedSlider = document.getElementById('animationSpeed');
+        
+        const ropeLengthValue = document.getElementById('ropeLengthValue');
+        const majorAxisValue = document.getElementById('majorAxisValue');
+        const minorAxisValue = document.getElementById('minorAxisValue');
+        const fociDistanceValue = document.getElementById('fociDistanceValue');
+        const animationSpeedValue = document.getElementById('animationSpeedValue');
+        
+        const ellipsePerimeterDisplay = document.getElementById('ellipsePerimeter');
+        const eccentricityDisplay = document.getElementById('eccentricity');
+        const statusDisplay = document.getElementById('status');
+        
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        
+        // 椭圆参数
+        let ropeLength = parseInt(ropeLengthSlider.value);
+        let majorAxis = parseInt(majorAxisSlider.value);
+        let minorAxis = parseInt(minorAxisSlider.value);
+        let fociDistance = parseInt(fociDistanceSlider.value);
+        let animationSpeed = parseInt(animationSpeedSlider.value);
+        
+        // 动画状态
+        let isAnimating = false;
+        let isPaused = false;
+        let animationFrameId = null;
+        let angle = 0; // 当前绘制角度
+        let drawnEllipsePoints = []; // 存储已绘制的椭圆点
+        
+        // 更新显示的数值
+        function updateDisplays() {
+            ropeLengthValue.textContent = ropeLength;
+            majorAxisValue.textContent = majorAxis;
+            minorAxisValue.textContent = minorAxis;
+            fociDistanceValue.textContent = fociDistance;
+            animationSpeedValue.textContent = animationSpeed;
+            
+            // 计算并显示椭圆周长（近似值）
+            const a = majorAxis;
+            const b = minorAxis;
+            const h = Math.pow((a - b) / (a + b), 2);
+            const perimeter = Math.PI * (a + b) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
+            ellipsePerimeterDisplay.textContent = Math.round(perimeter);
+            
+            // 计算并显示离心率
+            const c = fociDistance / 2;
+            const eccentricity = c / a;
+            eccentricityDisplay.textContent = eccentricity.toFixed(3);
+        }
+        
+        // 计算从参数化角度得到的椭圆上的点
+        function getPointOnEllipse(angle) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            return {
+                x: centerX + majorAxis * Math.cos(angle),
+                y: centerY + minorAxis * Math.sin(angle)
+            };
+        }
+        
+        // 更新椭圆参数
+        function updateEllipseParameters() {
+            ropeLength = parseInt(ropeLengthSlider.value);
+            fociDistance = parseInt(fociDistanceSlider.value);
+            animationSpeed = parseInt(animationSpeedSlider.value);
+            
+            // 绳子长度决定了长轴
+            majorAxis = ropeLength / 2;
+            majorAxisSlider.value = majorAxis;
+            
+            // 确保焦点间距不超过长轴
+            const maxFociDistance = 2 * Math.sqrt(majorAxis * majorAxis - minorAxis * minorAxis);
+            if (fociDistance > maxFociDistance) {
+                fociDistance = Math.floor(maxFociDistance);
+                fociDistanceSlider.value = fociDistance;
+            }
+            
+            // 重置已绘制的椭圆点
+            drawnEllipsePoints = [];
+            
+            updateDisplays();
+            if (!isAnimating) drawEllipse();
+        }
+        
+        // 绘制椭圆及其相关元素
+        function drawEllipse() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 计算焦点位置
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const c = fociDistance / 2; // 焦距
+            const a = majorAxis; // 半长轴
+            const b = minorAxis; // 半短轴
+            
+            // 计算焦点坐标
+            const focus1X = centerX - c;
+            const focus2X = centerX + c;
+            const focusY = centerY;
+            
+            // 绘制坐标轴
+            ctx.beginPath();
+            ctx.setLineDash([5, 3]);
+            ctx.strokeStyle = '#aaa';
+            ctx.lineWidth = 1;
+            
+            // x轴
+            ctx.moveTo(50, centerY);
+            ctx.lineTo(canvas.width - 50, centerY);
+            
+            // y轴
+            ctx.moveTo(centerX, 50);
+            ctx.lineTo(centerX, canvas.height - 50);
+            
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制已绘制的椭圆部分
+            if (drawnEllipsePoints.length > 0) {
+                ctx.beginPath();
+                ctx.moveTo(drawnEllipsePoints[0].x, drawnEllipsePoints[0].y);
+                
+                for (let i = 1; i < drawnEllipsePoints.length; i++) {
+                    ctx.lineTo(drawnEllipsePoints[i].x, drawnEllipsePoints[i].y);
+                }
+                
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+            
+            // 绘制焦点
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(focus1X, focusY, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(focus2X, focusY, 8, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 绘制焦点标签
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('F₁', focus1X - 15, focusY - 15);
+            ctx.fillText('F₂', focus2X + 10, focusY - 15);
+            
+            // 绘制图钉（在焦点位置）
+            drawThumbtack(focus1X, focusY);
+            drawThumbtack(focus2X, focusY);
+            
+            // 计算当前铅笔位置
+            const currentPoint = getPointOnEllipse(angle);
+            const pencilX = currentPoint.x;
+            const pencilY = currentPoint.y;
+            
+            // 绘制细绳
+            ctx.beginPath();
+            ctx.moveTo(focus1X, focusY);
+            ctx.lineTo(pencilX, pencilY);
+            ctx.lineTo(focus2X, focusY);
+            ctx.strokeStyle = '#27ae60';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制铅笔和手（手握住笔尖）
+            drawPencilAndHand(pencilX, pencilY, angle);
+            
+            // 绘制长轴和短轴
+            drawAxes(centerX, centerY, a, b);
+            
+            // 显示当前角度
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '14px Arial';
+            ctx.fillText(`角度: ${(angle * 180 / Math.PI).toFixed(1)}°`, 20, 30);
+            
+            // 显示绳子长度
+            ctx.fillText(`绳子长度: ${ropeLength}`, 20, 50);
+            
+            // 显示椭圆方程
+            ctx.fillText(`椭圆方程: x²/${(a*a).toFixed(0)} + y²/${(b*b).toFixed(0)} = 1`, 20, canvas.height - 20);
+        }
+        
+        // 绘制图钉
+        function drawThumbtack(x, y) {
+            // 图钉底部
+            ctx.fillStyle = '#34495e';
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 图钉顶部
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(x, y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // 图钉顶部细节
+            ctx.fillStyle = '#c0392b';
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        
+        // 绘制铅笔和手（手握住笔尖）
+        function drawPencilAndHand(x, y, angle) {
+            // 保存当前上下文状态
+            ctx.save();
+            
+            // 移动到铅笔位置
+            ctx.translate(x, y);
+            
+            // 根据铅笔位置调整角度
+            const dirAngle = Math.atan2(y - canvas.height/2, x - canvas.width/2);
+            ctx.rotate(dirAngle + Math.PI/2);
+            
+            // 铅笔长度
+            const pencilLength = 60;
+            
+            // 绘制铅笔（从笔尖开始）
+            // 笔尖
+            ctx.fillStyle = '#2c3e50';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-3, -15);
+            ctx.lineTo(3, -15);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 铅笔笔身（从笔尖向上）
+            ctx.fillStyle = '#FF9E00';
+            ctx.fillRect(-4, -15, 8, pencilLength);
+            
+            // 铅笔橡皮擦部分
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillRect(-4, -15 + pencilLength, 8, 10);
+            
+            // 铅笔金属环
+            ctx.fillStyle = '#bdc3c7';
+            ctx.fillRect(-4, -15 + pencilLength - 5, 8, 3);
+            
+            // 绘制手（握住铅笔的上部）
+            ctx.fillStyle = '#fad7ac';
+            ctx.strokeStyle = '#d4a574';
+            ctx.lineWidth = 2;
+            
+            // 手掌部分（在铅笔上部）
+            ctx.beginPath();
+            ctx.ellipse(0, -15 + pencilLength/2, 12, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 拇指（在铅笔右侧）
+            ctx.beginPath();
+            ctx.ellipse(10, -15 + pencilLength/2 - 5, 8, 12, Math.PI/4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 其他手指（在铅笔左侧）
+            for (let i = 0; i < 4; i++) {
+                ctx.beginPath();
+                ctx.ellipse(-8, -15 + pencilLength/2 + i*6 - 8, 5, 8, -Math.PI/6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            
+            ctx.restore();
+        }
+        
+        // 绘制长轴和短轴
+        function drawAxes(centerX, centerY, a, b) {
+            // 长轴
+            ctx.beginPath();
+            ctx.moveTo(centerX - a, centerY);
+            ctx.lineTo(centerX + a, centerY);
+            ctx.strokeStyle = '#9b59b6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 3]);
+            ctx.stroke();
+            
+            // 短轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - b);
+            ctx.lineTo(centerX, centerY + b);
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 标注长轴
+            ctx.fillStyle = '#9b59b6';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText(`长轴: ${2*a}`, centerX + a + 10, centerY - 5);
+            
+            // 标注短轴
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillText(`短轴: ${2*b}`, centerX + 10, centerY - b - 10);
+        }
+        
+        // 动画循环
+        function animate() {
+            if (!isAnimating || isPaused) return;
+            
+            // 增加角度
+            angle += 0.02 * (animationSpeed / 5);
+            
+            // 添加当前点到已绘制椭圆点数组
+            const currentPoint = getPointOnEllipse(angle);
+            drawnEllipsePoints.push({
+                x: currentPoint.x,
+                y: currentPoint.y
+            });
+            
+            // 如果完成了一整圈
+            if (angle >= 2 * Math.PI) {
+                angle = 2 * Math.PI;
+                isAnimating = false;
+                statusDisplay.textContent = "完成";
+                cancelAnimationFrame(animationFrameId);
+            } else {
+                statusDisplay.textContent = "绘制中...";
+                animationFrameId = requestAnimationFrame(animate);
+            }
+            
+            drawEllipse();
+        }
+        
+        // 开始动画
+        function startAnimation() {
+            if (isAnimating) {
+                // 如果已经在动画中，重置
+                resetAnimation();
+                setTimeout(startAnimation, 100);
+                return;
+            }
+            
+            // 重置角度和已绘制点
+            angle = 0;
+            drawnEllipsePoints = [];
+            isAnimating = true;
+            isPaused = false;
+            statusDisplay.textContent = "绘制中...";
+            
+            // 开始动画循环
+            animate();
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            isAnimating = false;
+            isPaused = false;
+            angle = 0;
+            drawnEllipsePoints = [];
+            statusDisplay.textContent = "就绪";
+            
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            
+            drawEllipse();
+        }
+        
+        // 暂停/继续动画
+        function togglePause() {
+            if (!isAnimating) return;
+            
+            isPaused = !isPaused;
+            statusDisplay.textContent = isPaused ? "已暂停" : "绘制中...";
+            
+            if (!isPaused) {
+                animate();
+            }
+        }
+        
+        // 事件监听
+        ropeLengthSlider.addEventListener('input', updateEllipseParameters);
+        majorAxisSlider.addEventListener('input', function() {
+            majorAxis = parseInt(majorAxisSlider.value);
+            // 更新绳子长度为2倍长轴
+            ropeLength = majorAxis * 2;
+            ropeLengthSlider.value = ropeLength;
+            updateEllipseParameters();
+        });
+        minorAxisSlider.addEventListener('input', function() {
+            minorAxis = parseInt(minorAxisSlider.value);
+            updateEllipseParameters();
+        });
+        fociDistanceSlider.addEventListener('input', updateEllipseParameters);
+        animationSpeedSlider.addEventListener('input', updateEllipseParameters);
+        
+        startBtn.addEventListener('click', startAnimation);
+        resetBtn.addEventListener('click', resetAnimation);
+        pauseBtn.addEventListener('click', togglePause);
+        
+        // 初始化
+        updateDisplays();
+        drawEllipse();
+    </script>
+</body>
+</html>
