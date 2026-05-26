@@ -1,0 +1,715 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>⚡ 量子视界 · 光电效应沉浸式模拟实验室</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none; /* 更流畅的拖拽体验 */
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #03070f, #000000);
+      font-family: 'Segoe UI', 'Poppins', 'Courier New', monospace;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: #eef5ff;
+    }
+
+    /* 炫光头部 */
+    .glow-header {
+      text-align: center;
+      padding: 12px 0 6px;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 4px;
+      background: linear-gradient(135deg, #aaffff, #3c6eff, #ff44cc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 25px rgba(0, 255, 255, 0.6);
+      position: relative;
+      flex-shrink: 0;
+      backdrop-filter: blur(2px);
+    }
+    .glow-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 15%;
+      width: 70%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, cyan, magenta, transparent);
+      border-radius: 100%;
+    }
+
+    #main {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      padding: 12px 16px 16px 16px;
+      gap: 16px;
+    }
+
+    /* 左侧实验区 —— 科幻真空管 */
+    #exp-container {
+      flex: 0 0 45%;
+      background: rgba(8, 18, 28, 0.65);
+      backdrop-filter: blur(2px);
+      border-radius: 28px;
+      border: 1px solid rgba(0, 255, 255, 0.35);
+      box-shadow: 0 0 25px rgba(0, 180, 255, 0.2), inset 0 0 12px rgba(0, 255, 255, 0.1);
+      padding: 8px;
+      transition: all 0.3s;
+    }
+    #expCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      display: block;
+      background: #030b14;
+      cursor: grab;
+    }
+    #expCanvas:active { cursor: grabbing; }
+
+    /* 中央双图表区 玻璃质感 */
+    .chart-panel {
+      flex: 0 0 28%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+    .chart-card {
+      background: rgba(12, 22, 35, 0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 24px;
+      border: 1px solid rgba(0, 200, 255, 0.4);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      padding: 8px;
+      flex: 1;
+      transition: transform 0.2s;
+    }
+    .chart-card:hover { border-color: #0ff; box-shadow: 0 0 18px rgba(0, 255, 255, 0.3); }
+    canvas.chart-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      background: #07121e;
+    }
+
+    /* 右侧控制中心 – 霓虹灯风格 */
+    #control-lab {
+      flex: 0 0 25%;
+      background: rgba(6, 16, 26, 0.8);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      border: 1px solid rgba(0, 255, 200, 0.5);
+      padding: 16px 15px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      box-shadow: -5px 0 25px rgba(0, 255, 255, 0.1);
+    }
+    /* 读数卡片发光 */
+    .digital-meters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .meter {
+      flex: 1;
+      background: #021018;
+      border-radius: 24px;
+      padding: 12px 5px;
+      text-align: center;
+      border: 1px solid #2affaa66;
+      box-shadow: 0 0 12px rgba(42, 255, 170, 0.3);
+      transition: all 0.2s;
+    }
+    .meter .label {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #8dd0ff;
+    }
+    .meter .value {
+      font-size: 32px;
+      font-weight: bold;
+      font-family: 'Orbitron', monospace;
+      text-shadow: 0 0 10px currentColor;
+    }
+    .voltage-val { color: #ffaa66; text-shadow: 0 0 8px #ff8844; }
+    .current-val { color: #66ffcc; text-shadow: 0 0 12px #22ffaa; }
+
+    .ctrl-card {
+      background: rgba(10, 25, 40, 0.6);
+      border-radius: 20px;
+      padding: 12px 15px;
+      margin-bottom: 18px;
+      border-left: 4px solid #0ff;
+      transition: 0.2s;
+    }
+    .ctrl-card h3 {
+      font-size: 1rem;
+      color: #7df9ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .slider-group label {
+      width: 65px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 5px;
+      -webkit-appearance: none;
+      background: linear-gradient(90deg, #0ff, #f0f);
+      border-radius: 5px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 12px cyan;
+      border: 1px solid cyan;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .val-badge {
+      background: #00000066;
+      padding: 4px 8px;
+      border-radius: 40px;
+      font-family: monospace;
+      font-weight: bold;
+      color: #ffcc88;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .btn-neon {
+      background: rgba(0, 30, 40, 0.8);
+      border: 1px solid #0ff;
+      color: #0ff;
+      padding: 8px 14px;
+      border-radius: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 12px;
+      backdrop-filter: blur(4px);
+      flex: 1;
+      text-align: center;
+    }
+    .btn-neon:hover {
+      background: #0ff22a22;
+      box-shadow: 0 0 12px #0ff;
+      text-shadow: 0 0 4px white;
+      transform: scale(0.97);
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .badge-warning {
+      color: #ffaa66;
+      font-size: 11px;
+      text-align: center;
+      margin-top: 8px;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #021c2c; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: cyan; border-radius: 10px; }
+
+    @keyframes pulseGlow {
+      0% { text-shadow: 0 0 2px cyan; }
+      100% { text-shadow: 0 0 12px cyan; }
+    }
+    .freq-active { animation: pulseGlow 1s infinite alternate; }
+  </style>
+</head>
+<body>
+<div class="glow-header">
+  🌌 光电效应 · 量子跃迁实验台 | 爱因斯坦的光量子论沉浸模拟 🌠
+</div>
+<div id="main">
+  <!-- 左侧 真空管动画区 -->
+  <div id="exp-container">
+    <canvas id="expCanvas"></canvas>
+  </div>
+
+  <!-- 中置 双图表动态分析区 -->
+  <div class="chart-panel">
+    <div class="chart-card">
+      <canvas id="iuChart" class="chart-canvas"></canvas>
+    </div>
+    <div class="chart-card">
+      <canvas id="ucfChart" class="chart-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- 右侧 未来感控制器 -->
+  <div id="control-lab">
+    <div class="digital-meters">
+      <div class="meter"><div class="label">⚡ 电压 U</div><div class="value voltage-val" id="vReading">0.0 V</div></div>
+      <div class="meter"><div class="label">🔁 光电流 I</div><div class="value current-val" id="iReading">0.0 μA</div></div>
+    </div>
+
+    <div class="ctrl-card">
+      <h3>🌈 光子源调制</h3>
+      <div class="slider-group"><label>频率 f</label><input type="range" id="freqSlider" min="280" max="3600" value="800" step="10"><span class="val-badge" id="freqVal">800 THz</span></div>
+      <div class="slider-group"><label>光强 I</label><input type="range" id="intensitySlider" min="0" max="300" value="100" step="5"><span class="val-badge" id="intensityVal">100 %</span></div>
+      <div class="badge-warning" id="freqTip">💡 阈值检测中...</div>
+    </div>
+
+    <div class="ctrl-card">
+      <h3>🔩 金属阴极 (逸出功)</h3>
+      <div class="slider-group"><label>逸出功 W₀</label><input type="range" id="workSlider" min="1.0" max="6.0" value="2.3" step="0.05"><span class="val-badge" id="workVal">2.30 eV</span></div>
+      <div class="slider-group"><label>截止电压 Uc</label><span class="val-badge" id="ucAlive">0.00 V</span></div>
+    </div>
+
+    <div class="ctrl-card">
+      <h3>⚡ 外部偏压 & 电路</h3>
+      <div class="slider-group"><label>偏压调节</label><input type="range" id="voltageSlider" min="0" max="100" value="50" step="1"><span class="val-badge" id="voltageVal">0.0 V</span></div>
+      <div class="btn-group"><button class="btn-neon" id="polarityBtn">🔁 极性: 正向</button><button class="btn-neon" id="emitBtn">✨ 光子发射: 开启</button></div>
+    </div>
+
+    <div class="ctrl-card">
+      <h3>📈 实验数据记录</h3>
+      <div class="btn-group"><button class="btn-neon" id="recordIU">📌 记录 I-U 点</button><button class="btn-neon" id="recordUcf">📌 记录 Uc-f 点</button></div>
+      <div class="btn-group" style="margin-top: 6px;"><button class="btn-neon" id="clearIU">🗑 清除 I-U</button><button class="btn-neon" id="clearUcf">🗑 清除 Uc-f</button></div>
+      <div class="badge-warning" style="margin-top: 12px;">⚛️ 拖拽变阻器滑块 / 实时量子跃迁动画</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ---------- 物理常数 & 状态 ----------
+    const h = 4.135667662e-15; // eV·s
+    const state = {
+      freq: 800,        // THz
+      intensity: 100,   // %
+      workFunc: 2.3,    // eV
+      voltageRatio: 50,
+      polarity: 1,      // 1正向 -1反向
+      emitting: true,
+      voltage: 0,
+      current: 0,
+      maxVoltage: 15
+    };
+
+    // 粒子系统数组 (更生动的效果)
+    let photons = [];
+    let electrons = [];
+    let sparks = [];     // 额外碰撞火花特效
+
+    // 存储数据点
+    let iuData = [];
+    let ucfData = [];
+
+    // ---------- 辅助物理函数 ----------
+    function photonEnergy(fTHz) { return h * fTHz * 1e12; }
+    function canEmit() { return photonEnergy(state.freq) > state.workFunc; }
+    function maxKineticEnergy() { return Math.max(0, photonEnergy(state.freq) - state.workFunc); }
+    function stoppingVoltage() { return maxKineticEnergy(); }
+    
+    // 计算光电流 (基于饱和+截止物理)
+    function computeCurrent() {
+      if (!state.emitting) return 0;
+      if (!canEmit()) return 0;
+      const Ek = maxKineticEnergy();
+      const Uc = stoppingVoltage();
+      const V = state.voltage * state.polarity;
+      const intensityFactor = state.intensity / 100;
+      const satCurrent = 12.5 * intensityFactor; // μA 饱和值
+      if (satCurrent <= 0) return 0;
+      if (V >= 0) {
+        // 正向区加速
+        let factor = 1 - Math.exp(-V / Math.max(0.4, Uc+0.3));
+        let I = satCurrent * (0.2 + 0.8 * factor);
+        return Math.min(satCurrent, Math.max(0, I));
+      } else {
+        let absV = Math.abs(V);
+        if (absV >= Uc) return 0;
+        let ratio = 1 - (absV / (Uc+0.01));
+        let I = satCurrent * 0.25 * ratio * ratio;
+        return Math.min(satCurrent, Math.max(0, I));
+      }
+    }
+
+    function updatePhysics() {
+      state.voltage = (state.voltageRatio / 100) * state.maxVoltage;
+      state.current = computeCurrent();
+    }
+
+    // 炫彩映射 (可见光+紫外炫光)
+    function freqToGlowColor(fTHz) {
+      let f = fTHz;
+      if (f < 400) { let t = (f-280)/120; return `hsl(${20 + 40*t}, 100%, 65%)`; }
+      if (f < 480) return `hsl(${45 - (f-400)*0.5}, 100%, 60%)`;
+      if (f < 570) return `hsl(${80 - (f-480)*0.8}, 100%, 58%)`;
+      if (f < 650) return `hsl(${180 - (f-570)*0.9}, 100%, 60%)`;
+      if (f < 780) return `hsl(${260 - (f-650)*0.6}, 95%, 65%)`;
+      return `hsl(${290 + Math.min(60,(f-780)/30)}, 100%, 70%)`;
+    }
+
+    // ========= 粒子引擎 生动版本 ==========
+    const plateRect = { x: 0.08, y: 0.12, w: 0.78, h: 0.38 }; // 相对坐标 (实验区)
+    const anodeX = 0.22;
+    const cathodeX = 0.78;
+    const plateTop = 0.18;
+    const plateBot = 0.46;
+    
+    function spawnPhoton() {
+      if (!state.emitting) return;
+      if (state.intensity <= 0) return;
+      let rate = (state.intensity / 100) * 0.28;
+      if (Math.random() > rate) return;
+      let col = freqToGlowColor(state.freq);
+      photons.push({
+        x: 0.05 + Math.random() * 0.08, y: 0.22 + Math.random() * 0.28,
+        vx: 0.009 + Math.random() * 0.006, vy: (Math.random() - 0.5) * 0.008,
+        color: col, life: 1, trail: []
+      });
+    }
+    
+    function spawnElectron(pitX, pitY) {
+      if (!canEmit()) return;
+      let angle = (Math.random() - 0.5) * 1.8;
+      let speed = 0.0035 + Math.random() * 0.004;
+      electrons.push({
+        x: pitX - 0.02, y: pitY,
+        vx: -speed * Math.cos(angle), vy: -speed * Math.sin(angle) * 0.7,
+        trail: [], age: 0, glow: true
+      });
+    }
+    
+    function addSparks(x, y) {
+      for (let i=0;i<3;i++) sparks.push({ x: x+(Math.random()-0.5)*0.02, y: y+(Math.random()-0.5)*0.02, life: 0.6 });
+    }
+    
+    function updateParticles() {
+      // 光子运动 & 撞击阴极
+      for (let i=0; i<photons.length; i++) {
+        let p = photons[i];
+        p.trail.push({x:p.x, y:p.y});
+        if(p.trail.length>6) p.trail.shift();
+        p.x += p.vx; p.y += p.vy;
+        if(p.x > cathodeX-0.02 && p.x < cathodeX+0.03 && p.y > plateTop-0.05 && p.y < plateBot+0.05) {
+          // 撞击阴极 发射电子
+          if (canEmit() && state.emitting && Math.random() < 0.65) {
+            let emitY = Math.min(plateBot-0.03, Math.max(plateTop+0.03, p.y));
+            spawnElectron(cathodeX-0.01, emitY);
+            addSparks(cathodeX-0.02, emitY);
+          }
+          p.life = 0;
+        }
+        if(p.x > 1.1 || p.x < -0.1 || p.y > 0.7 || p.y < 0.05) p.life = 0;
+      }
+      photons = photons.filter(p => p.life>0 || p.trail.length>0);
+      
+      // 电子运动 (电场加速度)
+      let Vfield = state.voltage * state.polarity;
+      let accel = Vfield * 0.00023;
+      for (let e of electrons) {
+        e.trail.push({x:e.x, y:e.y});
+        if(e.trail.length > 12) e.trail.shift();
+        e.vx -= accel * 0.012;
+        e.x += e.vx;
+        e.y += e.vy;
+        e.age++;
+        if(e.x <= anodeX+0.02) { e.life = false; addSparks(anodeX+0.01, e.y); } // 到达阳极
+        if(e.x > cathodeX+0.1 || e.y < plateTop-0.08 || e.y > plateBot+0.08 || e.age>400) e.life = false;
+      }
+      electrons = electrons.filter(e => e.life !== false && e.trail.length>0);
+      // 火花消失
+      sparks = sparks.filter(s => { s.life -= 0.03; return s.life > 0; });
+      while(photons.length > 130) photons.shift();
+      while(electrons.length > 120) electrons.shift();
+    }
+
+    // ========= 华丽绘图 ==========
+    let expCanvas = document.getElementById('expCanvas');
+    let expCtx = expCanvas.getContext('2d');
+    let iuCanvas = document.getElementById('iuChart');
+    let iuCtx = iuCanvas.getContext('2d');
+    let ucfCanvas = document.getElementById('ucfChart');
+    let ucfCtx = ucfCanvas.getContext('2d');
+    
+    function resizeAll() {
+      const dpr = window.devicePixelRatio || 1;
+      [expCanvas, iuCanvas, ucfCanvas].forEach(c => {
+        let rect = c.getBoundingClientRect();
+        c.width = rect.width * dpr;
+        c.height = rect.height * dpr;
+        let ctx = c.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      });
+    }
+    window.addEventListener('resize', ()=> { resizeAll(); });
+    
+    function drawExperiment() {
+      let c = expCanvas, ctx = expCtx;
+      let w = c.getBoundingClientRect().width;
+      let h = c.getBoundingClientRect().height;
+      ctx.clearRect(0, 0, w, h);
+      // 科幻背景真空管
+      let grad = ctx.createLinearGradient(0,0,w,0);
+      grad.addColorStop(0, '#04121f');
+      grad.addColorStop(1, '#01101a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,w,h);
+      
+      // 玻璃管轮廓
+      ctx.save();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#0ff88a88';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(12, 12, w-24, h-24);
+      
+      // 绘制电极
+      let leftPlate = { x: w*0.22, y: h*0.2, width: 20, height: h*0.5 };
+      let rightPlate = { x: w*0.78-15, y: h*0.2, width: 22, height: h*0.5 };
+      ctx.fillStyle = '#3c5e7e';
+      ctx.shadowBlur = 8;
+      ctx.fillRect(leftPlate.x, leftPlate.y, leftPlate.width, leftPlate.height);
+      ctx.fillStyle = '#4f708f';
+      ctx.fillRect(rightPlate.x, rightPlate.y, rightPlate.width, rightPlate.height);
+      ctx.fillStyle = '#aaffff';
+      ctx.font = "bold 18px 'Segoe UI'";
+      ctx.fillText("A", leftPlate.x+5, leftPlate.y-6);
+      ctx.fillText("K", rightPlate.x+7, rightPlate.y-6);
+      // 逸出功凹坑绘制
+      let pitCount = 5;
+      for(let i=0;i<pitCount;i++) {
+        let yPit = rightPlate.y + 20 + i * (rightPlate.height-40)/(pitCount-1);
+        let isMid = i===2;
+        let depth = isMid ? 14 + (state.workFunc/6)*10 : 10;
+        ctx.fillStyle = isMid ? '#1a4055' : '#09202e';
+        ctx.fillRect(rightPlate.x- depth, yPit-7, depth+2, 14);
+        if(isMid) ctx.fillStyle = '#44ffaa'; else ctx.fillStyle = '#2a88aa';
+        ctx.font = "10px monospace";
+        ctx.fillText("⚛️", rightPlate.x- depth-4, yPit+3);
+      }
+      
+      // 绘制光子 (流光)
+      for(let p of photons) {
+        let px = p.x * w, py = p.y * h;
+        for(let t=0;t<p.trail.length;t++) {
+          let tx = p.trail[t].x*w, ty = p.trail[t].y*h;
+          ctx.globalAlpha = 0.3 * (t/p.trail.length);
+          ctx.beginPath();
+          ctx.arc(tx, ty, 4, 0, Math.PI*2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        }
+        ctx.globalAlpha = 0.95;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI*2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        // 光晕波纹
+        ctx.beginPath();
+        ctx.arc(px, py, 10, 0, Math.PI*2);
+        ctx.fillStyle = p.color+'44';
+        ctx.fill();
+      }
+      
+      // 电子流光
+      for(let e of electrons) {
+        let ex = e.x*w, ey = e.y*h;
+        for(let t=0;t<e.trail.length;t++) {
+          let tx = e.trail[t].x*w, ty = e.trail[t].y*h;
+          ctx.globalAlpha = 0.45 * (t/e.trail.length);
+          ctx.beginPath();
+          ctx.arc(tx, ty, 3, 0, Math.PI*2);
+          ctx.fillStyle = '#88ffbb';
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = '#00ffaa';
+        ctx.beginPath();
+        ctx.arc(ex, ey, 5, 0, Math.PI*2);
+        ctx.fillStyle = '#bbffdd';
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.font = "bold 9px monospace";
+        ctx.fillText("e⁻", ex-3, ey+2);
+      }
+      
+      // 火花特效
+      for(let s of sparks){
+        ctx.globalAlpha = s.life;
+        ctx.fillStyle = `rgba(255, 100, 50, ${s.life})`;
+        ctx.beginPath();
+        ctx.arc(s.x*w, s.y*h, 3, 0, Math.PI*2);
+        ctx.fill();
+      }
+      
+      // 电压极性标识
+      ctx.font = "bold 12px monospace";
+      ctx.fillStyle = state.polarity===1? '#44ff88':'#ff8866';
+      ctx.fillText(state.polarity===1? "加速电场 →" : "减速电场 ←", w*0.4, h*0.08);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      // 绘制电路变阻器简洁符号
+      ctx.beginPath();
+      ctx.strokeStyle = '#33ccaa';
+      ctx.lineWidth = 2;
+      let resX = w*0.18, resY = h*0.78;
+      for(let i=0;i<8;i++) { ctx.moveTo(resX+i*12, resY); ctx.lineTo(resX+i*12+5, resY-12); ctx.lineTo(resX+i*12+12, resY); }
+      ctx.stroke();
+      let sliderFrac = state.voltageRatio/100;
+      let sliderX = resX + sliderFrac * (96);
+      ctx.fillStyle = '#ff6666cc';
+      ctx.fillRect(sliderX-4, resY-14, 8, 24);
+      ctx.restore();
+    }
+    
+    // I-U 图表绘制，带动态发光曲线
+    function drawIU() {
+      let c = iuCanvas, ctx = iuCtx, w = c.getBoundingClientRect().width, h = c.getBoundingClientRect().height;
+      ctx.clearRect(0,0,w,h);
+      let margin = {top:28, right:18, bottom:32, left:45};
+      let cw = w-margin.left-margin.right, ch = h-margin.top-margin.bottom;
+      ctx.fillStyle = "#c0ffff";
+      ctx.font = "bold 12px 'Segoe UI'";
+      ctx.fillText("📈 伏安特性 I–U", w/2, 18);
+      ctx.save(); ctx.translate(margin.left, margin.top);
+      ctx.strokeStyle = '#2a6d8a'; ctx.lineWidth=0.8;
+      for(let i=0;i<=5;i++){ let x=i*cw/5; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,ch); ctx.stroke(); }
+      for(let i=0;i<=4;i++){ let y=i*ch/4; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cw,y); ctx.stroke(); }
+      ctx.fillStyle='#88aaff'; ctx.fillText("U (V)", cw/2, ch+22);
+      ctx.save(); ctx.translate(-32, ch/2); ctx.rotate(-Math.PI/2); ctx.fillText("I (μA)", 0, 0); ctx.restore();
+      // 数据点
+      for(let p of iuData) {
+        let x = (p.u/15)*cw, y = ch - (p.i/14)*ch;
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2);
+        ctx.fillStyle = '#ff66c0'; ctx.shadowBlur=8; ctx.fill();
+      }
+      // 当前工作点
+      let curX = (state.voltage/15)*cw, curY = ch - (state.current/14)*ch;
+      ctx.beginPath(); ctx.arc(curX, curY, 7, 0, Math.PI*2);
+      ctx.strokeStyle = '#ff3377'; ctx.lineWidth=2.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(curX, curY, 4, 0, Math.PI*2);
+      ctx.fillStyle = '#ff2277'; ctx.fill();
+      ctx.restore();
+    }
+    
+    function drawUcf() {
+      let c = ucfCanvas, ctx = ucfCtx, w = c.getBoundingClientRect().width, h = c.getBoundingClientRect().height;
+      ctx.clearRect(0,0,w,h);
+      let margin = {top:28, right:18, bottom:32, left:45};
+      let cw = w-margin.left-margin.right, ch = h-margin.top-margin.bottom;
+      ctx.fillStyle = "#ffd966";
+      ctx.font = "bold 12px monospace";
+      ctx.fillText("🔮 截止电压–频率 (Uc-f)", w/2, 18);
+      ctx.save(); ctx.translate(margin.left, margin.top);
+      ctx.strokeStyle = '#2a6d8a'; ctx.lineWidth=0.6;
+      for(let i=0;i<=6;i++){ let x=i*cw/6; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,ch); ctx.stroke(); }
+      for(let i=0;i<=5;i++){ let y=i*ch/5; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cw,y); ctx.stroke(); }
+      ctx.fillStyle='#ffaa88'; ctx.fillText("f (THz)", cw/2, ch+22);
+      ctx.save(); ctx.translate(-32, ch/2); ctx.rotate(-Math.PI/2); ctx.fillText("Uc (V)", 0, 0); ctx.restore();
+      // 理论直线
+      let thrF = state.workFunc / (h*1e12);
+      ctx.beginPath(); ctx.strokeStyle = '#44ffff88'; ctx.setLineDash([6,8]);
+      for(let f=280; f<=3600; f+=30){
+        let uc = Math.max(0, h*f*1e12 - state.workFunc);
+        let x = ((f-280)/3320)*cw, y = ch - (uc/12)*ch;
+        if(f===280) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+      // 数据点
+      for(let p of ucfData){
+        let x = (p.f/3600)*cw, y = ch - (p.uc/12)*ch;
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2);
+        ctx.fillStyle = '#ffaa44'; ctx.shadowBlur=6; ctx.fill();
+      }
+      let curUc = stoppingVoltage();
+      let curX = (state.freq/3600)*cw, curY = ch - (curUc/12)*ch;
+      ctx.beginPath(); ctx.arc(curX, curY, 7, 0, Math.PI*2);
+      ctx.strokeStyle = '#ff8844'; ctx.lineWidth=2; ctx.stroke();
+      ctx.restore();
+    }
+    
+    // ========= UI事件绑定 ==========
+    function updateUIReadings(){
+      let v = state.voltage * state.polarity;
+      document.getElementById('vReading').innerHTML = v.toFixed(2)+" V";
+      document.getElementById('iReading').innerHTML = state.current.toFixed(2)+" μA";
+      document.getElementById('voltageVal').innerHTML = state.voltage.toFixed(2)+" V";
+      document.getElementById('ucAlive').innerHTML = stoppingVoltage().toFixed(3)+" V";
+      let thresholdFreq = state.workFunc/(h*1e12);
+      document.getElementById('freqTip').innerHTML = canEmit()? `✅ 超过截止频率 (f₀=${thresholdFreq.toFixed(0)} THz) 光电子奔涌` : `❌ 低于截止频率 ${thresholdFreq.toFixed(0)} THz ，无电子发射`;
+    }
+    
+    // slider绑定
+    document.getElementById('freqSlider').addEventListener('input',e=>{ state.freq=parseInt(e.target.value); document.getElementById('freqVal').innerText=state.freq+" THz"; });
+    document.getElementById('intensitySlider').addEventListener('input',e=>{ state.intensity=parseInt(e.target.value); document.getElementById('intensityVal').innerText=state.intensity+"%"; });
+    document.getElementById('workSlider').addEventListener('input',e=>{ state.workFunc=parseFloat(e.target.value); document.getElementById('workVal').innerText=state.workFunc.toFixed(2)+" eV"; });
+    document.getElementById('voltageSlider').addEventListener('input',e=>{ state.voltageRatio=parseInt(e.target.value); });
+    document.getElementById('polarityBtn').addEventListener('click',()=>{ state.polarity*=-1; document.getElementById('polarityBtn').innerHTML=state.polarity===1?"🔁 极性:正向":"🔁 极性:反向"; });
+    document.getElementById('emitBtn').addEventListener('click',()=>{ state.emitting=!state.emitting; document.getElementById('emitBtn').innerHTML=state.emitting?"✨ 光子发射:开启":"💤 发射:暂停"; if(!state.emitting)state.current=0; });
+    document.getElementById('recordIU').addEventListener('click',()=>{ iuData.push({u:state.voltage, i:state.current}); });
+    document.getElementById('recordUcf').addEventListener('click',()=>{ ucfData.push({f:state.freq, uc:stoppingVoltage()}); });
+    document.getElementById('clearIU').addEventListener('click',()=>{ iuData.length=0; });
+    document.getElementById('clearUcf').addEventListener('click',()=>{ ucfData.length=0; });
+    
+    // 变阻器滑块拖拽
+    let drag = false;
+    expCanvas.addEventListener('mousedown',(e)=>{
+      let rect=expCanvas.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width*1000;
+      if(x>150 && x<600) drag=true;
+    });
+    window.addEventListener('mousemove',(e)=>{
+      if(!drag)return;
+      let rect=expCanvas.getBoundingClientRect(), x=(e.clientX-rect.left)/rect.width;
+      let frac = Math.min(1,Math.max(0,(x-0.18)/0.64));
+      state.voltageRatio=Math.floor(frac*100);
+      document.getElementById('voltageSlider').value=state.voltageRatio;
+    });
+    window.addEventListener('mouseup',()=>{ drag=false; });
+    
+    // 动画主循环
+    let last=0;
+    function animate(){
+      updatePhysics();
+      spawnPhoton();
+      updateParticles();
+      updateUIReadings();
+      drawExperiment();
+      drawIU();
+      drawUcf();
+      requestAnimationFrame(animate);
+    }
+    resizeAll();
+    animate();
+  })();
+</script>
+</body>
+</html>
