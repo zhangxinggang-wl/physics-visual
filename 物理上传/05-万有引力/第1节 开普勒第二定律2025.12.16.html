@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开普勒第二定律</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: #0a1a2d;
+            color: #e0e0ff;
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background-color: rgba(16, 30, 50, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 10, 30, 0.5);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(64, 156, 255, 0.3);
+            position: relative;
+        }
+        
+        h1 {
+            color: #4fc3f7;
+            font-size: 2.8rem;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            position: absolute;
+            right: 0;
+            bottom: 15px;
+            font-size: 1.1rem;
+            color: #90a4ae;
+            font-style: italic;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .canvas-container {
+            flex: 3;
+            background-color: #0d1b2f;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        #orbitCanvas {
+            width: 100%;
+            height: 550px;
+            display: block;
+            border-radius: 5px;
+            cursor: crosshair;
+        }
+        
+        .canvas-instruction {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+        
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .control-section {
+            background-color: rgba(25, 40, 65, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        h2 {
+            color: #29b6f6;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(41, 182, 246, 0.3);
+            font-size: 1.2rem;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #bbdefb;
+            font-size: 0.95rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .value-display {
+            color: #4fc3f7;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background-color: #1e88e5;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .marker-controls {
+            background-color: rgba(41, 182, 246, 0.1);
+            border-left: 4px solid #29b6f6;
+            padding: 20px;
+            border-radius: 0 5px 5px 0;
+            margin-bottom: 25px;
+        }
+        
+        .marker-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .data-display {
+            background-color: rgba(0, 30, 60, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            margin-top: 0;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .data-item {
+            background-color: rgba(20, 40, 70, 0.6);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .data-value {
+            font-size: 1.3rem;
+            color: #ffeb3b;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .data-label {
+            color: #90a4ae;
+            font-size: 0.9rem;
+        }
+        
+        .marker-info {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 20px;
+            border-radius: 0 5px 5px 0;
+            margin-bottom: 25px;
+        }
+        
+        .area-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .area-info-item {
+            background-color: rgba(30, 50, 80, 0.6);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(64, 156, 255, 0.2);
+            color: #90a4ae;
+            font-size: 0.95rem;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .marker-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .area-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>开普勒第二定律</h1>
+            <div class="subtitle">制作：张兴刚燕赵名师工作室 · 耿春辉</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <div class="canvas-instruction">
+                    点击椭圆轨道设置标记点（A-F），再次点击已有点可删除
+                </div>
+                <canvas id="orbitCanvas"></canvas>
+            </div>
+            
+            <div class="right-panel">
+                <div class="control-section">
+                    <h2>动画控制</h2>
+                    <div class="buttons">
+                        <button id="playPauseBtn">暂停动画</button>
+                        <button id="resetBtn">重置动画</button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h2>轨道参数</h2>
+                    <div class="control-group">
+                        <label for="eccentricity">轨道偏心率</label>
+                        <input type="range" id="eccentricity" min="0.1" max="0.9" step="0.05" value="0.7">
+                        <div class="value-display" id="eccentricityValue">0.70</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="speedControl">时间步长</label>
+                        <input type="range" id="speedControl" min="10" max="100" value="60">
+                        <div class="value-display" id="speedValue">极快</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="marker-controls">
+            <h2>标记点控制</h2>
+            <div class="marker-buttons">
+                <button id="autoSetMarkersBtn">自动设置相等面积点</button>
+                <button id="clearMarkersBtn">清除所有标记</button>
+                <button id="showEqualAreasBtn">显示相等面积</button>
+            </div>
+        </div>
+        
+        <div class="marker-info">
+            <h2>相等面积验证</h2>
+            <div class="area-info-grid">
+                <div class="area-info-item">
+                    <div class="data-label">AB面积</div>
+                    <div class="data-value" id="areaAB">0.00</div>
+                    <div class="data-label">A: <span id="markerAInfo">未设置</span></div>
+                    <div class="data-label">B: <span id="markerBInfo">未设置</span></div>
+                </div>
+                <div class="area-info-item">
+                    <div class="data-label">CD面积</div>
+                    <div class="data-value" id="areaCD">0.00</div>
+                    <div class="data-label">C: <span id="markerCInfo">未设置</span></div>
+                    <div class="data-label">D: <span id="markerDInfo">未设置</span></div>
+                </div>
+                <div class="area-info-item">
+                    <div class="data-label">EF面积</div>
+                    <div class="data-value" id="areaEF">0.00</div>
+                    <div class="data-label">E: <span id="markerEInfo">未设置</span></div>
+                    <div class="data-label">F: <span id="markerFInfo">未设置</span></div>
+                </div>
+            </div>
+            <p style="margin-top: 15px; text-align: center; color: #ffeb3b;">
+                <span id="areaComparison">请设置标记点验证面积相等</span>
+            </p>
+        </div>
+        
+        <div class="data-display">
+            <h2>物理量监测</h2>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">角动量</div>
+                    <div class="data-value" id="angularMomentum">0.00</div>
+                    <div class="data-label">(kg·m²/s)</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">扫过面积</div>
+                    <div class="data-value" id="areaRate">0.00</div>
+                    <div class="data-label">(m²/s)</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">行星速度</div>
+                    <div class="data-value" id="planetSpeed">0.00</div>
+                    <div class="data-label">(m/s)</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">距日距离</div>
+                    <div class="data-value" id="sunDistance">0.00</div>
+                    <div class="data-label">(m)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>本动画演示了开普勒第二定律（面积定律）与角动量守恒的关系。</p>
+            <p>使用HTML5 Canvas和JavaScript实现 © 2023 张兴刚燕赵名师工作室 · 耿春辉</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        // 窗口调整大小时重置Canvas尺寸
+        window.addEventListener('resize', () => {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            updateCanvasCenter();
+        });
+        
+        // 动画状态
+        let animationId = null;
+        let isPlaying = true;
+        
+        // 轨道参数
+        let a = 230; // 椭圆长半轴
+        let b = 170; // 椭圆短半轴
+        let eccentricity = 0.7; // 偏心率
+        let centerX, centerY; // 画布中心
+        let focusDistance; // 焦点距离
+        let sunX, sunY; // 太阳位置（左侧焦点）
+        
+        // 行星参数（使用物理单位）
+        let angle = Math.PI * 0.25; // 初始角度
+        let planetRadius = 10;
+        let sunRadius = 25;
+        
+        // 物理参数（模拟值）
+        const planetMass = 1.0; // kg
+        let angularMomentum = 0; // 角动量
+        let areaRate = 0; // 面积速率
+        let planetSpeed = 0; // 行星速度
+        let distanceToSun = 0; // 距日距离
+        
+        // 显示选项
+        let showEqualAreas = true; // 默认显示相等面积
+        
+        // 标记点系统
+        let markers = {};
+        const markerLabels = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const markerColors = {
+            'A': '#FF5252', 'B': '#FF9800', 
+            'C': '#4CAF50', 'D': '#2196F3',
+            'E': '#9C27B0', 'F': '#00BCD4'
+        };
+        const areaColors = {
+            'AB': 'rgba(255, 82, 82, 0.5)',
+            'CD': 'rgba(76, 175, 80, 0.5)',
+            'EF': 'rgba(156, 39, 176, 0.5)'
+        };
+        
+        // 更新画布中心
+        function updateCanvasCenter() {
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            updateOrbitParameters();
+        }
+        
+        // 更新轨道参数
+        function updateOrbitParameters() {
+            eccentricity = parseFloat(document.getElementById('eccentricity').value);
+            document.getElementById('eccentricityValue').textContent = eccentricity.toFixed(2);
+            
+            // 根据偏心率计算短半轴
+            b = a * Math.sqrt(1 - eccentricity * eccentricity);
+            focusDistance = eccentricity * a;
+            
+            // 太阳位于左侧焦点
+            sunX = centerX - focusDistance;
+            sunY = centerY;
+            
+            // 确保椭圆完全在画布内
+            if (sunX - (a - focusDistance) < 30) {
+                // 如果左侧超出，调整中心位置
+                centerX += 30 - (sunX - (a - focusDistance));
+                sunX = centerX - focusDistance;
+            }
+            
+            // 重新计算角动量（保持恒定）
+            calculatePhysicalQuantities();
+        }
+        
+        // 计算行星位置
+        function calculatePlanetPosition(angle) {
+            // 椭圆参数方程（太阳在左侧焦点）
+            const x = centerX + a * Math.cos(angle);
+            const y = centerY + b * Math.sin(angle);
+            return { x, y };
+        }
+        
+        // 从屏幕坐标计算角度
+        function calculateAngleFromScreen(x, y) {
+            // 将屏幕坐标转换为椭圆参数角度
+            const dx = x - centerX;
+            const dy = y - centerY;
+            
+            // 计算对应的角度（使用椭圆参数方程反解）
+            let angle = Math.atan2(dy / b, dx / a);
+            if (angle < 0) angle += 2 * Math.PI;
+            
+            return angle;
+        }
+        
+        // 计算行星速度（遵循角动量守恒）
+        function calculatePlanetVelocity(angle) {
+            const pos = calculatePlanetPosition(angle);
+            
+            // 计算到太阳的距离
+            const dx = pos.x - sunX;
+            const dy = pos.y - sunY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // 根据角动量守恒计算速度
+            const vPerp = angularMomentum / (planetMass * distance);
+            
+            // 计算切向方向（垂直于位置矢量）
+            const tangentX = -dy / distance;
+            const tangentY = dx / distance;
+            
+            // 返回速度矢量
+            return {
+                x: vPerp * tangentX,
+                y: vPerp * tangentY,
+                magnitude: vPerp
+            };
+        }
+        
+        // 计算物理量
+        function calculatePhysicalQuantities() {
+            const pos = calculatePlanetPosition(angle);
+            
+            // 计算到太阳的距离
+            const dx = pos.x - sunX;
+            const dy = pos.y - sunY;
+            distanceToSun = Math.sqrt(dx * dx + dy * dy);
+            
+            // 计算速度
+            const velocity = calculatePlanetVelocity(angle);
+            planetSpeed = velocity.magnitude;
+            
+            // 计算角动量（如果尚未初始化）
+            if (angularMomentum === 0) {
+                // 初始化角动量（在近日点，速度最大）
+                const perihelionDistance = a * (1 - eccentricity);
+                const maxSpeed = Math.sqrt(angularMomentumConstant / perihelionDistance);
+                angularMomentum = planetMass * perihelionDistance * maxSpeed;
+            }
+            
+            // 计算面积速率
+            areaRate = angularMomentum / (2 * planetMass);
+            
+            // 更新显示
+            document.getElementById('angularMomentum').textContent = angularMomentum.toFixed(2);
+            document.getElementById('areaRate').textContent = areaRate.toFixed(2);
+            document.getElementById('planetSpeed').textContent = planetSpeed.toFixed(2);
+            document.getElementById('sunDistance').textContent = distanceToSun.toFixed(2);
+        }
+        
+        // 角动量常数（用于计算）
+        const angularMomentumConstant = 4000;
+        
+        // 绘制场景
+        function drawScene() {
+            // 清除Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景
+            const gradient = ctx.createRadialGradient(
+                centerX, centerY, 0,
+                centerX, centerY, canvas.width / 2
+            );
+            gradient.addColorStop(0, 'rgba(10, 25, 45, 0.8)');
+            gradient.addColorStop(1, 'rgba(5, 15, 30, 1)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制椭圆轨道
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, a, b, 0, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(64, 156, 255, 0.8)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制太阳（左侧焦点）
+            const sunGradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius * 1.5);
+            sunGradient.addColorStop(0, '#ffeb3b');
+            sunGradient.addColorStop(0.7, '#ff9800');
+            sunGradient.addColorStop(1, 'rgba(255, 152, 0, 0.2)');
+            
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = sunGradient;
+            ctx.fill();
+            
+            // 计算近日点和远日点的实际位置
+            // 左侧为近日点，右侧为远日点
+            const perihelionAngle = Math.PI; // 角度π时对应近日点（左侧）
+            const perihelionPos = calculatePlanetPosition(perihelionAngle);
+            
+            const aphelionAngle = 0; // 角度0时对应远日点（右侧）
+            const aphelionPos = calculatePlanetPosition(aphelionAngle);
+            
+            // 绘制近日点标记（左侧，靠近轨道）
+            ctx.fillStyle = '#ff5252';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText("近日点", perihelionPos.x - 30, perihelionPos.y - 25);
+            
+            // 绘制远日点标记（右侧，靠近轨道）
+            ctx.fillStyle = '#448aff';
+            ctx.fillText("远日点", aphelionPos.x + 30, aphelionPos.y - 25);
+            
+            // 绘制标记点
+            drawMarkers();
+            
+            // 计算行星位置
+            const planetPos = calculatePlanetPosition(angle);
+            
+            // 绘制相等时间间隔的面积（如果启用）
+            if (showEqualAreas) {
+                drawEqualTimeAreas();
+            }
+            
+            // 绘制行星
+            const planetGradient = ctx.createRadialGradient(
+                planetPos.x, planetPos.y, 0,
+                planetPos.x, planetPos.y, planetRadius
+            );
+            planetGradient.addColorStop(0, '#4fc3f7');
+            planetGradient.addColorStop(1, '#01579b');
+            
+            ctx.beginPath();
+            ctx.arc(planetPos.x, planetPos.y, planetRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = planetGradient;
+            ctx.fill();
+            
+            // 绘制行星光晕
+            ctx.beginPath();
+            ctx.arc(planetPos.x, planetPos.y, planetRadius * 1.8, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(79, 195, 247, 0.2)';
+            ctx.fill();
+            
+            // 绘制行星与太阳的连线
+            ctx.beginPath();
+            ctx.moveTo(sunX, sunY);
+            ctx.lineTo(planetPos.x, planetPos.y);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            
+            // 绘制行星轨迹
+            drawPlanetTrail();
+            
+            // 更新物理量显示
+            calculatePhysicalQuantities();
+        }
+        
+        // 绘制标记点
+        function drawMarkers() {
+            Object.keys(markers).forEach(label => {
+                const marker = markers[label];
+                const pos = calculatePlanetPosition(marker.angle);
+                
+                // 绘制标记点
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = markerColors[label];
+                ctx.fill();
+                
+                // 绘制标记点边框
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 10, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 绘制标记标签
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, pos.x, pos.y);
+                
+                // 绘制标记点到太阳的连线
+                ctx.beginPath();
+                ctx.moveTo(sunX, sunY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = markerColors[label] + '99';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+        }
+        
+        // 绘制相等时间间隔的面积
+        function drawEqualTimeAreas() {
+            // 绘制AB之间的面积
+            if (markers['A'] && markers['B']) {
+                drawSectorArea(markers['A'].angle, markers['B'].angle, areaColors['AB'], 'AB');
+            }
+            
+            // 绘制CD之间的面积
+            if (markers['C'] && markers['D']) {
+                drawSectorArea(markers['C'].angle, markers['D'].angle, areaColors['CD'], 'CD');
+            }
+            
+            // 绘制EF之间的面积
+            if (markers['E'] && markers['F']) {
+                drawSectorArea(markers['E'].angle, markers['F'].angle, areaColors['EF'], 'EF');
+            }
+            
+            // 更新面积信息
+            updateAreaInfo();
+        }
+        
+        // 绘制扇形面积
+        function drawSectorArea(startAngle, endAngle, color, label) {
+            ctx.beginPath();
+            ctx.moveTo(sunX, sunY);
+            
+            // 确保角度正确
+            if (endAngle < startAngle) endAngle += 2 * Math.PI;
+            
+            // 绘制扇形边缘
+            const steps = 50;
+            for (let j = 0; j <= steps; j++) {
+                const intermediateAngle = startAngle + (endAngle - startAngle) * (j / steps);
+                const pos = calculatePlanetPosition(intermediateAngle);
+                ctx.lineTo(pos.x, pos.y);
+            }
+            
+            ctx.closePath();
+            
+            // 使用指定颜色填充
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            // 绘制扇形边界
+            ctx.strokeStyle = color.replace('0.5', '0.9');
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 在扇形中心绘制标签
+            const midAngle = startAngle + (endAngle - startAngle) / 2;
+            const midPos = calculatePlanetPosition(midAngle);
+            const labelPos = {
+                x: sunX + (midPos.x - sunX) * 0.5,
+                y: sunY + (midPos.y - sunY) * 0.5
+            };
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, labelPos.x, labelPos.y);
+        }
+        
+        // 更新面积信息
+        function updateAreaInfo() {
+            let areas = [];
+            
+            // 计算AB面积
+            if (markers['A'] && markers['B']) {
+                const areaAB = calculateSectorArea(markers['A'].angle, markers['B'].angle);
+                document.getElementById('areaAB').textContent = areaAB.toFixed(2);
+                document.getElementById('markerAInfo').textContent = `${(markers['A'].angle * 180 / Math.PI).toFixed(1)}°`;
+                document.getElementById('markerBInfo').textContent = `${(markers['B'].angle * 180 / Math.PI).toFixed(1)}°`;
+                areas.push({label: 'AB', value: areaAB});
+            } else {
+                document.getElementById('areaAB').textContent = '0.00';
+                document.getElementById('markerAInfo').textContent = '未设置';
+                document.getElementById('markerBInfo').textContent = '未设置';
+            }
+            
+            // 计算CD面积
+            if (markers['C'] && markers['D']) {
+                const areaCD = calculateSectorArea(markers['C'].angle, markers['D'].angle);
+                document.getElementById('areaCD').textContent = areaCD.toFixed(2);
+                document.getElementById('markerCInfo').textContent = `${(markers['C'].angle * 180 / Math.PI).toFixed(1)}°`;
+                document.getElementById('markerDInfo').textContent = `${(markers['D'].angle * 180 / Math.PI).toFixed(1)}°`;
+                areas.push({label: 'CD', value: areaCD});
+            } else {
+                document.getElementById('areaCD').textContent = '0.00';
+                document.getElementById('markerCInfo').textContent = '未设置';
+                document.getElementById('markerDInfo').textContent = '未设置';
+            }
+            
+            // 计算EF面积
+            if (markers['E'] && markers['F']) {
+                const areaEF = calculateSectorArea(markers['E'].angle, markers['F'].angle);
+                document.getElementById('areaEF').textContent = areaEF.toFixed(2);
+                document.getElementById('markerEInfo').textContent = `${(markers['E'].angle * 180 / Math.PI).toFixed(1)}°`;
+                document.getElementById('markerFInfo').textContent = `${(markers['F'].angle * 180 / Math.PI).toFixed(1)}°`;
+                areas.push({label: 'EF', value: areaEF});
+            } else {
+                document.getElementById('areaEF').textContent = '0.00';
+                document.getElementById('markerEInfo').textContent = '未设置';
+                document.getElementById('markerFInfo').textContent = '未设置';
+            }
+            
+            // 更新面积比较信息
+            if (areas.length >= 2) {
+                const avgArea = areas.reduce((sum, a) => sum + a.value, 0) / areas.length;
+                const maxDiff = Math.max(...areas.map(a => Math.abs(a.value - avgArea)));
+                const diffPercent = (maxDiff / avgArea * 100).toFixed(1);
+                
+                if (diffPercent < 5) {
+                    document.getElementById('areaComparison').innerHTML = 
+                        `<span style="color:#4CAF50">✓ 面积基本相等 (最大差异: ${diffPercent}%)</span>`;
+                } else {
+                    document.getElementById('areaComparison').innerHTML = 
+                        `<span style="color:#FF9800">面积差异较大 (最大差异: ${diffPercent}%)</span>`;
+                }
+            } else {
+                document.getElementById('areaComparison').textContent = 
+                    '请设置标记点验证面积相等 (需要至少两组: A-B, C-D, E-F)';
+            }
+        }
+        
+        // 计算扇形面积
+        function calculateSectorArea(startAngle, endAngle) {
+            // 确保角度正确
+            if (endAngle < startAngle) endAngle += 2 * Math.PI;
+            
+            // 使用数值积分计算面积
+            const steps = 100;
+            let totalArea = 0;
+            
+            for (let i = 0; i < steps; i++) {
+                const t = startAngle + (endAngle - startAngle) * (i / steps);
+                const t2 = startAngle + (endAngle - startAngle) * ((i + 1) / steps);
+                
+                const pos1 = calculatePlanetPosition(t);
+                const pos2 = calculatePlanetPosition(t2);
+                
+                // 三角形面积公式：0.5 * |x1*y2 - x2*y1|
+                const triangleArea = 0.5 * Math.abs(
+                    (pos1.x - sunX) * (pos2.y - sunY) - 
+                    (pos2.x - sunX) * (pos1.y - sunY)
+                );
+                
+                totalArea += triangleArea;
+            }
+            
+            return totalArea;
+        }
+        
+        // 计算从给定角度开始，扫过指定面积后的角度
+        function findAngleForArea(startAngle, targetArea) {
+            let currentAngle = startAngle;
+            let accumulatedArea = 0;
+            const step = 0.01; // 角度步长
+            
+            while (accumulatedArea < targetArea && currentAngle < startAngle + 2 * Math.PI) {
+                const nextAngle = currentAngle + step;
+                const segmentArea = calculateSegmentArea(currentAngle, nextAngle);
+                accumulatedArea += segmentArea;
+                currentAngle = nextAngle;
+            }
+            
+            return currentAngle;
+        }
+        
+        // 计算小段面积（用于迭代计算）
+        function calculateSegmentArea(startAngle, endAngle) {
+            const pos1 = calculatePlanetPosition(startAngle);
+            const pos2 = calculatePlanetPosition(endAngle);
+            
+            // 三角形面积公式：0.5 * |x1*y2 - x2*y1|
+            return 0.5 * Math.abs(
+                (pos1.x - sunX) * (pos2.y - sunY) - 
+                (pos2.x - sunX) * (pos1.y - sunY)
+            );
+        }
+        
+        // 绘制行星轨迹
+        function drawPlanetTrail() {
+            ctx.beginPath();
+            const trailLength = 30; // 减少轨迹长度，因为速度更快
+            
+            for (let i = 0; i < trailLength; i++) {
+                const trailAngle = angle - i * 0.03; // 调整轨迹密度
+                const trailPos = calculatePlanetPosition(trailAngle);
+                
+                if (i === 0) {
+                    ctx.moveTo(trailPos.x, trailPos.y);
+                } else {
+                    ctx.lineTo(trailPos.x, trailPos.y);
+                }
+            }
+            
+            ctx.strokeStyle = 'rgba(79, 195, 247, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 在轨迹上添加亮点
+            for (let i = 0; i < trailLength; i += 6) { // 减少亮点密度
+                const trailAngle = angle - i * 0.03;
+                const trailPos = calculatePlanetPosition(trailAngle);
+                
+                ctx.beginPath();
+                ctx.arc(trailPos.x, trailPos.y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(79, 195, 247, 0.8)';
+                ctx.fill();
+            }
+        }
+        
+        // 动画循环
+        function animate() {
+            // 更新行星角度
+            if (isPlaying) {
+                // 根据角动量守恒计算角速度
+                const pos = calculatePlanetPosition(angle);
+                const dx = pos.x - sunX;
+                const dy = pos.y - sunY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 角速度 = v_perp / r = L / (m * r²)
+                const angularSpeed = angularMomentum / (planetMass * distance * distance);
+                
+                // 应用时间步长因子（大幅加快速度）
+                const speedControl = document.getElementById('speedControl');
+                const timeStep = parseFloat(speedControl.value);
+                // 增加系数，大幅加快动画（约5倍速度）
+                angle += angularSpeed * timeStep * 0.05;
+                
+                // 保持角度在0-2π范围内
+                if (angle >= 2 * Math.PI) {
+                    angle -= 2 * Math.PI;
+                }
+            }
+            
+            // 绘制场景
+            drawScene();
+            
+            // 继续动画循环
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 设置或删除标记点
+        function toggleMarker(clickX, clickY) {
+            // 计算点击位置对应的角度
+            const clickAngle = calculateAngleFromScreen(clickX, clickY);
+            
+            // 检查是否点击在轨道附近（在轨道内外一定范围内）
+            const pos = calculatePlanetPosition(clickAngle);
+            const distanceToClick = Math.sqrt(Math.pow(clickX - pos.x, 2) + Math.pow(clickY - pos.y, 2));
+            
+            if (distanceToClick < 30) { // 如果点击在轨道附近
+                // 检查是否点击了已有的标记点
+                let clickedExistingMarker = null;
+                Object.keys(markers).forEach(label => {
+                    const marker = markers[label];
+                    const markerPos = calculatePlanetPosition(marker.angle);
+                    const distanceToMarker = Math.sqrt(Math.pow(clickX - markerPos.x, 2) + Math.pow(clickY - markerPos.y, 2));
+                    
+                    if (distanceToMarker < 15) { // 如果点击了已有的标记点
+                        clickedExistingMarker = label;
+                    }
+                });
+                
+                if (clickedExistingMarker) {
+                    // 删除已有点
+                    delete markers[clickedExistingMarker];
+                    updateAreaInfo();
+                } else {
+                    // 查找第一个可用的标记点标签
+                    let availableLabel = null;
+                    for (const label of markerLabels) {
+                        if (!markers[label]) {
+                            availableLabel = label;
+                            break;
+                        }
+                    }
+                    
+                    if (availableLabel) {
+                        // 添加新标记点
+                        markers[availableLabel] = {
+                            angle: clickAngle,
+                            color: markerColors[availableLabel]
+                        };
+                        updateAreaInfo();
+                    } else {
+                        alert('已设置所有标记点 (A-F)，请先删除一些点再添加新点');
+                    }
+                }
+            }
+        }
+        
+        // 自动设置相等面积点（确保AB=CD=EF）
+        function autoSetEqualAreaMarkers() {
+            clearMarkers();
+            
+            // 设置目标面积（椭圆总面积的1/6，确保三组面积相等）
+            const totalArea = Math.PI * a * b; // 椭圆面积公式
+            const targetArea = totalArea / 6; // 每组面积约为总面积的1/6
+            
+            // 设置A点（从近日点附近开始）
+            const startAngleA = Math.PI * 0.9; // 从近日点附近开始
+            markers['A'] = { angle: startAngleA, color: markerColors['A'] };
+            
+            // 计算B点，使得AB面积等于目标面积
+            const angleB = findAngleForArea(startAngleA, targetArea);
+            markers['B'] = { angle: angleB, color: markerColors['B'] };
+            
+            // 设置C点为B点之后的一点
+            const startAngleC = angleB + 0.1; // B点之后稍微偏移
+            markers['C'] = { angle: startAngleC, color: markerColors['C'] };
+            
+            // 计算D点，使得CD面积等于目标面积
+            const angleD = findAngleForArea(startAngleC, targetArea);
+            markers['D'] = { angle: angleD, color: markerColors['D'] };
+            
+            // 设置E点为D点之后的一点
+            const startAngleE = angleD + 0.1; // D点之后稍微偏移
+            markers['E'] = { angle: startAngleE, color: markerColors['E'] };
+            
+            // 计算F点，使得EF面积等于目标面积
+            const angleF = findAngleForArea(startAngleE, targetArea);
+            markers['F'] = { angle: angleF, color: markerColors['F'] };
+            
+            // 如果F点超出2π，调整到0-2π范围内
+            if (markers['F'].angle >= 2 * Math.PI) {
+                markers['F'].angle -= 2 * Math.PI;
+            }
+            
+            updateAreaInfo();
+        }
+        
+        // 清除所有标记
+        function clearMarkers() {
+            markers = {};
+            updateAreaInfo();
+        }
+        
+        // 初始化控制
+        function initControls() {
+            // 偏心率控制
+            const eccentricityControl = document.getElementById('eccentricity');
+            eccentricityControl.addEventListener('input', function() {
+                updateOrbitParameters();
+                // 如果已有标记点，重新计算相等面积点
+                if (Object.keys(markers).length > 0) {
+                    autoSetEqualAreaMarkers();
+                }
+            });
+            
+            // 速度控制
+            const speedControl = document.getElementById('speedControl');
+            speedControl.addEventListener('input', function() {
+                const speedValue = parseInt(this.value);
+                let speedText;
+                if (speedValue <= 20) speedText = '中速';
+                else if (speedValue <= 40) speedText = '快速';
+                else if (speedValue <= 60) speedText = '极快';
+                else if (speedValue <= 80) speedText = '超快';
+                else speedText = '极限';
+                document.getElementById('speedValue').textContent = speedText;
+            });
+            
+            // 播放/暂停按钮
+            const playPauseBtn = document.getElementById('playPauseBtn');
+            playPauseBtn.addEventListener('click', function() {
+                isPlaying = !isPlaying;
+                this.textContent = isPlaying ? '暂停动画' : '播放动画';
+            });
+            
+            // 重置按钮
+            const resetBtn = document.getElementById('resetBtn');
+            resetBtn.addEventListener('click', function() {
+                angle = Math.PI * 0.25;
+            });
+            
+            // 自动设置相等面积点按钮
+            const autoSetMarkersBtn = document.getElementById('autoSetMarkersBtn');
+            autoSetMarkersBtn.addEventListener('click', function() {
+                autoSetEqualAreaMarkers();
+            });
+            
+            // 清除所有标记按钮
+            const clearMarkersBtn = document.getElementById('clearMarkersBtn');
+            clearMarkersBtn.addEventListener('click', function() {
+                clearMarkers();
+            });
+            
+            // 显示相等面积按钮
+            const showEqualAreasBtn = document.getElementById('showEqualAreasBtn');
+            showEqualAreasBtn.addEventListener('click', function() {
+                showEqualAreas = !showEqualAreas;
+                this.textContent = showEqualAreas ? '隐藏相等面积' : '显示相等面积';
+                
+                // 如果标记点不足，提示用户
+                if (showEqualAreas && Object.keys(markers).length < 4) {
+                    alert('请先设置至少两组标记点 (如A-B和C-D)');
+                }
+            });
+            
+            // 画布点击事件
+            canvas.addEventListener('click', function(event) {
+                const rect = canvas.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                const clickY = event.clientY - rect.top;
+                
+                toggleMarker(clickX, clickY);
+            });
+            
+            // 初始化参数
+            updateCanvasCenter();
+            
+            // 自动设置示例标记点
+            setTimeout(() => {
+                autoSetEqualAreaMarkers();
+                showEqualAreas = true;
+                showEqualAreasBtn.textContent = '隐藏相等面积';
+            }, 1000);
+        }
+        
+        // 初始化
+        function init() {
+            initControls();
+            animate();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

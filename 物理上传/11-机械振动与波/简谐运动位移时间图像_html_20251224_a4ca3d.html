@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简谐振动位移-时间图像动画演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1b2e, #162b40);
+            color: #e0f0ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px;
+            background: rgba(20, 40, 70, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(80, 160, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(80, 160, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4da6ff, #66ccff, #4da6ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: title-glow 3s infinite alternate;
+        }
+        
+        @keyframes title-glow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(25, 45, 75, 0.85);
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(80, 160, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .panel-title {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            color: #66ccff;
+            border-bottom: 2px solid rgba(102, 204, 255, 0.4);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-title::before {
+            content: '●';
+            color: #ff9966;
+            font-size: 1.2rem;
+        }
+        
+        .simulation-container {
+            height: 280px;
+            position: relative;
+            background: rgba(15, 30, 55, 0.9);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid rgba(80, 160, 255, 0.3);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        #simulation-area {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .spring {
+            position: absolute;
+            top: 50%;
+            left: 80px;
+            width: 300px;
+            height: 4px;
+            background: linear-gradient(90deg, #66ccff, #4da6ff);
+            transform: translateY(-50%);
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(102, 204, 255, 0.5);
+        }
+        
+        .spring::before, .spring::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #66ccff;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .spring::before {
+            left: -5px;
+        }
+        
+        .spring::after {
+            right: -5px;
+        }
+        
+        .object {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff9966, #ff6600);
+            top: 50%;
+            transform: translateY(-50%);
+            left: 380px;
+            box-shadow: 
+                0 5px 15px rgba(255, 102, 0, 0.7),
+                inset 0 3px 8px rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 10;
+            transition: left 0.1s linear;
+        }
+        
+        .equilibrium {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.6);
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .equilibrium-label {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .amplitude-line {
+            position: absolute;
+            height: 2px;
+            background: rgba(255, 153, 102, 0.6);
+            top: 50%;
+            transform: translateY(-50%);
+            left: 50%;
+            width: 0;
+        }
+        
+        .amplitude-label {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff9966;
+            font-weight: bold;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .graph-container {
+            height: 280px;
+            background: rgba(15, 30, 55, 0.9);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid rgba(80, 160, 255, 0.3);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+        
+        #graph-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .control-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #66ccff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-title::before {
+            content: '↕';
+            font-size: 1.2rem;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .slider-value {
+            min-width: 60px;
+            text-align: center;
+            background: rgba(30, 60, 100, 0.8);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #ff9966;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            height: 10px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #1a3a5f, #2a5a9f);
+            border-radius: 5px;
+            outline: none;
+            border: 1px solid rgba(80, 160, 255, 0.3);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #66ccff, #2a8aff);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(102, 204, 255, 0.8);
+            border: 2px solid #e0f0ff;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #66ccff, #2a8aff);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(102, 204, 255, 0.8);
+            border: 2px solid #e0f0ff;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            background: linear-gradient(90deg, #2a5a9f, #3a7abf);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        button:hover {
+            background: linear-gradient(90deg, #3a7abf, #4a9adf);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button i {
+            font-size: 1.2rem;
+        }
+        
+        #start-btn {
+            background: linear-gradient(90deg, #2a9f5a, #3abf7a);
+        }
+        
+        #start-btn:hover {
+            background: linear-gradient(90deg, #3abf7a, #4adf9a);
+        }
+        
+        #reset-btn {
+            background: linear-gradient(90deg, #9f5a2a, #bf7a3a);
+        }
+        
+        #reset-btn:hover {
+            background: linear-gradient(90deg, #bf7a3a, #df9a4a);
+        }
+        
+        .data-display {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            flex: 1;
+            min-width: 180px;
+            text-align: center;
+            padding: 15px;
+            background: rgba(30, 60, 100, 0.7);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(80, 160, 255, 0.2);
+        }
+        
+        .data-title {
+            font-size: 1rem;
+            color: #aad5ff;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .data-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffcc66;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .data-unit {
+            font-size: 1rem;
+            color: #aad5ff;
+            margin-left: 5px;
+        }
+        
+        .info-panel {
+            margin-top: 20px;
+            padding: 25px;
+            background: rgba(30, 60, 100, 0.8);
+            border-radius: 15px;
+            border-left: 6px solid #ff9966;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .info-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #66ccff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-content {
+            line-height: 1.7;
+            font-size: 1.05rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            background: rgba(40, 70, 120, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #66ccff;
+        }
+        
+        .equation {
+            font-family: 'Cambria', 'Times New Roman', serif;
+            font-size: 1.3rem;
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #ffcc66;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(80, 160, 255, 0.2);
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+        
+        .vibration-dots {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .vibration-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 204, 255, 0.7);
+            border-radius: 50%;
+            animation: float 3s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            50% { transform: translateY(-20px) scale(1.2); opacity: 0.3; }
+            100% { transform: translateY(0) scale(1); opacity: 0.7; }
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .panel {
+                min-width: 100%;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>简谐振动位移-时间图像动画演示</h1>
+            <p class="subtitle">本演示展示了简谐振动中物体的位移、速度和加速度随时间变化的规律。简谐振动是一种周期性运动，其位移-时间图像为正弦或余弦曲线。</p>
+        </header>
+        
+        <div class="content">
+            <div class="panel">
+                <h2 class="panel-title">简谐振动模拟</h2>
+                <div class="simulation-container">
+                    <div id="simulation-area">
+                        <div class="vibration-dots" id="vibration-dots"></div>
+                        <div class="spring"></div>
+                        <div class="equilibrium">
+                            <div class="equilibrium-label">平衡位置</div>
+                        </div>
+                        <div class="amplitude-line" id="amplitude-line"></div>
+                        <div class="amplitude-label" id="amplitude-label">振幅: 20 cm</div>
+                        <div class="object" id="moving-object">振子</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="control-title">振幅 (A)</div>
+                        <div class="slider-container">
+                            <input type="range" id="amplitude-slider" min="5" max="40" value="20" step="1">
+                            <div class="slider-value" id="amplitude-value">20 cm</div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-title">角频率 (ω)</div>
+                        <div class="slider-container">
+                            <input type="range" id="frequency-slider" min="0.5" max="3" value="1.5" step="0.1">
+                            <div class="slider-value" id="frequency-value">1.5 rad/s</div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-title">初始相位 (φ)</div>
+                        <div class="slider-container">
+                            <input type="range" id="phase-slider" min="0" max="6.28" value="0" step="0.1">
+                            <div class="slider-value" id="phase-value">0 rad</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons">
+                    <button id="start-btn">
+                        <span>▶</span> 开始振动
+                    </button>
+                    <button id="pause-btn">
+                        <span>⏸</span> 暂停
+                    </button>
+                    <button id="reset-btn">
+                        <span>↺</span> 重置
+                    </button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2 class="panel-title">位移-时间图像</h2>
+                <div class="graph-container">
+                    <canvas id="graph-canvas"></canvas>
+                </div>
+                
+                <div class="data-display">
+                    <div class="data-item">
+                        <div class="data-title">位移 (x)</div>
+                        <div class="data-value" id="displacement-value">0.00</div>
+                        <span class="data-unit">cm</span>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">速度 (v)</div>
+                        <div class="data-value" id="velocity-value">0.00</div>
+                        <span class="data-unit">cm/s</span>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">加速度 (a)</div>
+                        <div class="data-value" id="acceleration-value">0.00</div>
+                        <span class="data-unit">cm/s²</span>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-title">周期 (T)</div>
+                        <div class="data-value" id="period-value">4.19</div>
+                        <span class="data-unit">s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3 class="info-title">简谐振动原理说明</h3>
+            <div class="info-content">
+                <div class="info-item">
+                    <h4>简谐振动定义</h4>
+                    <p>简谐振动是指物体在跟偏离平衡位置的位移大小成正比，并且总指向平衡位置的回复力作用下的振动。</p>
+                    <div class="equation">F = -kx</div>
+                    <p>其中 F 是回复力，k 是劲度系数，x 是位移。</p>
+                </div>
+                
+                <div class="info-item">
+                    <h4>位移方程</h4>
+                    <p>简谐振动的位移随时间按正弦或余弦规律变化：</p>
+                    <div class="equation">x = A·cos(ωt + φ)</div>
+                    <p>其中 A 是振幅，ω 是角频率，t 是时间，φ 是初相位。</p>
+                </div>
+                
+                <div class="info-item">
+                    <h4>速度和加速度</h4>
+                    <p>对位移方程求导可得速度和加速度：</p>
+                    <div class="equation">v = -Aω·sin(ωt + φ)</div>
+                    <div class="equation">a = -Aω²·cos(ωt + φ)</div>
+                    <p>加速度与位移成正比，方向相反。</p>
+                </div>
+                
+                <div class="info-item">
+                    <h4>图像特点</h4>
+                    <p>位移-时间图像为正弦/余弦曲线，速度-时间图像与位移图像相位差π/2，加速度图像与位移图像相位差π（反相）。</p>
+                    <p>周期 T = 2π/ω，频率 f = 1/T = ω/2π。</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>简谐振动教学演示 | 物理动画模拟 | 位移-时间图像可视化</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const simulationArea = document.getElementById('simulation-area');
+        const movingObject = document.getElementById('moving-object');
+        const amplitudeLine = document.getElementById('amplitude-line');
+        const amplitudeLabel = document.getElementById('amplitude-label');
+        const graphCanvas = document.getElementById('graph-canvas');
+        const ctx = graphCanvas.getContext('2d');
+        
+        // 控制元素
+        const amplitudeSlider = document.getElementById('amplitude-slider');
+        const frequencySlider = document.getElementById('frequency-slider');
+        const phaseSlider = document.getElementById('phase-slider');
+        
+        const amplitudeValue = document.getElementById('amplitude-value');
+        const frequencyValue = document.getElementById('frequency-value');
+        const phaseValue = document.getElementById('phase-value');
+        
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        // 数据元素
+        const displacementValue = document.getElementById('displacement-value');
+        const velocityValue = document.getElementById('velocity-value');
+        const accelerationValue = document.getElementById('acceleration-value');
+        const periodValue = document.getElementById('period-value');
+        
+        // 振动参数
+        let amplitude = 20; // 振幅 (cm)
+        let angularFrequency = 1.5; // 角频率 (rad/s)
+        let phase = 0; // 初相位 (rad)
+        
+        // 动画控制变量
+        let animationId = null;
+        let isAnimating = false;
+        let startTime = null;
+        let currentTime = 0;
+        let lastTimestamp = 0;
+        
+        // 位移数据点
+        const displacementPoints = [];
+        const velocityPoints = [];
+        const accelerationPoints = [];
+        
+        // 初始化画布
+        function initCanvasSize() {
+            const container = graphCanvas.parentElement;
+            graphCanvas.width = container.clientWidth;
+            graphCanvas.height = container.clientHeight;
+        }
+        
+        // 创建漂浮点
+        function createFloatingDots() {
+            const dotsContainer = document.getElementById('vibration-dots');
+            dotsContainer.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'vibration-dot';
+                dot.style.left = `${Math.random() * 100}%`;
+                dot.style.top = `${Math.random() * 100}%`;
+                dot.style.animationDelay = `${Math.random() * 3}s`;
+                dotsContainer.appendChild(dot);
+            }
+        }
+        
+        // 绘制坐标轴
+        function drawAxes() {
+            const width = graphCanvas.width;
+            const height = graphCanvas.height;
+            const padding = 50;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制网格
+            ctx.strokeStyle = 'rgba(100, 150, 220, 0.2)';
+            ctx.lineWidth = 1;
+            
+            // 水平网格线
+            const ySteps = 8;
+            const yStepPixel = (height - 2 * padding) / ySteps;
+            for (let i = 0; i <= ySteps; i++) {
+                const y = padding + i * yStepPixel;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // 垂直网格线
+            const xSteps = 12;
+            const xStepPixel = (width - 2 * padding) / xSteps;
+            for (let i = 0; i <= xSteps; i++) {
+                const x = padding + i * xStepPixel;
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+            }
+            
+            // 绘制坐标轴
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(200, 230, 255, 0.9)';
+            ctx.lineWidth = 3;
+            
+            // Y轴（位移轴）
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            
+            // X轴（时间轴）
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            // 绘制箭头
+            ctx.beginPath();
+            // Y轴箭头
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding - 7, padding + 15);
+            ctx.lineTo(padding + 7, padding + 15);
+            ctx.fillStyle = 'rgba(200, 230, 255, 0.9)';
+            ctx.fill();
+            
+            // X轴箭头
+            ctx.beginPath();
+            ctx.moveTo(width - padding, height - padding);
+            ctx.lineTo(width - padding - 15, height - padding - 7);
+            ctx.lineTo(width - padding - 15, height - padding + 7);
+            ctx.fill();
+            
+            // 坐标轴标签
+            ctx.fillStyle = 'rgba(200, 230, 255, 0.9)';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('位移 x (cm)', padding - 35, padding - 15);
+            ctx.fillText('时间 t (s)', width - padding + 25, height - padding + 25);
+            
+            // 绘制刻度线和标签
+            ctx.strokeStyle = 'rgba(200, 230, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.font = '14px Arial';
+            ctx.fillStyle = 'rgba(200, 230, 255, 0.8)';
+            ctx.textAlign = 'center';
+            
+            // Y轴刻度（位移）
+            const yStepsCount = 8;
+            const yStepValue = amplitude * 2 / yStepsCount;
+            const yStepPixel2 = (height - 2 * padding) / yStepsCount;
+            
+            for (let i = 0; i <= yStepsCount; i++) {
+                const y = height - padding - i * yStepPixel2;
+                const value = (i - yStepsCount/2) * yStepValue;
+                
+                ctx.beginPath();
+                ctx.moveTo(padding - 8, y);
+                ctx.lineTo(padding, y);
+                ctx.stroke();
+                
+                ctx.fillText(value.toFixed(0), padding - 20, y + 4);
+            }
+            
+            // X轴刻度（时间）
+            const xStepsCount = 12;
+            const xStepValue = 0.5; // 每刻度0.5秒
+            const xStepPixel2 = (width - 2 * padding) / xStepsCount;
+            
+            for (let i = 0; i <= xStepsCount; i++) {
+                const x = padding + i * xStepPixel2;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, height - padding);
+                ctx.lineTo(x, height - padding + 8);
+                ctx.stroke();
+                
+                ctx.fillText((i * xStepValue).toFixed(1), x, height - padding + 22);
+            }
+            
+            // 绘制平衡位置线
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            
+            const equilibriumY = height - padding - (height - 2 * padding) / 2;
+            ctx.moveTo(padding, equilibriumY);
+            ctx.lineTo(width - padding, equilibriumY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 平衡位置标签
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.font = 'italic 14px Arial';
+            ctx.fillText('平衡位置 x=0', width - padding - 60, equilibriumY - 8);
+        }
+        
+        // 绘制位移-时间曲线
+        function drawDisplacementCurve() {
+            if (displacementPoints.length < 2) return;
+            
+            const width = graphCanvas.width;
+            const height = graphCanvas.height;
+            const padding = 50;
+            
+            const xScale = (width - 2 * padding) / 6; // 6秒时间范围
+            const yScale = (height - 2 * padding) / (amplitude * 2.5); // 振幅范围
+            
+            // 绘制位移曲线
+            ctx.beginPath();
+            ctx.strokeStyle = '#ff9966';
+            ctx.lineWidth = 3;
+            
+            // 移动到第一个点
+            const firstPoint = displacementPoints[0];
+            const firstX = padding + firstPoint.time * xScale;
+            const firstY = height - padding - (firstPoint.displacement + amplitude) * yScale;
+            ctx.moveTo(firstX, firstY);
+            
+            // 绘制曲线
+            for (let i = 1; i < displacementPoints.length; i++) {
+                const point = displacementPoints[i];
+                const x = padding + point.time * xScale;
+                const y = height - padding - (point.displacement + amplitude) * yScale;
+                
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.stroke();
+            
+            // 绘制最后一个数据点
+            if (displacementPoints.length > 0) {
+                const lastPoint = displacementPoints[displacementPoints.length - 1];
+                const lastX = padding + lastPoint.time * xScale;
+                const lastY = height - padding - (lastPoint.displacement + amplitude) * yScale;
+                
+                ctx.beginPath();
+                ctx.fillStyle = '#ff9966';
+                ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+        
+        // 更新振幅线
+        function updateAmplitudeLine() {
+            const containerWidth = simulationArea.clientWidth;
+            const centerX = containerWidth / 2;
+            const amplitudePixels = (amplitude / 40) * 200; // 将振幅转换为像素
+            
+            amplitudeLine.style.width = `${amplitudePixels * 2}px`;
+            amplitudeLine.style.left = `${centerX - amplitudePixels}px`;
+            amplitudeLabel.textContent = `振幅: ${amplitude} cm`;
+            amplitudeLabel.style.left = `${centerX}px`;
+        }
+        
+        // 计算简谐振动
+        function calculateSHM(time) {
+            // 位移 x = A * cos(ωt + φ)
+            const displacement = amplitude * Math.cos(angularFrequency * time + phase);
+            
+            // 速度 v = -Aω * sin(ωt + φ)
+            const velocity = -amplitude * angularFrequency * Math.sin(angularFrequency * time + phase);
+            
+            // 加速度 a = -Aω² * cos(ωt + φ)
+            const acceleration = -amplitude * angularFrequency * angularFrequency * Math.cos(angularFrequency * time + phase);
+            
+            return { displacement, velocity, acceleration };
+        }
+        
+        // 动画循环
+        function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            
+            // 计算经过的时间（秒）
+            const deltaTime = (timestamp - lastTimestamp) / 1000;
+            currentTime += deltaTime;
+            lastTimestamp = timestamp;
+            
+            // 计算位移、速度、加速度
+            const { displacement, velocity, acceleration } = calculateSHM(currentTime);
+            
+            // 更新数据点
+            displacementPoints.push({
+                time: currentTime,
+                displacement: displacement
+            });
+            
+            velocityPoints.push({
+                time: currentTime,
+                velocity: velocity
+            });
+            
+            accelerationPoints.push({
+                time: currentTime,
+                acceleration: acceleration
+            });
+            
+            // 限制数据点数量（保持6秒的数据）
+            const maxPoints = 300;
+            if (displacementPoints.length > maxPoints) {
+                displacementPoints.shift();
+                velocityPoints.shift();
+                accelerationPoints.shift();
+            }
+            
+            // 更新物体位置
+            const containerWidth = simulationArea.clientWidth;
+            const centerX = containerWidth / 2;
+            const amplitudePixels = (amplitude / 40) * 200;
+            const pixelDisplacement = (displacement / amplitude) * amplitudePixels;
+            movingObject.style.left = `${centerX + pixelDisplacement - 30}px`;
+            
+            // 更新数据显示
+            displacementValue.textContent = displacement.toFixed(2);
+            velocityValue.textContent = velocity.toFixed(2);
+            accelerationValue.textContent = acceleration.toFixed(2);
+            
+            // 重新绘制图像
+            drawAxes();
+            drawDisplacementCurve();
+            
+            // 继续动画
+            if (isAnimating) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        // 开始动画
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            
+            // 如果不是重置状态，保留已有数据点
+            if (currentTime === 0) {
+                displacementPoints.length = 0;
+                velocityPoints.length = 0;
+                accelerationPoints.length = 0;
+            }
+            
+            startTime = null;
+            lastTimestamp = 0;
+            animationId = requestAnimationFrame(animate);
+            
+            startBtn.innerHTML = '<span>▶</span> 继续振动';
+        }
+        
+        // 暂停动画
+        function pauseAnimation() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            pauseAnimation();
+            currentTime = 0;
+            displacementPoints.length = 0;
+            velocityPoints.length = 0;
+            accelerationPoints.length = 0;
+            
+            // 重置物体位置
+            const containerWidth = simulationArea.clientWidth;
+            const centerX = containerWidth / 2;
+            movingObject.style.left = `${centerX - 30}px`;
+            
+            // 重置数据显示
+            const { displacement, velocity, acceleration } = calculateSHM(0);
+            displacementValue.textContent = displacement.toFixed(2);
+            velocityValue.textContent = velocity.toFixed(2);
+            accelerationValue.textContent = acceleration.toFixed(2);
+            
+            // 重新绘制空坐标轴
+            drawAxes();
+            
+            startBtn.innerHTML = '<span>▶</span> 开始振动';
+        }
+        
+        // 更新振动参数
+        function updateVibrationParams() {
+            amplitude = parseFloat(amplitudeSlider.value);
+            angularFrequency = parseFloat(frequencySlider.value);
+            phase = parseFloat(phaseSlider.value);
+            
+            // 更新显示值
+            amplitudeValue.textContent = `${amplitude} cm`;
+            frequencyValue.textContent = `${angularFrequency} rad/s`;
+            phaseValue.textContent = `${phase.toFixed(2)} rad`;
+            
+            // 更新周期显示
+            const period = (2 * Math.PI / angularFrequency).toFixed(2);
+            periodValue.textContent = period;
+            
+            // 更新振幅线
+            updateAmplitudeLine();
+            
+            // 如果不是动画状态，更新位置
+            if (!isAnimating) {
+                const { displacement } = calculateSHM(currentTime);
+                const containerWidth = simulationArea.clientWidth;
+                const centerX = containerWidth / 2;
+                const amplitudePixels = (amplitude / 40) * 200;
+                const pixelDisplacement = (displacement / amplitude) * amplitudePixels;
+                movingObject.style.left = `${centerX + pixelDisplacement - 30}px`;
+                
+                // 重新绘制图像
+                drawAxes();
+                if (displacementPoints.length > 0) {
+                    drawDisplacementCurve();
+                }
+            }
+        }
+        
+        // 初始化
+        function init() {
+            // 设置画布大小
+            initCanvasSize();
+            window.addEventListener('resize', () => {
+                initCanvasSize();
+                updateAmplitudeLine();
+                drawAxes();
+                drawDisplacementCurve();
+            });
+            
+            // 创建漂浮点
+            createFloatingDots();
+            
+            // 绘制初始坐标轴
+            drawAxes();
+            
+            // 设置事件监听器
+            startBtn.addEventListener('click', startAnimation);
+            pauseBtn.addEventListener('click', pauseAnimation);
+            resetBtn.addEventListener('click', resetAnimation);
+            
+            // 滑块事件
+            amplitudeSlider.addEventListener('input', updateVibrationParams);
+            frequencySlider.addEventListener('input', updateVibrationParams);
+            phaseSlider.addEventListener('input', updateVibrationParams);
+            
+            // 初始振动参数
+            updateVibrationParams();
+            
+            // 初始振幅线
+            updateAmplitudeLine();
+        }
+        
+        // 启动初始化
+        init();
+    </script>
+</body>
+</html>

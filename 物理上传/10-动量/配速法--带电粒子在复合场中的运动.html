@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>高中物理：配速法教学演示 | 带电粒子在复合场中的运动</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #eef2f7;
+            margin: 0;
+            padding: 20px;
+            color: #1e2a3a;
+        }
+
+        .main-wrapper {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .top-bar {
+            padding: 1rem 1.5rem 0.5rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+        h1 {
+            font-size: 1.7rem;
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .title-main {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .maker {
+            font-size: 0.85rem;
+            font-weight: normal;
+            background: #eef2ff;
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: #1e4a76;
+        }
+        .flex-main {
+            display: flex;
+            flex-wrap: nowrap;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .canvas-area {
+            flex: 3;
+            min-width: 0;
+            background: #fefefe;
+            padding: 1rem;
+            position: relative;
+        }
+        .canvas-container {
+            position: relative;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: crosshair;
+        }
+        /* 左侧工具栏 - 整体向左平移 */
+        .canvas-toolbar {
+            position: absolute;
+            top: 24px;
+            left: 12px;          /* 更靠左 */
+            z-index: 20;
+            display: flex;
+            gap: 10px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            padding: 8px 14px;
+            border-radius: 60px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(59,130,246,0.3);
+        }
+        .canvas-toolbar button {
+            background: #3b82f6;
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .canvas-toolbar button:hover { background: #2563eb; transform: scale(0.96); }
+        
+        /* 右上角面板控制按钮 - 进一步向右上移动 */
+        .panel-control-buttons {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 30;
+            display: flex;
+            gap: 6px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(4px);
+            padding: 4px 8px;
+            border-radius: 30px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+        .panel-control-buttons button {
+            background: #f1f5f9;
+            border: none;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.65rem;
+            color: #1e293b;
+        }
+        .panel-control-buttons button:hover { background: #e2e8f0; }
+        
+        .controls-area {
+            flex: 1.2;
+            min-width: 280px;
+            background: #f9fafc;
+            border-left: 1px solid #e2e8f0;
+            padding: 1rem 1.2rem;
+            transition: all 0.25s ease;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+        .controls-area.collapsed {
+            flex: 0;
+            min-width: 0;
+            padding: 0;
+            width: 0;
+            visibility: hidden;
+            opacity: 0;
+        }
+        .param-group {
+            background: white;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .param-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 3px solid #3b82f6;
+            padding-left: 10px;
+        }
+        .slider-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .slider-container label {
+            width: 150px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        input[type="range"] { flex: 2; min-width: 120px; height: 4px; border-radius: 5px; }
+        .number-input { width: 65px; text-align: center; border: 1px solid #cbd5e1; border-radius: 10px; padding: 4px; font-family: monospace; }
+        select { padding: 5px 8px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; font-weight: 500; }
+        .badge { background: #eef2ff; border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 500; }
+        .toggle-switch { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+        .status-line { font-size: 0.75rem; margin-top: 8px; background: #eef2ff; border-radius: 16px; padding: 6px; text-align: center; font-family: monospace; }
+        .disabled-input { background-color: #eef2f3; color: #6b7280; cursor: not-allowed; }
+        .dir-buttons { display: flex; gap: 10px; margin-top: 5px; }
+        .dir-btn { background: #e2e8f0; border: none; padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; }
+        .dir-btn.active { background: #3b82f6; color: white; }
+        hr { margin: 12px 0; }
+        .charge-select {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+        .charge-select button {
+            background: #e2e8f0;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .charge-select button.active {
+            background: #3b82f6;
+            color: white;
+        }
+        @media (max-width: 860px) {
+            .flex-main { flex-wrap: wrap; }
+            .controls-area { min-width: 100%; border-left: none; border-top: 1px solid #e2e8f0; }
+            .panel-control-buttons { top: auto; bottom: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="main-wrapper">
+    <div class="top-bar">
+        <h1>
+            <div class="title-main">
+                ⚡ 配速法 · 带电粒子在复合场中的运动
+                <span class="maker">制作：河北省临城中学 耿春辉</span>
+            </div>
+        </h1>
+        <div style="font-size:0.8rem; margin-top:6px; color:#2c5f8a;">匀速直线 + 匀速圆周 分解思想 | 虚线为分运动轨迹 | 速度矢量箭头</div>
+    </div>
+    <div class="flex-main">
+        <div class="canvas-area">
+            <div class="canvas-container">
+                <canvas id="simCanvas" width="900" height="550" style="width:100%; height:auto; max-width:100%; aspect-ratio:900/550"></canvas>
+                <div class="canvas-toolbar">
+                    <button id="resetBtn">⟳ 重置粒子</button>
+                    <button id="clearTrailBtn">🗑️ 清除轨迹</button>
+                    <button id="pauseBtn">⏸️ 暂停</button>
+                    <button id="playBtn">▶️ 运行</button>
+                    <button id="toggleSubBtn" style="background:#8b5cf6;">🔘 显示分运动</button>
+                    <button id="toggleAxisBtn" style="background:#4b5563;">📐 隐藏坐标轴</button>
+                </div>
+                <!-- 右上角独立面板控制按钮，已移动到更右上位置 -->
+                <div class="panel-control-buttons">
+                    <button id="hidePanelBtn">◀ 隐藏参数</button>
+                    <button id="showPanelBtn">显示参数 ▶</button>
+                </div>
+            </div>
+            <div class="status-line" id="liveStatus">实时速度: (0.00,0.00) m/s  | 速率: 0.00 m/s</div>
+        </div>
+
+        <!-- 右侧参数栏 -->
+        <div class="controls-area" id="rightPanel">
+            <div class="param-group">
+                <div class="param-title">🎛️ 模式选择</div>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="modeFactorCheckbox"> 
+                    <label style="font-weight:600">✨ 力倍数调节模式 (相对倍数)</label>
+                </div>
+                <div class="badge">勾选后，下方基础数值参数失效，按照力比值自动计算场强与磁感强度（仅定性关系）</div>
+            </div>
+
+            <div class="param-group" id="factorGroup">
+                <div class="param-title">⚖️ 力倍数调节 (倍数模式有效)</div>
+                <!-- 电性选择 -->
+                <div class="charge-select" id="chargeSelectGroup">
+                    <span style="font-size:0.85rem; margin-right:8px;">粒子电性：</span>
+                    <button id="chargePosBtn" class="active">正电荷 (+)</button>
+                    <button id="chargeNegBtn">负电荷 (-)</button>
+                </div>
+                <!-- 初速度大小滑块（无数值输入） -->
+                <div class="slider-container">
+                    <label>初速度 v₀ 大小:</label>
+                    <input type="range" id="v0MagFactor" min="0" max="12" step="0.2" value="4.0" disabled>
+                    <span style="margin-left:5px; min-width:40px;">示意值</span>
+                </div>
+                <div class="slider-container">
+                    <label>初速度方向角 θ₀ :</label>
+                    <input type="range" id="v0AngleFactor" min="0" max="360" step="2" value="45" disabled>
+                    <input type="number" id="v0AngleFactorNum" class="number-input" step="2" value="45" disabled>
+                    <span>°</span>
+                </div>
+                <!-- 三个独立开关：电场、磁场、重力 -->
+                <div class="toggle-switch">
+                    <input type="checkbox" id="enableEfieldFactor" disabled> 
+                    <label>启用电场</label>
+                </div>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="enableBfieldFactor" disabled> 
+                    <label>启用磁场</label>
+                </div>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="enableGravityFactor" disabled> 
+                    <label>启用重力</label>
+                </div>
+                <div id="ratioWithGravityArea">
+                    <div class="slider-container">
+                        <label>电场力/重力 (qE/mg) :</label>
+                        <input type="range" id="ratioEtoG" min="-3" max="3" step="0.1" value="1.0" disabled>
+                        <input type="number" id="ratioEtoGNum" class="number-input" step="0.1" value="1.0" disabled>
+                    </div>
+                    <div class="slider-container">
+                        <label>洛伦兹力(初速)/重力 (qv₀B/mg) :</label>
+                        <input type="range" id="ratioBtoG" min="-3" max="3" step="0.1" value="1.2" disabled>
+                        <input type="number" id="ratioBtoGNum" class="number-input" step="0.1" value="1.2" disabled>
+                    </div>
+                </div>
+                <div class="slider-container">
+                    <label>电场力/洛伦兹力初值 (qE / qv₀B) :</label>
+                    <input type="range" id="ratioEtoB" min="-3" max="3" step="0.1" value="0.833" disabled>
+                    <input type="number" id="ratioEtoBNum" class="number-input" step="0.1" value="0.833" disabled>
+                </div>
+                <div class="badge" id="factorModeHint">各场可独立启用，倍数关系仅在对应场启用时有效</div>
+            </div>
+
+            <!-- 方向控制（始终可用） -->
+            <div class="param-group">
+                <div class="param-title">🧭 场的方向控制 (所有模式均有效)</div>
+                <div class="slider-container">
+                    <label>电场方向角 :</label>
+                    <input type="range" id="eAngle" min="0" max="360" step="5" value="90">
+                    <input type="number" id="eAngleNum" class="number-input" step="5" value="90">
+                    <span>° (逆时针)</span>
+                </div>
+                <div class="slider-container" style="margin-top:8px">
+                    <label style="width:120px">磁场方向 :</label>
+                    <div class="dir-buttons">
+                        <button id="btnBOut" class="dir-btn">向外 (·)</button>
+                        <button id="btnBIn" class="dir-btn active">向内 (×)</button>
+                    </div>
+                </div>
+                <div class="badge">提示：正电荷时，洛伦兹力抵消重力需磁场向内(×)；抵消电场力需根据电场方向调节。</div>
+            </div>
+
+            <div class="param-group" id="numericalGroup">
+                <div class="param-title">🧪 基础数值模式 (直接设定场强/磁场)</div>
+                <div class="slider-container">
+                    <label>电荷 q :</label>
+                    <input type="range" id="qSlider" min="-3" max="3" step="0.1" value="1.0">
+                    <input type="number" id="qNum" class="number-input" step="0.1" value="1.0">
+                    <span>×10⁻⁶ C</span>
+                </div>
+                <div class="slider-container">
+                    <label>质量 m :</label>
+                    <input type="range" id="mSlider" min="0.5" max="5" step="0.1" value="1.2">
+                    <input type="number" id="mNum" class="number-input" step="0.1" value="1.2">
+                    <span>×10⁻⁶ kg</span>
+                </div>
+                <div class="slider-container">
+                    <label>初速度 v₀ :</label>
+                    <input type="range" id="v0Mag" min="0" max="12" step="0.2" value="4.0">
+                    <input type="number" id="v0MagNum" class="number-input" step="0.2" value="4.0">
+                    <span>m/s</span>
+                </div>
+                <div class="slider-container">
+                    <label>方向角 θ₀ :</label>
+                    <input type="range" id="v0Angle" min="0" max="360" step="2" value="45">
+                    <input type="number" id="v0AngleNum" class="number-input" step="2" value="45">
+                    <span>°</span>
+                </div>
+                <div class="param-title" style="margin-top:8px">🌍 重力场 (g)</div>
+                <div class="slider-container">
+                    <label>g 数值 :</label>
+                    <select id="gSelect">
+                        <option value="9.8">9.8 m/s²</option>
+                        <option value="10">10 m/s²</option>
+                    </select>
+                </div>
+                <div class="toggle-switch"><input type="checkbox" id="enableGravity" checked> <label>启用重力</label></div>
+                <div class="param-title" style="margin-top:8px">⚡ 匀强电场 (合场强) - 数值模式</div>
+                <div class="slider-container">
+                    <label>电场大小 E :</label>
+                    <input type="range" id="eMag" min="0" max="20" step="0.5" value="5.0">
+                    <input type="number" id="eMagNum" class="number-input" step="0.5" value="5.0">
+                    <span>N/C</span>
+                </div>
+                <div class="toggle-switch"><input type="checkbox" id="enableEfield" checked> <label>启用电场</label></div>
+                <div class="param-title" style="margin-top:8px">🧲 匀强磁场 (B ⊥ 屏幕) - 数值模式</div>
+                <div class="slider-container">
+                    <label>磁感强度 B :</label>
+                    <input type="range" id="bVal" min="-4" max="4" step="0.05" value="1.8">
+                    <input type="number" id="bNum" class="number-input" step="0.05" value="1.8">
+                    <span>T</span>
+                </div>
+                <div class="toggle-switch"><input type="checkbox" id="enableBfield" checked> <label>启用磁场</label></div>
+            </div>
+            <div class="badge" style="display:block; text-align:center;">配速法：漂移(匀速直线) + 圆周运动 | 虚线为分解轨迹</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ----- 物理状态 -----
+        let pos = { x: 0, y: 0 };
+        let vel = { x: 4.0 * Math.cos(45 * Math.PI/180), y: 4.0 * Math.sin(45 * Math.PI/180) };
+        let trail = [];
+        
+        // 基础数值模式参数
+        let q_num = 1.0;          // 10^-6 C
+        let m_num = 1.2;          // 10^-6 kg
+        let g_num = 9.8;
+        let eMag_num = 5.0;
+        let B_num = 1.8;
+        let enableG = true, enableE = true, enableB = true;
+        let v0Mag = 4.0, v0AngleDeg = 45;
+        
+        // 方向控制（始终独立）
+        let eAngleDeg = 90;        // 电场方向角度
+        let bDirection = -1;       // 磁场方向：默认向内（×）
+        
+        // 倍数模式参数
+        let useFactorMode = false;
+        let ratioEtoG = 1.0;    // qE / mg
+        let ratioBtoG = 1.2;    // q v0 B / mg
+        let ratioEtoB = 0.83333; // qE / (q v0 B)
+        
+        // 倍数模式下的独立开关 (新增磁场开关)
+        let enableE_factor = true;
+        let enableB_factor = true;
+        let enableG_factor = true;
+        let factorChargeSign = 1;   // 倍数模式下的电荷符号
+        
+        // 分运动显示
+        let showSubTrajectory = false;
+        let showAxis = true;
+        let driftTrail = [], cycloidTrail = [];
+        let simTime = 0;
+        
+        // 动画控制
+        let animationId = null;
+        let paused = true;
+        let lastFrameTime = 0;
+        
+        // canvas交互
+        let canvas = document.getElementById('simCanvas');
+        let ctx = canvas.getContext('2d');
+        let offsetX = 0, offsetY = 0;
+        let scale = 28;
+        let isDragging = false, dragStart = { x: 0, y: 0 };
+        
+        // ---------- 辅助函数 ----------
+        function getCurrentQ() {
+            if(useFactorMode) return factorChargeSign * Math.abs(q_num);
+            else return q_num;
+        }
+        function getCurrentM() { return useFactorMode ? m_num : m_num; }
+        function getCurrentG() { return useFactorMode ? g_num : g_num; }
+        function getCurrentV0() { return v0Mag; }
+        
+        // 实际电场和磁场的计算（倍数模式下考虑独立开关）
+        function getActualE() {
+            let rad = eAngleDeg * Math.PI/180;
+            if(!useFactorMode) {
+                if(!enableE) return { Ex: 0, Ey: 0 };
+                return { Ex: eMag_num * Math.cos(rad), Ey: eMag_num * Math.sin(rad) };
+            } else {
+                if(!enableE_factor) return { Ex: 0, Ey: 0 };
+                let q_c = getCurrentQ() * 1e-6;
+                if(enableG_factor) {
+                    let m_kg = getCurrentM() * 1e-6;
+                    let g_val = getCurrentG();
+                    let mg = m_kg * g_val;
+                    let E_mag = Math.abs(ratioEtoG) * mg / Math.abs(q_c);
+                    let signE = (ratioEtoG >= 0) ? 1 : -1;
+                    return { Ex: signE * E_mag * Math.cos(rad), Ey: signE * E_mag * Math.sin(rad) };
+                } else {
+                    // 无重力：固定电场力幅值 2e-6 N，方向由 ratioEtoB 符号和角度决定
+                    let fixedFE = 2.0e-6;
+                    let E_mag = fixedFE / Math.abs(q_c);
+                    let signE = (ratioEtoB >= 0) ? 1 : -1;
+                    return { Ex: signE * E_mag * Math.cos(rad), Ey: signE * E_mag * Math.sin(rad) };
+                }
+            }
+        }
+        
+        function getActualB() {
+            if(!useFactorMode) {
+                if(!enableB) return 0;
+                return B_num;
+            } else {
+                if(!enableB_factor) return 0;
+                let q_c = getCurrentQ() * 1e-6;
+                let v0 = getCurrentV0();
+                if(v0 < 0.01) v0 = 0.01;
+                let B_mag = 0;
+                if(enableG_factor) {
+                    let m_kg = getCurrentM() * 1e-6;
+                    let g_val = getCurrentG();
+                    let mg = m_kg * g_val;
+                    B_mag = Math.abs(ratioBtoG) * mg / (Math.abs(q_c) * v0);
+                    return bDirection * B_mag;
+                } else {
+                    let fixedFE = 2.0e-6;
+                    let qE_abs = fixedFE;
+                    let qvB_abs = (Math.abs(ratioEtoB) > 1e-6) ? qE_abs / Math.abs(ratioEtoB) : 0;
+                    B_mag = qvB_abs / (Math.abs(q_c) * v0);
+                    return bDirection * B_mag;
+                }
+            }
+        }
+        
+        // 恒定合力 (除洛伦兹力)
+        function getConstForce() {
+            let Fx = 0, Fy = 0;
+            let q_act = getCurrentQ() * 1e-6;
+            let m_act = getCurrentM() * 1e-6;
+            if(useFactorMode ? enableE_factor : enableE) {
+                let {Ex, Ey} = getActualE();
+                Fx += q_act * Ex;
+                Fy += q_act * Ey;
+            }
+            if(useFactorMode ? enableG_factor : enableG) {
+                Fy += - m_act * getCurrentG();
+            }
+            return { Fx, Fy };
+        }
+        
+        function computeAcceleration(vx, vy) {
+            let {Fx, Fy} = getConstForce();
+            let m_act = getCurrentM() * 1e-6;
+            let q_act = getCurrentQ() * 1e-6;
+            let B_act = getActualB();
+            if(Math.abs(B_act) > 1e-6) {
+                Fx += q_act * (vy * B_act);
+                Fy += q_act * (-vx * B_act);
+            }
+            return { ax: Fx / m_act, ay: Fy / m_act };
+        }
+        
+        function getDriftVelocity() {
+            let Bz = getActualB();
+            if(Math.abs(Bz) < 1e-6) return { vdx: 0, vdy: 0 };
+            let {Fx, Fy} = getConstForce();
+            let q_act = getCurrentQ() * 1e-6;
+            let crossX = Fy * Bz;
+            let crossY = -Fx * Bz;
+            let inv = 1.0 / (q_act * Bz * Bz);
+            return { vdx: crossX * inv, vdy: crossY * inv };
+        }
+        
+        function updateVelocityFromV0() {
+            let rad = v0AngleDeg * Math.PI/180;
+            vel.x = v0Mag * Math.cos(rad);
+            vel.y = v0Mag * Math.sin(rad);
+        }
+        
+        function resetSimulation() {
+            pos = { x: 0, y: 0 };
+            updateVelocityFromV0();
+            trail = [{ x:0, y:0 }];
+            simTime = 0;
+            driftTrail = [];
+            cycloidTrail = [];
+            paused = true;
+            syncUItoParams();
+        }
+        
+        function clearTrail() {
+            trail = [{ x: pos.x, y: pos.y }];
+            if(showSubTrajectory) { simTime = 0; driftTrail = []; cycloidTrail = []; }
+        }
+        
+        function rk4Step(dt) {
+            if(paused) return;
+            let vx = vel.x, vy = vel.y;
+            let x = pos.x, y = pos.y;
+            let {ax, ay} = computeAcceleration(vx, vy);
+            function derivs(vx_, vy_) {
+                let a = computeAcceleration(vx_, vy_);
+                return { vx: vx_, vy: vy_, ax: a.ax, ay: a.ay };
+            }
+            let k1v = { vx: vx, vy: vy };
+            let k1a = computeAcceleration(vx, vy);
+            let k2v = { vx: vx + k1a.ax * dt/2, vy: vy + k1a.ay * dt/2 };
+            let k2a = computeAcceleration(k2v.vx, k2v.vy);
+            let k3v = { vx: vx + k2a.ax * dt/2, vy: vy + k2a.ay * dt/2 };
+            let k3a = computeAcceleration(k3v.vx, k3v.vy);
+            let k4v = { vx: vx + k3a.ax * dt, vy: vy + k3a.ay * dt };
+            let k4a = computeAcceleration(k4v.vx, k4v.vy);
+            let newVx = vx + dt/6 * (k1a.ax + 2*k2a.ax + 2*k3a.ax + k4a.ax);
+            let newVy = vy + dt/6 * (k1a.ay + 2*k2a.ay + 2*k3a.ay + k4a.ay);
+            let newX = x + dt/6 * (k1v.vx + 2*k2v.vx + 2*k3v.vx + k4v.vx);
+            let newY = y + dt/6 * (k1v.vy + 2*k2v.vy + 2*k3v.vy + k4v.vy);
+            vel = { x: newVx, y: newVy };
+            pos = { x: newX, y: newY };
+            trail.push({ x: pos.x, y: pos.y });
+            
+            if(showSubTrajectory) {
+                simTime += dt;
+                let vd = getDriftVelocity();
+                let driftPos = { x: vd.vdx * simTime, y: vd.vdy * simTime };
+                driftTrail.push(driftPos);
+                let v_rel0_x = v0Mag * Math.cos(v0AngleDeg*Math.PI/180) - vd.vdx;
+                let v_rel0_y = v0Mag * Math.sin(v0AngleDeg*Math.PI/180) - vd.vdy;
+                let Bz = getActualB();
+                let q_act = getCurrentQ() * 1e-6, m_act = getCurrentM() * 1e-6;
+                let omega = (q_act * Bz) / m_act;
+                let v_perp = Math.hypot(v_rel0_x, v_rel0_y);
+                let R = (Math.abs(omega) > 1e-6) ? v_perp / Math.abs(omega) : 0;
+                let perpUnitX = -v_rel0_y / v_perp;
+                let perpUnitY = v_rel0_x / v_perp;
+                if(omega < 0) { perpUnitX = -perpUnitX; perpUnitY = -perpUnitY; }
+                let center = { x: -perpUnitX * R, y: -perpUnitY * R };
+                let angle0 = Math.atan2(v_rel0_y, v_rel0_x);
+                let angle = angle0 + omega * simTime;
+                let relX = R * Math.cos(angle);
+                let relY = R * Math.sin(angle);
+                let cycloidPos = { x: center.x + relX, y: center.y + relY };
+                cycloidTrail.push(cycloidPos);
+                if(driftTrail.length > 3000) driftTrail.shift();
+                if(cycloidTrail.length > 3000) cycloidTrail.shift();
+            }
+        }
+        
+        function animate(currentTime) {
+            if(!lastFrameTime) lastFrameTime = currentTime;
+            let dt = Math.min(0.033, (currentTime - lastFrameTime) / 1000);
+            if(dt > 0.005) {
+                let subSteps = 2;
+                let subDt = dt / subSteps;
+                for(let i=0;i<subSteps;i++) rk4Step(subDt);
+            }
+            lastFrameTime = currentTime;
+            drawCanvas();
+            updateStatusBar();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function updateStatusBar() {
+            let speed = Math.hypot(vel.x, vel.y);
+            document.getElementById('liveStatus').innerHTML = `实时速度: (${vel.x.toFixed(2)}, ${vel.y.toFixed(2)}) m/s  | 速率: ${speed.toFixed(2)} m/s`;
+        }
+        
+        function worldToScreen(x, y) {
+            let w = canvas.width, h = canvas.height;
+            return { x: (x + offsetX) * scale + w/2, y: h/2 - (y + offsetY) * scale };
+        }
+        
+        // 磁场符号 (步长12米，更稀疏)
+        function drawMagneticSymbols() {
+            if(!(useFactorMode ? enableB_factor : enableB)) return;
+            let Bval = getActualB();
+            if(Math.abs(Bval) < 1e-6) return;
+            const stepWorld = 12.0;
+            const w = canvas.width, h = canvas.height;
+            let left = -offsetX - (w/2)/scale;
+            let right = -offsetX + (w/2)/scale;
+            let bottom = -offsetY - (h/2)/scale;
+            let top = -offsetY + (h/2)/scale;
+            for(let x = Math.floor(left/stepWorld)*stepWorld; x <= right; x += stepWorld) {
+                for(let y = Math.floor(bottom/stepWorld)*stepWorld; y <= top; y += stepWorld) {
+                    let screen = worldToScreen(x, y);
+                    if(screen.x < 0 || screen.x > w || screen.y < 0 || screen.y > h) continue;
+                    if(bDirection > 0) {
+                        ctx.fillStyle = "#1f2937";
+                        ctx.beginPath();
+                        ctx.arc(screen.x, screen.y, 3.2, 0, 2*Math.PI);
+                        ctx.fill();
+                    } else {
+                        ctx.beginPath();
+                        ctx.moveTo(screen.x-5, screen.y-5);
+                        ctx.lineTo(screen.x+5, screen.y+5);
+                        ctx.moveTo(screen.x+5, screen.y-5);
+                        ctx.lineTo(screen.x-5, screen.y+5);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = "#b91c1c";
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        function drawElectricFieldLines() {
+            if(!(useFactorMode ? enableE_factor : enableE)) return;
+            let E = getActualE();
+            let Emag = Math.hypot(E.Ex, E.Ey);
+            if(Emag < 0.01) return;
+            let angleRad = Math.atan2(E.Ey, E.Ex);
+            const dirX = Math.cos(angleRad);
+            const dirY = Math.sin(angleRad);
+            const perpX = -dirY;
+            const perpY = dirX;
+            const w = canvas.width, h = canvas.height;
+            let left = -offsetX - (w/2)/scale;
+            let right = -offsetX + (w/2)/scale;
+            let bottom = -offsetY - (h/2)/scale;
+            let top = -offsetY + (h/2)/scale;
+            let centerX = (left+right)/2;
+            let centerY = (bottom+top)/2;
+            let span = Math.min( (right-left)*0.8, (top-bottom)*0.8 );
+            let spacing = span / 4;
+            for(let i = -2; i <= 2; i++) {
+                let offset = i * spacing;
+                let cx = centerX + offset * perpX;
+                let cy = centerY + offset * perpY;
+                let tMin = -18, tMax = 18;
+                let p1 = { x: cx + tMin * dirX, y: cy + tMin * dirY };
+                let p2 = { x: cx + tMax * dirX, y: cy + tMax * dirY };
+                let sp1 = worldToScreen(p1.x, p1.y);
+                let sp2 = worldToScreen(p2.x, p2.y);
+                if((sp1.x < 0 && sp2.x < 0) || (sp1.x > w && sp2.x > w) || (sp1.y < 0 && sp2.y < 0) || (sp1.y > h && sp2.y > h)) continue;
+                ctx.beginPath();
+                ctx.moveTo(sp1.x, sp1.y);
+                ctx.lineTo(sp2.x, sp2.y);
+                ctx.strokeStyle = "#ef4444";
+                ctx.lineWidth = 3.0;
+                ctx.setLineDash([6, 10]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                let tArrow = tMax * 0.65;
+                let arrowBase = { x: cx + tArrow * dirX, y: cy + tArrow * dirY };
+                let arrowTip = { x: arrowBase.x + 0.8 * dirX, y: arrowBase.y + 0.8 * dirY };
+                if(Math.abs(arrowBase.x) < 0.8 && Math.abs(arrowBase.y) < 0.8) continue;
+                let screenBase = worldToScreen(arrowBase.x, arrowBase.y);
+                let screenTip = worldToScreen(arrowTip.x, arrowTip.y);
+                let ang = Math.atan2(screenTip.y - screenBase.y, screenTip.x - screenBase.x);
+                let asz = 10;
+                ctx.beginPath();
+                ctx.moveTo(screenTip.x, screenTip.y);
+                ctx.lineTo(screenTip.x - asz * Math.cos(ang - Math.PI/6), screenTip.y - asz * Math.sin(ang - Math.PI/6));
+                ctx.lineTo(screenTip.x - asz * Math.cos(ang + Math.PI/6), screenTip.y - asz * Math.sin(ang + Math.PI/6));
+                ctx.fillStyle = "#ef4444";
+                ctx.fill();
+            }
+        }
+        
+        function drawSubTrajectories() {
+            if(!showSubTrajectory) return;
+            if(driftTrail.length > 1) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = "#3b82f6";
+                ctx.lineWidth = 1.8;
+                ctx.setLineDash([8, 6]);
+                for(let i=0;i<driftTrail.length-1;i++) {
+                    let p1 = worldToScreen(driftTrail[i].x, driftTrail[i].y);
+                    let p2 = worldToScreen(driftTrail[i+1].x, driftTrail[i+1].y);
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+                ctx.beginPath();
+                ctx.strokeStyle = "#10b981";
+                ctx.lineWidth = 1.8;
+                ctx.setLineDash([8, 6]);
+                for(let i=0;i<cycloidTrail.length-1;i++) {
+                    let p1 = worldToScreen(cycloidTrail[i].x, cycloidTrail[i].y);
+                    let p2 = worldToScreen(cycloidTrail[i+1].x, cycloidTrail[i+1].y);
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+                ctx.setLineDash([]);
+                ctx.restore();
+            }
+        }
+        
+        function drawCanvas() {
+            if(!ctx) return;
+            const w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+            ctx.save();
+            
+            if(showAxis) {
+                let origin = worldToScreen(0,0);
+                ctx.beginPath();
+                ctx.moveTo(0, origin.y);
+                ctx.lineTo(w, origin.y);
+                ctx.moveTo(origin.x, 0);
+                ctx.lineTo(origin.x, h);
+                ctx.strokeStyle = "#2c3e66";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.fillStyle = "#2c3e66";
+                ctx.fillText("x", w-10, origin.y-5);
+                ctx.fillText("y", origin.x+8, 12);
+            }
+            
+            drawElectricFieldLines();
+            drawMagneticSymbols();
+            drawSubTrajectories();
+            
+            if(trail.length > 1) {
+                ctx.beginPath();
+                ctx.strokeStyle = "#f97316";
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([]);
+                for(let i=0;i<trail.length-1;i++) {
+                    let p1 = worldToScreen(trail[i].x, trail[i].y);
+                    let p2 = worldToScreen(trail[i+1].x, trail[i+1].y);
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+            
+            let particlePos = worldToScreen(pos.x, pos.y);
+            let grad = ctx.createRadialGradient(particlePos.x-3, particlePos.y-3, 3, particlePos.x, particlePos.y, 12);
+            grad.addColorStop(0, '#3b82f6');
+            grad.addColorStop(1, '#1e40af');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(particlePos.x, particlePos.y, 7, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(particlePos.x-1.5, particlePos.y-1.5, 1.5, 0, 2*Math.PI);
+            ctx.fill();
+            
+            let velVecEnd = worldToScreen(pos.x + vel.x*0.35, pos.y + vel.y*0.35);
+            ctx.beginPath();
+            ctx.moveTo(particlePos.x, particlePos.y);
+            ctx.lineTo(velVecEnd.x, velVecEnd.y);
+            ctx.strokeStyle = "#e11d48";
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            let angle = Math.atan2(velVecEnd.y - particlePos.y, velVecEnd.x - particlePos.x);
+            let arrowSize = 10;
+            let a1x = velVecEnd.x - arrowSize * Math.cos(angle - Math.PI/6);
+            let a1y = velVecEnd.y - arrowSize * Math.sin(angle - Math.PI/6);
+            let a2x = velVecEnd.x - arrowSize * Math.cos(angle + Math.PI/6);
+            let a2y = velVecEnd.y - arrowSize * Math.sin(angle + Math.PI/6);
+            ctx.beginPath();
+            ctx.moveTo(velVecEnd.x, velVecEnd.y);
+            ctx.lineTo(a1x, a1y);
+            ctx.lineTo(a2x, a2y);
+            ctx.fillStyle = "#e11d48";
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function syncUItoParams() {
+            // 数值模式区域
+            document.getElementById('qSlider').value = q_num;
+            document.getElementById('qNum').value = q_num;
+            document.getElementById('mSlider').value = m_num;
+            document.getElementById('mNum').value = m_num;
+            document.getElementById('v0Mag').value = v0Mag;
+            document.getElementById('v0MagNum').value = v0Mag;
+            document.getElementById('v0Angle').value = v0AngleDeg;
+            document.getElementById('v0AngleNum').value = v0AngleDeg;
+            document.getElementById('gSelect').value = g_num;
+            document.getElementById('enableGravity').checked = enableG;
+            document.getElementById('eMag').value = eMag_num;
+            document.getElementById('eMagNum').value = eMag_num;
+            document.getElementById('eAngle').value = eAngleDeg;
+            document.getElementById('eAngleNum').value = eAngleDeg;
+            document.getElementById('enableEfield').checked = enableE;
+            document.getElementById('bVal').value = B_num;
+            document.getElementById('bNum').value = B_num;
+            document.getElementById('enableBfield').checked = enableB;
+            // 倍数模式区域
+            document.getElementById('v0MagFactor').value = v0Mag;
+            document.getElementById('v0AngleFactor').value = v0AngleDeg;
+            document.getElementById('v0AngleFactorNum').value = v0AngleDeg;
+            document.getElementById('enableEfieldFactor').checked = enableE_factor;
+            document.getElementById('enableBfieldFactor').checked = enableB_factor;
+            document.getElementById('enableGravityFactor').checked = enableG_factor;
+            document.getElementById('ratioEtoG').value = ratioEtoG;
+            document.getElementById('ratioEtoGNum').value = ratioEtoG;
+            document.getElementById('ratioBtoG').value = ratioBtoG;
+            document.getElementById('ratioBtoGNum').value = ratioBtoG;
+            document.getElementById('ratioEtoB').value = ratioEtoB;
+            document.getElementById('ratioEtoBNum').value = ratioEtoB;
+            if(factorChargeSign === 1) {
+                document.getElementById('chargePosBtn').classList.add('active');
+                document.getElementById('chargeNegBtn').classList.remove('active');
+            } else {
+                document.getElementById('chargePosBtn').classList.remove('active');
+                document.getElementById('chargeNegBtn').classList.add('active');
+            }
+            if(bDirection === 1) {
+                document.getElementById('btnBOut').classList.add('active');
+                document.getElementById('btnBIn').classList.remove('active');
+            } else {
+                document.getElementById('btnBOut').classList.remove('active');
+                document.getElementById('btnBIn').classList.add('active');
+            }
+        }
+        
+        function setMode(useFactor) {
+            useFactorMode = useFactor;
+            let numericInputs = document.querySelectorAll('#qSlider, #qNum, #mSlider, #mNum, #v0Mag, #v0MagNum, #v0Angle, #v0AngleNum, #gSelect, #eMag, #eMagNum, #bVal, #bNum, #enableGravity, #enableEfield, #enableBfield');
+            let factorInputs = document.querySelectorAll('#ratioEtoG, #ratioEtoGNum, #ratioBtoG, #ratioBtoGNum, #ratioEtoB, #ratioEtoBNum');
+            let factorExtra = document.querySelectorAll('#v0MagFactor, #v0AngleFactor, #v0AngleFactorNum, #enableEfieldFactor, #enableBfieldFactor, #enableGravityFactor');
+            let chargeBtns = document.querySelectorAll('#chargePosBtn, #chargeNegBtn');
+            numericInputs.forEach(inp => inp.disabled = useFactor);
+            factorInputs.forEach(inp => inp.disabled = !useFactor);
+            factorExtra.forEach(inp => inp.disabled = !useFactor);
+            chargeBtns.forEach(btn => { if(useFactor) btn.removeAttribute('disabled'); else btn.setAttribute('disabled', 'disabled'); });
+            updateFactorUIHint();
+            resetSimulation();
+        }
+        
+        function updateFactorUIHint() {
+            const hintDiv = document.getElementById('factorModeHint');
+            if(useFactorMode) {
+                hintDiv.innerHTML = "各场可独立启用，倍数关系仅在对应场启用时有效。";
+            } else {
+                hintDiv.innerHTML = "倍数模式未启用，请勾选上方复选框。";
+            }
+        }
+        
+        function updateNumerical() {
+            if(useFactorMode) return;
+            q_num = parseFloat(document.getElementById('qSlider').value);
+            m_num = parseFloat(document.getElementById('mSlider').value);
+            v0Mag = parseFloat(document.getElementById('v0Mag').value);
+            v0AngleDeg = parseFloat(document.getElementById('v0Angle').value);
+            g_num = parseFloat(document.getElementById('gSelect').value);
+            enableG = document.getElementById('enableGravity').checked;
+            eMag_num = parseFloat(document.getElementById('eMag').value);
+            eAngleDeg = parseFloat(document.getElementById('eAngle').value);
+            enableE = document.getElementById('enableEfield').checked;
+            B_num = parseFloat(document.getElementById('bVal').value);
+            enableB = document.getElementById('enableBfield').checked;
+            document.getElementById('v0MagFactor').value = v0Mag;
+            document.getElementById('v0AngleFactor').value = v0AngleDeg;
+            document.getElementById('v0AngleFactorNum').value = v0AngleDeg;
+            document.getElementById('enableEfieldFactor').checked = enableE;
+            document.getElementById('enableBfieldFactor').checked = enableB;
+            document.getElementById('enableGravityFactor').checked = enableG;
+            updateVelocityFromV0();
+            resetSimulation();
+        }
+        
+        function updateFromFactorControls() {
+            if(!useFactorMode) return;
+            let newV0Mag = parseFloat(document.getElementById('v0MagFactor').value);
+            let newV0Angle = parseFloat(document.getElementById('v0AngleFactor').value);
+            let newEnableE = document.getElementById('enableEfieldFactor').checked;
+            let newEnableB = document.getElementById('enableBfieldFactor').checked;
+            let newEnableG = document.getElementById('enableGravityFactor').checked;
+            document.getElementById('v0Mag').value = newV0Mag;
+            document.getElementById('v0MagNum').value = newV0Mag;
+            document.getElementById('v0Angle').value = newV0Angle;
+            document.getElementById('v0AngleNum').value = newV0Angle;
+            v0Mag = newV0Mag;
+            v0AngleDeg = newV0Angle;
+            enableE_factor = newEnableE;
+            enableB_factor = newEnableB;
+            enableG_factor = newEnableG;
+            document.getElementById('enableEfield').checked = newEnableE;
+            document.getElementById('enableBfield').checked = newEnableB;
+            document.getElementById('enableGravity').checked = newEnableG;
+            updateVelocityFromV0();
+            resetSimulation();
+            updateFactorUIHint();
+        }
+        
+        function updateFactor() {
+            if(!useFactorMode) return;
+            let newRatioEtoG = parseFloat(document.getElementById('ratioEtoG').value);
+            let newRatioBtoG = parseFloat(document.getElementById('ratioBtoG').value);
+            let newRatioEtoB = parseFloat(document.getElementById('ratioEtoB').value);
+            if(enableG_factor) {
+                if(Math.abs(newRatioEtoB - ratioEtoB) > 0.01) {
+                    ratioEtoB = newRatioEtoB;
+                    ratioEtoG = ratioEtoB * ratioBtoG;
+                    document.getElementById('ratioEtoG').value = ratioEtoG;
+                    document.getElementById('ratioEtoGNum').value = ratioEtoG;
+                } else if(Math.abs(newRatioEtoG - ratioEtoG) > 0.01) {
+                    ratioEtoG = newRatioEtoG;
+                    if(Math.abs(ratioBtoG) > 1e-6) ratioEtoB = ratioEtoG / ratioBtoG;
+                    else ratioEtoB = 0;
+                    document.getElementById('ratioEtoB').value = ratioEtoB;
+                    document.getElementById('ratioEtoBNum').value = ratioEtoB;
+                } else if(Math.abs(newRatioBtoG - ratioBtoG) > 0.01) {
+                    ratioBtoG = newRatioBtoG;
+                    if(Math.abs(ratioBtoG) > 1e-6) ratioEtoB = ratioEtoG / ratioBtoG;
+                    else ratioEtoB = 0;
+                    document.getElementById('ratioEtoB').value = ratioEtoB;
+                    document.getElementById('ratioEtoBNum').value = ratioEtoB;
+                }
+                ratioEtoG = parseFloat(document.getElementById('ratioEtoG').value);
+                ratioBtoG = parseFloat(document.getElementById('ratioBtoG').value);
+                ratioEtoB = parseFloat(document.getElementById('ratioEtoB').value);
+            } else {
+                if(Math.abs(newRatioEtoB - ratioEtoB) > 0.01) ratioEtoB = newRatioEtoB;
+                document.getElementById('ratioEtoG').value = ratioEtoG;
+                document.getElementById('ratioEtoGNum').value = ratioEtoG;
+                document.getElementById('ratioBtoG').value = ratioBtoG;
+                document.getElementById('ratioBtoGNum').value = ratioBtoG;
+                document.getElementById('ratioEtoB').value = ratioEtoB;
+                document.getElementById('ratioEtoBNum').value = ratioEtoB;
+            }
+            eAngleDeg = parseFloat(document.getElementById('eAngle').value);
+            document.getElementById('eAngleNum').value = eAngleDeg;
+            updateFactorUIHint();
+            updateVelocityFromV0();
+            resetSimulation();
+        }
+        
+        function setCharge(sign) {
+            if(!useFactorMode) return;
+            factorChargeSign = sign;
+            syncUItoParams();
+            resetSimulation();
+        }
+        
+        function bindEvents() {
+            document.getElementById('modeFactorCheckbox').addEventListener('change', (e) => setMode(e.target.checked));
+            document.querySelectorAll('#qSlider, #qNum, #mSlider, #mNum, #v0Mag, #v0MagNum, #v0Angle, #v0AngleNum, #gSelect, #eMag, #eMagNum, #bVal, #bNum, #enableGravity, #enableEfield, #enableBfield').forEach(el => {
+                el.addEventListener('input', updateNumerical);
+                el.addEventListener('change', updateNumerical);
+            });
+            document.querySelectorAll('#v0MagFactor, #v0AngleFactor, #v0AngleFactorNum, #enableEfieldFactor, #enableBfieldFactor, #enableGravityFactor').forEach(el => {
+                el.addEventListener('input', updateFromFactorControls);
+                el.addEventListener('change', updateFromFactorControls);
+            });
+            document.querySelectorAll('#ratioEtoG, #ratioEtoGNum, #ratioBtoG, #ratioBtoGNum, #ratioEtoB, #ratioEtoBNum').forEach(el => {
+                el.addEventListener('input', updateFactor);
+                el.addEventListener('change', updateFactor);
+            });
+            document.getElementById('chargePosBtn').addEventListener('click', () => setCharge(1));
+            document.getElementById('chargeNegBtn').addEventListener('click', () => setCharge(-1));
+            document.getElementById('eAngle').addEventListener('input', () => {
+                eAngleDeg = parseFloat(document.getElementById('eAngle').value);
+                document.getElementById('eAngleNum').value = eAngleDeg;
+                resetSimulation();
+            });
+            document.getElementById('eAngleNum').addEventListener('input', () => {
+                eAngleDeg = parseFloat(document.getElementById('eAngleNum').value);
+                document.getElementById('eAngle').value = eAngleDeg;
+                resetSimulation();
+            });
+            document.getElementById('btnBOut').addEventListener('click', () => {
+                bDirection = 1;
+                document.getElementById('btnBOut').classList.add('active');
+                document.getElementById('btnBIn').classList.remove('active');
+                resetSimulation();
+            });
+            document.getElementById('btnBIn').addEventListener('click', () => {
+                bDirection = -1;
+                document.getElementById('btnBOut').classList.remove('active');
+                document.getElementById('btnBIn').classList.add('active');
+                resetSimulation();
+            });
+            document.getElementById('resetBtn').onclick = () => resetSimulation();
+            document.getElementById('clearTrailBtn').onclick = () => clearTrail();
+            document.getElementById('pauseBtn').onclick = () => { paused = true; };
+            document.getElementById('playBtn').onclick = () => { paused = false; };
+            document.getElementById('toggleSubBtn').onclick = () => {
+                showSubTrajectory = !showSubTrajectory;
+                if(showSubTrajectory) { simTime = 0; driftTrail = []; cycloidTrail = []; document.getElementById('toggleSubBtn').style.background = '#f97316'; }
+                else document.getElementById('toggleSubBtn').style.background = '#8b5cf6';
+                resetSimulation();
+            };
+            document.getElementById('toggleAxisBtn').onclick = () => {
+                showAxis = !showAxis;
+                document.getElementById('toggleAxisBtn').textContent = showAxis ? "📐 隐藏坐标轴" : "📐 显示坐标轴";
+                drawCanvas();
+            };
+        }
+        
+        function initPanelControls() {
+            const panel = document.getElementById('rightPanel');
+            document.getElementById('hidePanelBtn').onclick = () => panel.classList.add('collapsed');
+            document.getElementById('showPanelBtn').onclick = () => panel.classList.remove('collapsed');
+        }
+        
+        function initInteraction() {
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                let delta = -e.deltaY * 0.005;
+                let newScale = scale * (1 + delta);
+                if(newScale > 5 && newScale < 120) scale = newScale;
+                drawCanvas();
+            });
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                dragStart = { x: e.clientX, y: e.clientY };
+                canvas.style.cursor = 'grabbing';
+            });
+            window.addEventListener('mousemove', (e) => {
+                if(!isDragging) return;
+                let dx = (e.clientX - dragStart.x) / scale;
+                let dy = (e.clientY - dragStart.y) / scale;
+                offsetX += dx;
+                offsetY -= dy;
+                dragStart = { x: e.clientX, y: e.clientY };
+                drawCanvas();
+            });
+            window.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+        }
+        
+        function resizeCanvas() { canvas.width = 900; canvas.height = 550; drawCanvas(); }
+        
+        function init() {
+            resizeCanvas();
+            bindEvents();
+            initInteraction();
+            initPanelControls();
+            setMode(false);
+            updateVelocityFromV0();
+            resetSimulation();
+            animationId = requestAnimationFrame(animate);
+        }
+        init();
+    })();
+</script>
+</body>
+</html>

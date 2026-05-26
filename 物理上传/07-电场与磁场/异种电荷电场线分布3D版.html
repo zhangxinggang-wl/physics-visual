@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异种点电荷电场线切线方向 - 小电荷+箭头切线</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            line-height: 1.6;
+            overflow: hidden;
+            height: 100vh;
+        }
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 12px;
+            padding: 20px;
+            width: 320px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        h1 {
+            color: #4cc9f0;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #4361ee;
+            padding-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .subtitle {
+            color: #b8c1ec;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        .control-group {
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        h2 {
+            color: #4361ee;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        h2 i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #b8c1ec;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 12px;
+            -webkit-appearance: none;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+            transition: background 0.3s;
+        }
+        input[type="range"]:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4cc9f0;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+            transition: all 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.8);
+        }
+        .value-display {
+            display: inline-block;
+            background: rgba(67, 97, 238, 0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            min-width: 50px;
+            text-align: center;
+            border: 1px solid rgba(67, 97, 238, 0.5);
+        }
+        button {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        button i {
+            margin-right: 6px;
+        }
+        button:hover {
+            background: linear-gradient(135deg, #3a0ca3, #4361ee);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .info {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 4px solid #f72585;
+            padding: 14px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 12px;
+            padding: 16px;
+            width: 320px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        .instructions h3 {
+            color: #f72585;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .instructions p {
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+        .instructions p i {
+            margin-right: 8px;
+            color: #4cc9f0;
+        }
+        .field-line-count {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .field-line-count .count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4cc9f0;
+            margin-top: 5px;
+        }
+        #charge-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 18px;
+            border-radius: 12px;
+            width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        #charge-display h3 {
+            color: #f72585;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        .charge-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .charge-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .positive {
+            background: #ff2e63;
+            color: #ff2e63;
+        }
+        .negative {
+            background: #4cc9f0;
+            color: #4cc9f0;
+        }
+        .arrow-color {
+            background: #ffde59;
+            color: #ffde59;
+        }
+        .charge-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .slider-label {
+            width: 120px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        .direction-explanation {
+            background: rgba(67, 97, 238, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(67, 97, 238, 0.3);
+            line-height: 1.5;
+        }
+        .electric-field-info {
+            position: absolute;
+            top: 200px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 18px;
+            border-radius: 12px;
+            width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        .electric-field-info h3 {
+            color: #f72585;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        .field-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .field-info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .performance-warning {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            color: #ff6b6b;
+        }
+        /* 自定义滚动条 */
+        #ui::-webkit-scrollbar {
+            width: 6px;
+        }
+        #ui::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        #ui::-webkit-scrollbar-thumb {
+            background: rgba(67, 97, 238, 0.5);
+            border-radius: 3px;
+        }
+        #ui::-webkit-scrollbar-thumb:hover {
+            background: rgba(67, 97, 238, 0.7);
+        }
+        .icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            text-align: center;
+            font-style: normal;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-left: auto;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #4cc9f0;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: rgba(67, 97, 238, 0.5);
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .arrow-density-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .arrow-density-label {
+            width: 120px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        .arrow-size-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .arrow-size-label {
+            width: 120px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        .charge-size-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .charge-size-label {
+            width: 120px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+        .arrow-visualization {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        .arrow-visualization h3 {
+            color: #ffde59;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .visualization-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .visualization-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .visualization-option input {
+            margin-right: 8px;
+        }
+        .physics-info {
+            position: absolute;
+            bottom: 20px;
+            left: 360px;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        .physics-info h3 {
+            color: #4cc9f0;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        .highlight {
+            color: #ffde59;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+        
+        <div id="ui">
+            <h1>电场线切线方向</h1>
+            <p class="subtitle">小体积点电荷 + 箭头切线方向可视化<br>箭头方向表示电场切线方向</p>
+            
+            <div class="control-group">
+                <h2><i class="icon">⚡</i>电荷电量设置</h2>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span class="charge-indicator positive"></span>
+                        正电荷:
+                    </div>
+                    <input type="range" id="positive-charge" min="0.5" max="3.0" step="0.1" value="1.0">
+                    <span id="positive-value" class="value-display">1.0</span>
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span class="charge-indicator negative"></span>
+                        负电荷:
+                    </div>
+                    <input type="range" id="negative-charge" min="0.5" max="3.0" step="0.1" value="1.0">
+                    <span id="negative-value" class="value-display">1.0</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2><i class="icon">📐</i>系统参数</h2>
+                <label>电荷间距: <span id="distance-value" class="value-display">4.0</span></label>
+                <input type="range" id="distance" min="2.0" max="8.0" step="0.5" value="4.0">
+                
+                <label>电场线数量: <span id="lines-value" class="value-display">15</span></label>
+                <input type="range" id="field-lines" min="6" max="50" step="2" value="15">
+                
+                <div class="charge-size-container">
+                    <div class="charge-size-label">
+                        <span class="charge-indicator positive"></span>
+                        电荷大小:
+                    </div>
+                    <input type="range" id="charge-size" min="0.1" max="0.5" step="0.05" value="0.2">
+                    <span id="charge-size-value" class="value-display">0.2</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2><i class="icon">↗️</i>切线箭头显示</h2>
+                <div class="arrow-density-container">
+                    <div class="arrow-density-label">
+                        <span class="charge-indicator arrow-color"></span>
+                        箭头密度:
+                    </div>
+                    <input type="range" id="arrow-density" min="1" max="10" step="1" value="3">
+                    <span id="arrow-density-value" class="value-display">3</span>
+                </div>
+                
+                <div class="arrow-size-container">
+                    <div class="arrow-size-label">
+                        <span class="charge-indicator arrow-color"></span>
+                        箭头大小:
+                    </div>
+                    <input type="range" id="arrow-size" min="0.3" max="1.5" step="0.1" value="0.8">
+                    <span id="arrow-size-value" class="value-display">0.8</span>
+                </div>
+                
+                <label>
+                    显示箭头:
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="show-arrows" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+                
+                <label>
+                    显示电场线:
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="show-field-lines" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+                
+                <div class="performance-warning" id="performance-warning" style="display: none;">
+                    ⚠️ 箭头密度较高时可能会影响性能
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2><i class="icon">🎮</i>动画控制</h2>
+                <div class="button-group">
+                    <button id="play-pause"><i class="icon">⏸️</i>暂停动画</button>
+                    <button id="reset-view"><i class="icon">🔄</i>重置视角</button>
+                    <button id="toggle-arrow-motion"><i class="icon">🌀</i>箭头动画</button>
+                </div>
+            </div>
+            
+            <div class="info">
+                <p><strong>电场线切线方向物理意义:</strong></p>
+                <p>1. <span class="highlight">电场线上任意点的切线方向 = 该点的电场方向</span></p>
+                <p>2. 箭头方向从正电荷指向负电荷</p>
+                <p>3. 箭头密度表示电场强度大小</p>
+                <p>4. 箭头方向永不相交</p>
+                <div class="direction-explanation">
+                    <p><strong>箭头切线方向:</strong> 黄色箭头表示电场线切线方向，箭头尖端指向电场方向。</p>
+                    <p>电荷体积缩小，突出切线箭头显示。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="charge-display">
+            <h3><i class="icon">🔋</i>电荷状态</h3>
+            <div class="charge-info">
+                <div class="charge-color positive"></div>
+                <div>正电荷 (+Q): <span id="positive-charge-display">1.0</span> 单位</div>
+            </div>
+            <div class="charge-info">
+                <div class="charge-color negative"></div>
+                <div>负电荷 (-Q): <span id="negative-charge-display">1.0</span> 单位</div>
+            </div>
+            <div class="charge-info">
+                <div class="charge-color arrow-color"></div>
+                <div>切线箭头: <span id="arrow-status">显示中</span></div>
+            </div>
+            <div class="charge-info">
+                <div style="width:16px;margin-right:12px;text-align:center">↗️</div>
+                <div>箭头密度: <span id="density-display">3/线</span></div>
+            </div>
+        </div>
+        
+        <div class="arrow-visualization">
+            <h3><i class="icon">🎨</i>箭头显示模式</h3>
+            <div class="visualization-option">
+                <input type="radio" id="vis-static" name="visualization" value="static" checked>
+                <label for="vis-static">静态箭头</label>
+            </div>
+            <div class="visualization-option">
+                <input type="radio" id="vis-gradient" name="visualization" value="gradient">
+                <label for="vis-gradient">渐变箭头</label>
+            </div>
+            <div class="visualization-option">
+                <input type="radio" id="vis-pulsing" name="visualization" value="pulsing">
+                <label for="vis-pulsing">脉动箭头</label>
+            </div>
+        </div>
+        
+        <div class="electric-field-info">
+            <h3><i class="icon">📊</i>电场信息</h3>
+            <div class="field-info-item">
+                <span>中点电场强度:</span>
+                <span id="midpoint-strength">0.50</span>
+            </div>
+            <div class="field-info-item">
+                <span>电荷间作用力:</span>
+                <span id="force-value">0.25</span>
+            </div>
+            <div class="field-info-item">
+                <span>电场线密度:</span>
+                <span id="field-density">中</span>
+            </div>
+            <div class="field-info-item">
+                <span>箭头显示模式:</span>
+                <span id="visualization-mode">静态箭头</span>
+            </div>
+        </div>
+        
+        <div class="physics-info">
+            <h3><i class="icon">📚</i>物理要点</h3>
+            <p>• <span class="highlight">切线方向 = 电场方向</span></p>
+            <p>• 箭头密集处 = 电场强度大</p>
+            <p>• 箭头稀疏处 = 电场强度小</p>
+            <p>• 小体积点电荷 = 理想点电荷模型</p>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="icon">💡</i>操作说明</h3>
+            <p><i class="icon">🖱️</i>鼠标拖动：旋转视角</p>
+            <p><i class="icon">📜</i>鼠标滚轮：缩放视图</p>
+            <p><i class="icon">↔️</i>右键拖动：平移视图</p>
+            <p><i class="icon">🎚️</i>调整滑块：改变参数</p>
+        </div>
+        
+        <div class="field-line-count">
+            <div>电场线数量</div>
+            <div class="count" id="current-lines">15</div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let scene, camera, renderer, controls;
+        let positiveCharge, negativeCharge;
+        let fieldLines = [];
+        let tangentArrows = []; // 切线方向箭头
+        let animationId;
+        let isPlaying = true;
+        let showArrows = true;
+        let showFieldLines = true;
+        let arrowMotion = false;
+        let visualizationMode = 'static';
+        
+        // 电荷参数
+        let chargeParams = {
+            positiveCharge: 1.0,
+            negativeCharge: 1.0,
+            distance: 4.0,
+            fieldLineCount: 15,
+            arrowDensity: 3,      // 每条电场线上的箭头数量
+            arrowSize: 0.8,       // 箭头大小
+            chargeSize: 0.2       // 电荷大小（减小）
+        };
+        
+        // 存储电场线点数据
+        let fieldLinePoints = [];
+        
+        // 初始化场景
+        function init() {
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(8, 6, 8);
+            
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            const container = document.getElementById('canvas-container');
+            container.appendChild(renderer.domElement);
+            
+            // 添加轨道控制
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // 创建点电荷和电场线
+            createCharges();
+            createFieldLines();
+            
+            // 添加事件监听器
+            setupEventListeners();
+            
+            // 计算并显示电场信息
+            updateElectricFieldInfo();
+            
+            // 开始动画循环
+            animate();
+        }
+        
+        // 创建点电荷（小体积）
+        function createCharges() {
+            // 移除现有的电荷
+            if (positiveCharge) scene.remove(positiveCharge);
+            if (negativeCharge) scene.remove(negativeCharge);
+            
+            // 使用固定的电荷大小（减小）
+            const chargeRadius = chargeParams.chargeSize;
+            
+            // 创建正电荷（红色，小体积）
+            const positiveGeometry = new THREE.SphereGeometry(chargeRadius, 32, 32);
+            const positiveMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xff2e63,
+                emissive: 0xff2e63,
+                emissiveIntensity: 0.3, // 增加发光强度
+                shininess: 100
+            });
+            positiveCharge = new THREE.Mesh(positiveGeometry, positiveMaterial);
+            positiveCharge.position.set(-chargeParams.distance/2, 0, 0);
+            positiveCharge.castShadow = true;
+            scene.add(positiveCharge);
+            
+            // 创建正电荷标签（保持大小不变）
+            const positiveLabel = createChargeLabel(`+${chargeParams.positiveCharge.toFixed(1)}Q`, 0xff2e63);
+            positiveLabel.position.set(0, chargeRadius + 0.3, 0);
+            positiveCharge.add(positiveLabel);
+            
+            // 创建负电荷（蓝色，小体积）
+            const negativeGeometry = new THREE.SphereGeometry(chargeRadius, 32, 32);
+            const negativeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x4cc9f0,
+                emissive: 0x4cc9f0,
+                emissiveIntensity: 0.3, // 增加发光强度
+                shininess: 100
+            });
+            negativeCharge = new THREE.Mesh(negativeGeometry, negativeMaterial);
+            negativeCharge.position.set(chargeParams.distance/2, 0, 0);
+            negativeCharge.castShadow = true;
+            scene.add(negativeCharge);
+            
+            // 创建负电荷标签（保持大小不变）
+            const negativeLabel = createChargeLabel(`-${chargeParams.negativeCharge.toFixed(1)}Q`, 0x4cc9f0);
+            negativeLabel.position.set(0, chargeRadius + 0.3, 0);
+            negativeCharge.add(negativeLabel);
+            
+            // 更新电荷显示值
+            document.getElementById('positive-charge-display').textContent = chargeParams.positiveCharge.toFixed(1);
+            document.getElementById('negative-charge-display').textContent = chargeParams.negativeCharge.toFixed(1);
+        }
+        
+        // 创建电荷标签
+        function createChargeLabel(text, color) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 128;
+            
+            // 绘制背景
+            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制文本
+            context.font = 'bold 50px Arial'; // 减小字体大小
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillStyle = `rgb(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255})`;
+            context.fillText(text, canvas.width/2, canvas.height/2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture, 
+                transparent: true,
+                opacity: 0.9
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(1.5, 0.75, 1); // 减小标签尺寸
+            
+            return sprite;
+        }
+        
+        // 创建电场线
+        function createFieldLines() {
+            // 清除现有的电场线和箭头
+            fieldLines.forEach(line => scene.remove(line));
+            tangentArrows.forEach(arrow => {
+                if (arrow.cone) scene.remove(arrow.cone);
+                if (arrow.cylinder) scene.remove(arrow.cylinder);
+            });
+            
+            fieldLines = [];
+            tangentArrows = [];
+            fieldLinePoints = [];
+            
+            // 性能警告
+            const warningElement = document.getElementById('performance-warning');
+            const totalArrows = chargeParams.fieldLineCount * chargeParams.arrowDensity;
+            warningElement.style.display = totalArrows > 100 ? 'block' : 'none';
+            
+            // 创建电场线
+            for (let i = 0; i < chargeParams.fieldLineCount; i++) {
+                // 计算电场线路径
+                const points = calculateFieldLine(i);
+                fieldLinePoints.push(points);
+                
+                // 创建电场线（如果显示）
+                if (showFieldLines) {
+                    createSingleFieldLine(points, i);
+                }
+                
+                // 创建切线方向箭头（如果显示）
+                if (showArrows) {
+                    createTangentArrows(points, i);
+                }
+            }
+            
+            // 更新显示
+            document.getElementById('current-lines').textContent = chargeParams.fieldLineCount;
+            document.getElementById('density-display').textContent = `${chargeParams.arrowDensity}/线`;
+        }
+        
+        // 计算单条电场线路径
+        function calculateFieldLine(lineIndex) {
+            // 在正电荷表面均匀分布起点
+            const phi = Math.acos(1 - 2 * (lineIndex + 0.5) / chargeParams.fieldLineCount);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * lineIndex;
+            
+            const chargeRadius = chargeParams.chargeSize;
+            const startPoint = new THREE.Vector3(
+                -chargeParams.distance/2 + chargeRadius * 1.2 * Math.cos(theta) * Math.sin(phi),
+                chargeRadius * 1.2 * Math.sin(theta) * Math.sin(phi),
+                chargeRadius * 1.2 * Math.cos(phi)
+            );
+            
+            return traceFieldLine(startPoint);
+        }
+        
+        // 追踪电场线路径
+        function traceFieldLine(startPoint) {
+            const points = [startPoint.clone()];
+            const stepSize = 0.05;
+            const maxSteps = 500;
+            let currentPoint = startPoint.clone();
+            let steps = 0;
+            
+            while (steps < maxSteps) {
+                const electricField = calculateElectricField(currentPoint);
+                const fieldMagnitude = electricField.length();
+                
+                if (fieldMagnitude < 0.01 || fieldMagnitude > 100) break;
+                
+                electricField.normalize();
+                currentPoint.add(electricField.multiplyScalar(stepSize));
+                points.push(currentPoint.clone());
+                
+                // 检查是否接近负电荷
+                const distanceToNegative = currentPoint.distanceTo(negativeCharge.position);
+                const chargeRadius = chargeParams.chargeSize;
+                if (distanceToNegative < chargeRadius * 1.5) {
+                    break;
+                }
+                
+                steps++;
+            }
+            
+            return points;
+        }
+        
+        // 创建单条电场线
+        function createSingleFieldLine(points, lineIndex) {
+            // 根据可视化模式选择颜色
+            let color;
+            if (visualizationMode === 'gradient') {
+                // 渐变模式：根据位置计算颜色
+                const t = lineIndex / chargeParams.fieldLineCount;
+                color = new THREE.Color().setHSL(t, 0.8, 0.6);
+            } else {
+                // 静态模式：使用淡绿色
+                color = new THREE.Color(0x4ade80);
+            }
+            
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: color,
+                linewidth: chargeParams.fieldLineCount > 30 ? 1 : 1.5, // 减小线宽
+                transparent: true,
+                opacity: 0.6 // 降低不透明度
+            });
+            
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            scene.add(line);
+            fieldLines.push(line);
+        }
+        
+        // 创建切线方向箭头
+        function createTangentArrows(points, lineIndex) {
+            const arrowCount = chargeParams.arrowDensity;
+            
+            // 在电场线上均匀分布箭头
+            for (let i = 0; i < arrowCount; i++) {
+                // 计算箭头位置索引（避开起点和终点）
+                const index = Math.floor((i + 1) * points.length / (arrowCount + 2));
+                if (index <= 1 || index >= points.length - 2) continue;
+                
+                const position = points[index];
+                const tangent = calculateTangent(points, index);
+                
+                // 创建箭头
+                createSingleTangentArrow(position, tangent, lineIndex, i);
+            }
+        }
+        
+        // 创建单个切线方向箭头
+        function createSingleTangentArrow(position, tangent, lineIndex, arrowIndex) {
+            const baseSize = chargeParams.arrowSize;
+            
+            // 创建箭头组
+            const arrowGroup = {};
+            
+            // 箭头尖端（圆锥）
+            const coneHeight = 0.15 * baseSize;
+            const coneRadius = 0.08 * baseSize;
+            const coneGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 8);
+            
+            // 箭杆（圆柱）
+            const cylinderHeight = 0.2 * baseSize;
+            const cylinderRadius = 0.02 * baseSize;
+            const cylinderGeometry = new THREE.CylinderGeometry(
+                cylinderRadius, cylinderRadius, cylinderHeight, 6
+            );
+            
+            // 根据可视化模式选择颜色
+            let color;
+            if (visualizationMode === 'gradient') {
+                // 渐变模式：根据箭头索引计算颜色
+                const t = arrowIndex / chargeParams.arrowDensity;
+                color = new THREE.Color().setHSL(0.1 + t * 0.4, 0.9, 0.6);
+            } else {
+                // 静态模式：使用黄色
+                color = new THREE.Color(0xffde59);
+            }
+            
+            const coneMaterial = new THREE.MeshBasicMaterial({ 
+                color: color,
+                transparent: true,
+                opacity: 0.9
+            });
+            
+            const cylinderMaterial = new THREE.MeshBasicMaterial({ 
+                color: color,
+                transparent: true,
+                opacity: 0.9
+            });
+            
+            const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+            const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+            
+            // 设置箭头位置和方向
+            cone.position.copy(position);
+            cylinder.position.copy(position);
+            
+            // 调整箭杆位置（在箭头尖端后面）
+            cylinder.position.add(tangent.clone().multiplyScalar(-cylinderHeight/2 - coneHeight/2));
+            
+            // 调整箭头尖端位置
+            cone.position.add(tangent.clone().multiplyScalar(coneHeight/2));
+            
+            // 使箭头指向切线方向
+            cone.lookAt(position.clone().add(tangent));
+            cylinder.lookAt(position.clone().add(tangent));
+            
+            // 添加到场景
+            scene.add(cone);
+            scene.add(cylinder);
+            
+            // 存储箭头信息
+            arrowGroup.cone = cone;
+            arrowGroup.cylinder = cylinder;
+            arrowGroup.userData = {
+                originalPosition: position.clone(),
+                originalTangent: tangent.clone(),
+                lineIndex: lineIndex,
+                arrowIndex: arrowIndex,
+                progress: Math.random() * Math.PI * 2,
+                color: color.clone()
+            };
+            
+            tangentArrows.push(arrowGroup);
+        }
+        
+        // 计算电场线上某点的切线方向
+        function calculateTangent(points, index) {
+            const i = Math.max(1, Math.min(index, points.length - 2));
+            const pPrev = points[i-1];
+            const pNext = points[i+1];
+            return new THREE.Vector3().subVectors(pNext, pPrev).normalize();
+        }
+        
+        // 计算某点的电场强度
+        function calculateElectricField(point) {
+            const k = 1.0;
+            
+            // 正电荷产生的电场
+            const r1 = new THREE.Vector3().subVectors(point, positiveCharge.position);
+            const r1Mag = r1.length();
+            const e1 = new THREE.Vector3().copy(r1).multiplyScalar(k * chargeParams.positiveCharge / Math.max(r1Mag * r1Mag * r1Mag, 0.001));
+            
+            // 负电荷产生的电场
+            const r2 = new THREE.Vector3().subVectors(point, negativeCharge.position);
+            const r2Mag = r2.length();
+            const e2 = new THREE.Vector3().copy(r2).multiplyScalar(-k * chargeParams.negativeCharge / Math.max(r2Mag * r2Mag * r2Mag, 0.001));
+            
+            return e1.add(e2);
+        }
+        
+        // 更新电场信息显示
+        function updateElectricFieldInfo() {
+            // 计算中点电场强度
+            const midpoint = new THREE.Vector3(0, 0, 0);
+            const midpointField = calculateElectricField(midpoint);
+            const midpointStrength = midpointField.length().toFixed(2);
+            
+            // 计算电荷间作用力
+            const distance = chargeParams.distance;
+            const force = (chargeParams.positiveCharge * chargeParams.negativeCharge) / (distance * distance);
+            
+            // 计算电场线密度
+            let fieldDensity = "低";
+            const totalCharge = chargeParams.positiveCharge + chargeParams.negativeCharge;
+            if (totalCharge > 3.0) fieldDensity = "高";
+            else if (totalCharge > 1.5) fieldDensity = "中";
+            
+            // 更新显示
+            document.getElementById('midpoint-strength').textContent = midpointStrength;
+            document.getElementById('force-value').textContent = force.toFixed(3);
+            document.getElementById('field-density').textContent = fieldDensity;
+            document.getElementById('arrow-status').textContent = showArrows ? "显示中" : "已隐藏";
+            document.getElementById('visualization-mode').textContent = getVisualizationModeName();
+        }
+        
+        // 获取可视化模式名称
+        function getVisualizationModeName() {
+            switch(visualizationMode) {
+                case 'static': return '静态箭头';
+                case 'gradient': return '渐变箭头';
+                case 'pulsing': return '脉动箭头';
+                default: return '静态箭头';
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 正电荷电量滑块
+            document.getElementById('positive-charge').addEventListener('input', function(e) {
+                chargeParams.positiveCharge = parseFloat(e.target.value);
+                document.getElementById('positive-value').textContent = chargeParams.positiveCharge.toFixed(1);
+                updateScene();
+            });
+            
+            // 负电荷电量滑块
+            document.getElementById('negative-charge').addEventListener('input', function(e) {
+                chargeParams.negativeCharge = parseFloat(e.target.value);
+                document.getElementById('negative-value').textContent = chargeParams.negativeCharge.toFixed(1);
+                updateScene();
+            });
+            
+            // 电荷间距滑块
+            document.getElementById('distance').addEventListener('input', function(e) {
+                chargeParams.distance = parseFloat(e.target.value);
+                document.getElementById('distance-value').textContent = chargeParams.distance.toFixed(1);
+                updateScene();
+            });
+            
+            // 电场线数量滑块
+            document.getElementById('field-lines').addEventListener('input', function(e) {
+                chargeParams.fieldLineCount = parseInt(e.target.value);
+                document.getElementById('lines-value').textContent = chargeParams.fieldLineCount;
+                updateScene();
+            });
+            
+            // 电荷大小滑块
+            document.getElementById('charge-size').addEventListener('input', function(e) {
+                chargeParams.chargeSize = parseFloat(e.target.value);
+                document.getElementById('charge-size-value').textContent = chargeParams.chargeSize.toFixed(2);
+                updateScene();
+            });
+            
+            // 箭头密度滑块
+            document.getElementById('arrow-density').addEventListener('input', function(e) {
+                chargeParams.arrowDensity = parseInt(e.target.value);
+                document.getElementById('arrow-density-value').textContent = chargeParams.arrowDensity;
+                updateScene();
+            });
+            
+            // 箭头大小滑块
+            document.getElementById('arrow-size').addEventListener('input', function(e) {
+                chargeParams.arrowSize = parseFloat(e.target.value);
+                document.getElementById('arrow-size-value').textContent = chargeParams.arrowSize.toFixed(1);
+                updateScene();
+            });
+            
+            // 显示箭头开关
+            document.getElementById('show-arrows').addEventListener('change', function(e) {
+                showArrows = this.checked;
+                updateScene();
+            });
+            
+            // 显示电场线开关
+            document.getElementById('show-field-lines').addEventListener('change', function(e) {
+                showFieldLines = this.checked;
+                updateScene();
+            });
+            
+            // 播放/暂停按钮
+            document.getElementById('play-pause').addEventListener('click', function() {
+                isPlaying = !isPlaying;
+                this.innerHTML = isPlaying ? '<i class="icon">⏸️</i>暂停动画' : '<i class="icon">▶️</i>播放动画';
+            });
+            
+            // 重置视角按钮
+            document.getElementById('reset-view').addEventListener('click', function() {
+                controls.reset();
+                camera.position.set(8, 6, 8);
+                controls.update();
+            });
+            
+            // 箭头动画按钮
+            document.getElementById('toggle-arrow-motion').addEventListener('click', function() {
+                arrowMotion = !arrowMotion;
+                this.innerHTML = arrowMotion ? '<i class="icon">🌀</i>停止动画' : '<i class="icon">🌀</i>箭头动画';
+            });
+            
+            // 可视化方式选择
+            document.querySelectorAll('input[name="visualization"]').forEach(radio => {
+                radio.addEventListener('change', function(e) {
+                    visualizationMode = e.target.value;
+                    updateScene();
+                });
+            });
+            
+            // 窗口大小调整
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        // 更新场景
+        function updateScene() {
+            createCharges();
+            createFieldLines();
+            updateElectricFieldInfo();
+        }
+        
+        // 窗口大小调整处理
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // 动画循环
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            if (isPlaying) {
+                // 电荷旋转
+                positiveCharge.rotation.y += 0.01;
+                negativeCharge.rotation.y -= 0.01;
+                
+                // 箭头动画效果
+                const time = Date.now() * 0.001;
+                
+                tangentArrows.forEach((arrowGroup, index) => {
+                    const data = arrowGroup.userData;
+                    data.progress += 0.03;
+                    
+                    // 脉动模式：箭头大小变化
+                    if (visualizationMode === 'pulsing' || arrowMotion) {
+                        const pulse = 0.8 + 0.2 * Math.sin(time * 2 + data.progress);
+                        
+                        // 应用脉动效果到箭头大小
+                        const scale = pulse;
+                        arrowGroup.cone.scale.set(scale, scale, scale);
+                        arrowGroup.cylinder.scale.set(scale, scale, scale);
+                        
+                        // 脉动模式下的透明度变化
+                        if (visualizationMode === 'pulsing') {
+                            const opacity = 0.7 + 0.3 * Math.sin(time * 2 + data.progress);
+                            arrowGroup.cone.material.opacity = opacity;
+                            arrowGroup.cylinder.material.opacity = opacity;
+                        }
+                    }
+                    
+                    // 渐变模式：颜色变化
+                    if (visualizationMode === 'gradient') {
+                        const hue = (0.1 + data.arrowIndex / chargeParams.arrowDensity * 0.4 + Math.sin(time + data.lineIndex * 0.1) * 0.05) % 1;
+                        const color = new THREE.Color().setHSL(hue, 0.9, 0.6);
+                        arrowGroup.cone.material.color.copy(color);
+                        arrowGroup.cylinder.material.color.copy(color);
+                    }
+                    
+                    // 箭头动画：轻微摆动
+                    if (arrowMotion && visualizationMode !== 'pulsing') {
+                        const swing = Math.sin(time * 1.5 + data.progress) * 0.1;
+                        const swingAxis = new THREE.Vector3(
+                            Math.sin(data.lineIndex),
+                            Math.cos(data.lineIndex),
+                            0
+                        ).normalize();
+                        
+                        const rotatedTangent = data.originalTangent.clone()
+                            .applyAxisAngle(swingAxis, swing * 0.1);
+                        
+                        arrowGroup.cone.lookAt(arrowGroup.cone.position.clone().add(rotatedTangent));
+                        arrowGroup.cylinder.lookAt(arrowGroup.cylinder.position.clone().add(rotatedTangent));
+                    }
+                });
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // 清理资源
+        window.addEventListener('beforeunload', () => {
+            cancelAnimationFrame(animationId);
+        });
+    </script>
+</body>
+</html>

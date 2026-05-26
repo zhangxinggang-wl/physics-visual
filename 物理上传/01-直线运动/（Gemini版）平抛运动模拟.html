@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>平抛运动模拟</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 1000px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        h1 { margin: 0; color: #2c3e50; text-align: center; }
+        .credit {
+            text-align: right;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+            padding-right: 20px;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        #canvas-wrapper {
+            position: relative;
+            border: 2px solid #dfe6e9;
+            background-color: #fff;
+            border-radius: 4px;
+        }
+        .controls {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 10px;
+            border-left: 1px solid #eee;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label { font-weight: bold; font-size: 14px; color: #34495e; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .val-display { float: right; color: #e67e22; font-family: Consolas, monospace; }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        #startBtn { background-color: #2ecc71; color: white; }
+        #pauseBtn { background-color: #f1c40f; color: white; }
+        #resetBtn { background-color: #3498db; color: white; grid-column: span 2; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+
+        /* 右下角物理量显示面板 */
+        #data-panel {
+            position: absolute;
+            bottom: 30px;
+            right: 320px; /* 避开右侧控制栏 */
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.8;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            pointer-events: none;
+        }
+        .data-row { display: flex; justify-content: space-between; gap: 15px; }
+        .data-label { font-weight: bold; color: #2c3e50; }
+        .data-value { color: #d35400; font-family: 'Courier New', Courier, monospace; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>平抛运动模拟</h1>
+    <div class="credit">制作：张兴刚燕赵名师工作室 耿春辉</div>
+</div>
+
+<div class="main-container">
+    <div id="canvas-wrapper">
+        <canvas id="simCanvas" width="700" height="550"></canvas>
+        <!-- 网页右下角数据实时显示 -->
+        <div id="data-panel">
+            <div class="data-row"><span class="data-label">水平速度 Vx:</span><span id="dVx" class="data-value">0.00</span> m/s</div>
+            <div class="data-row"><span class="data-label">竖直速度 Vy:</span><span id="dVy" class="data-value">0.00</span> m/s</div>
+            <div class="data-row"><span class="data-label">合速度 V:</span><span id="dV" class="data-value">0.00</span> m/s</div>
+            <div class="data-row"><span class="data-label">合位移 S:</span><span id="dS" class="data-value">0.00</span> m</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>初速度 $v_0$ (m/s): <span id="v0Val" class="val-display">10</span></label>
+            <input type="range" id="v0Input" min="2" max="30" value="10" step="1">
+        </div>
+        <div class="control-group">
+            <label>抛出高度 $h$ (m): <span id="hVal" class="val-display">30</span></label>
+            <input type="range" id="hInput" min="5" max="50" value="30" step="1">
+        </div>
+        
+        <hr style="width:100%; border:0; border-top:1px solid #eee; margin: 5px 0;">
+
+        <label class="checkbox-group">
+            <input type="checkbox" id="showVel" checked> 显示速度矢量 (含实时数值)
+        </label>
+        <label class="checkbox-group">
+            <input type="checkbox" id="showDisp"> 显示合位移 (虚线)
+        </label>
+
+        <div class="btn-group">
+            <button id="startBtn">开始</button>
+            <button id="pauseBtn">暂停</button>
+            <button id="resetBtn">重置</button>
+        </div>
+
+        <div style="font-size: 12px; color: #95a5a6; margin-top: 15px; line-height: 1.6;">
+            物理参数说明：<br>
+            - $g = 10 \, m/s^2$<br>
+            - 比例尺：1米 = 10像素<br>
+            - 速度矢量显示倍率：1m/s = 4px
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI 控件
+    const v0Input = document.getElementById('v0Input');
+    const hInput = document.getElementById('hInput');
+    const v0ValDisp = document.getElementById('v0Val');
+    const hValDisp = document.getElementById('hVal');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const showVelCheck = document.getElementById('showVel');
+    const showDispCheck = document.getElementById('showDisp');
+
+    // 数据面板
+    const dVx = document.getElementById('dVx');
+    const dVy = document.getElementById('dVy');
+    const dV = document.getElementById('dV');
+    const dS = document.getElementById('dS');
+
+    // 物理常量与环境设置
+    const g = 10;
+    const scale = 10; // 1m = 10px
+    const vScale = 4; // 速度矢量长度缩放系数
+    const originX = 50;
+    const originY = 50;
+
+    let v0 = parseFloat(v0Input.value);
+    let h = parseFloat(hInput.value);
+    let time = 0;
+    let isRunning = false;
+    let animationId = null;
+    let trail = [];
+
+    function init() {
+        v0 = parseFloat(v0Input.value);
+        h = parseFloat(hInput.value);
+        v0ValDisp.textContent = v0;
+        hValDisp.textContent = h;
+        if (!isRunning && time === 0) {
+            trail = [];
+            draw();
+        }
+    }
+
+    // 通用箭头绘制函数
+    function drawArrow(x1, y1, x2, y2, color, label = "", isDashed = false) {
+        if (Math.abs(x1 - x2) < 1 && Math.abs(y1 - y2) < 1) return;
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        if (isDashed) ctx.setLineDash([5, 5]);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        // 箭头头部
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 10 * Math.cos(angle - Math.PI / 8), y2 - 10 * Math.sin(angle - Math.PI / 8));
+        ctx.lineTo(x2 - 10 * Math.cos(angle + Math.PI / 8), y2 - 10 * Math.sin(angle + Math.PI / 8));
+        ctx.closePath();
+        ctx.fill();
+
+        // 绘制标签数值
+        if (label) {
+            ctx.fillStyle = color;
+            ctx.font = "bold 13px Arial";
+            ctx.fillText(label, x2 + 8 * Math.cos(angle), y2 + 8 * Math.sin(angle));
+        }
+        ctx.restore();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. 绘制坐标轴 (x右, y下)
+        drawArrow(originX, originY, canvas.width - 30, originY, '#333'); // x轴
+        drawArrow(originX, originY, originX, canvas.height - 30, '#333'); // y轴
+        ctx.fillStyle = '#333';
+        ctx.font = "italic 16px serif";
+        ctx.fillText("x", canvas.width - 25, originY - 10);
+        ctx.fillText("y", originX + 15, canvas.height - 15);
+        ctx.fillText("O", originX - 20, originY - 10);
+
+        // 2. 物理运动计算
+        let x = v0 * time;
+        let y = 0.5 * g * time * time;
+        let vx = v0;
+        let vy = g * time;
+        let v_total = Math.sqrt(vx * vx + vy * vy);
+        let s_total = Math.sqrt(x * x + y * y);
+
+        // 落地检测
+        if (y >= h) {
+            y = h;
+            time = Math.sqrt(2 * h / g);
+            x = v0 * time;
+            vy = g * time;
+            v_total = Math.sqrt(vx * vx + vy * vy);
+            s_total = Math.sqrt(x * x + y * y);
+            isRunning = false;
+            pauseBtn.textContent = "暂停";
+        }
+
+        const px = originX + x * scale;
+        const py = originY + y * scale;
+
+        // 更新网页右下角数据面板
+        dVx.textContent = vx.toFixed(2);
+        dVy.textContent = vy.toFixed(2);
+        dV.textContent = v_total.toFixed(2);
+        dS.textContent = s_total.toFixed(2);
+
+        // 3. 绘制运动轨迹
+        if (trail.length > 0) {
+            ctx.beginPath();
+            ctx.strokeStyle = '#bdc3c7';
+            ctx.setLineDash([2, 2]);
+            ctx.moveTo(originX, originY);
+            trail.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // 4. 绘制合位移 (仅虚线，不带数值标签)
+        if (showDispCheck.checked && time > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(155, 89, 182, 0.6)';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 2;
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(px, py);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // 5. 绘制速度矢量及其分量
+        if (showVelCheck.checked) {
+            const vpx = vx * vScale;
+            const vpy = vy * vScale;
+            
+            // 分速度 Vx (蓝色)
+            drawArrow(px, py, px + vpx, py, '#3498db', `Vx=${vx.toFixed(1)}`);
+            // 分速度 Vy (橙色)
+            drawArrow(px, py, px, py + vpy, '#e67e22', `Vy=${vy.toFixed(1)}`);
+            
+            // 平行四边形定则辅助虚线
+            ctx.beginPath();
+            ctx.strokeStyle = '#95a5a6';
+            ctx.setLineDash([3, 3]);
+            ctx.moveTo(px + vpx, py);
+            ctx.lineTo(px + vpx, py + vpy);
+            ctx.lineTo(px, py + vpy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 合速度 V (红色)
+            drawArrow(px, py, px + vpx, py + vpy, '#e74c3c', `V=${v_total.toFixed(1)}`);
+        }
+
+        // 6. 绘制小球
+        ctx.beginPath();
+        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#2c3e50';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        if (isRunning) trail.push({x: px, y: py});
+    }
+
+    function update() {
+        if (!isRunning) return;
+        time += 0.016; // 约 60 FPS
+        draw();
+        animationId = requestAnimationFrame(update);
+    }
+
+    // 交互逻辑
+    startBtn.onclick = () => {
+        if (!isRunning) {
+            if (time >= Math.sqrt(2 * h / g)) {
+                time = 0;
+                trail = [];
+            }
+            isRunning = true;
+            pauseBtn.textContent = "暂停";
+            update();
+        }
+    };
+
+    pauseBtn.onclick = () => {
+        if (time === 0) return;
+        isRunning = !isRunning;
+        if (isRunning) {
+            pauseBtn.textContent = "暂停";
+            update();
+        } else {
+            pauseBtn.textContent = "继续";
+            cancelAnimationFrame(animationId);
+        }
+    };
+
+    resetBtn.onclick = () => {
+        isRunning = false;
+        cancelAnimationFrame(animationId);
+        time = 0;
+        trail = [];
+        pauseBtn.textContent = "暂停";
+        init();
+    };
+
+    v0Input.oninput = init;
+    hInput.oninput = init;
+    showVelCheck.onchange = draw;
+    showDispCheck.onchange = draw;
+
+    // 初始绘制
+    init();
+</script>
+
+</body>
+</html>

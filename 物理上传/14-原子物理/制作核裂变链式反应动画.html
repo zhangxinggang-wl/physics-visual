@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核裂变链式反应动画</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .simulation-area {
+            flex: 3;
+            position: relative;
+        }
+        
+        #sceneCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(20, 20, 30, 0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 2px solid #e74c3c;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        h1 {
+            color: #e74c3c;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ddd;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            display: inline-block;
+            width: 60px;
+            text-align: right;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #e74c3c;
+        }
+        
+        button.active {
+            background: #c0392b;
+        }
+        
+        .data-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .data-item {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .color-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .info-box {
+            background: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .reaction-sequence {
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="simulation-area">
+            <canvas id="sceneCanvas"></canvas>
+            <div class="status-bar" id="statusBar">状态: 准备中...</div>
+        </div>
+        
+        <div class="control-panel">
+            <h1>核裂变链式反应</h1>
+            <p class="subtitle">中子诱导的原子核分裂连锁反应</p>
+            
+            <div class="control-group">
+                <h2>模拟参数</h2>
+                
+                <div class="slider-container">
+                    <label>初始中子数: <span id="neutronValue" class="value-display">3</span></label>
+                    <input type="range" id="neutronSlider" min="1" max="10" step="1" value="3">
+                </div>
+                
+                <div class="slider-container">
+                    <label>裂变截面: <span id="crossSectionValue" class="value-display">1.0</span> 单位</label>
+                    <input type="range" id="crossSectionSlider" min="0.1" max="3" step="0.1" value="1">
+                </div>
+                
+                <div class="slider-container">
+                    <label>倍增系数 k: <span id="kValue" class="value-display">1.2</span></label>
+                    <input type="range" id="kSlider" min="0.5" max="2" step="0.1" value="1.2">
+                </div>
+                
+                <div class="slider-container">
+                    <label>模拟速度: <span id="speedValue" class="value-display">1.0</span>x</label>
+                    <input type="range" id="speedSlider" min="0.1" max="3" step="0.1" value="1">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>控制面板</h2>
+                <div class="button-group">
+                    <button id="playBtn" class="active">开始</button>
+                    <button id="pauseBtn">暂停</button>
+                    <button id="resetBtn">重置</button>
+                </div>
+                
+                <div class="button-group">
+                    <button id="slowBtn">慢速</button>
+                    <button id="normalBtn" class="active">常速</button>
+                    <button id="fastBtn">快速</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>核裂变方程</h2>
+                <div class="reaction-sequence">
+                    n + ²³⁵U → 裂变产物 + 2-3n + 能量
+                </div>
+                <div class="info-box">
+                    裂变释放约200MeV能量，其中：
+                    <br>• 裂变碎片动能: ~168 MeV
+                    <br>• 裂变中子动能: ~5 MeV
+                    <br>• γ射线: ~7 MeV
+                    <br>• β衰变: ~8 MeV
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>实时数据</h2>
+                <div class="data-display">
+                    <div class="data-item">
+                        <span>当前中子数:</span>
+                        <span id="currentNeutrons">0</span>
+                    </div>
+                    <div class="data-item">
+                        <span>裂变次数:</span>
+                        <span id="fissionCount">0</span>
+                    </div>
+                    <div class="data-item">
+                        <span>累计中子:</span>
+                        <span id="totalNeutrons">0</span>
+                    </div>
+                    <div class="data-item">
+                        <span>反应速率:</span>
+                        <span id="reactionRate">0</span> 次/秒
+                    </div>
+                    <div class="data-item">
+                        <span>链式状态:</span>
+                        <span id="chainState">稳定</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>图例说明</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #3498db;"></div>
+                        <span>中子</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #e74c3c;"></div>
+                        <span>铀-235 核</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #2ecc71;"></div>
+                        <span>裂变碎片</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background-color: #f1c40f;"></div>
+                        <span>释放能量</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Three.js场景
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth * 0.75 / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('sceneCanvas'),
+            antialias: true
+        });
+        
+        // 控制变量
+        let isPlaying = true;
+        let simulationSpeed = 1.0;
+        let simulationTime = 0;
+        let animationFrameId = null;
+        
+        // 物理参数
+        let initialNeutrons = 3;
+        let crossSection = 1.0;
+        let kFactor = 1.2;  // 倍增系数
+        
+        // 模拟状态
+        let currentNeutrons = 0;
+        let totalNeutrons = 0;
+        let fissionCount = 0;
+        let reactionRate = 0;
+        let uraniumAtoms = [];
+        let neutrons = [];
+        let fissionFragments = [];
+        let energyParticles = [];
+        
+        // 物理参数
+        const MAX_URANIUM = 50;  // 最大铀原子数
+        const NEUTRON_LIFETIME = 3.0;  // 中子寿命（秒）
+        const FISSION_ENERGY = 200;  // MeV
+        
+        // 初始化渲染器
+        function initRenderer() {
+            const container = document.querySelector('.simulation-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x111111);
+        }
+        
+        // 初始化相机
+        function initCamera() {
+            camera.position.set(0, 0, 30);
+            camera.lookAt(0, 0, 0);
+        }
+        
+        // 添加光源
+        function addLights() {
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 5);
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xffffff, 0.5, 50);
+            pointLight.position.set(0, 0, 20);
+            scene.add(pointLight);
+        }
+        
+        // 创建铀原子
+        function createUraniumAtom(position) {
+            const geometry = new THREE.SphereGeometry(0.8, 16, 16);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0xe74c3c,
+                emissive: 0xe74c3c,
+                emissiveIntensity: 0.2
+            });
+            const atom = new THREE.Mesh(geometry, material);
+            
+            if (position) {
+                atom.position.copy(position);
+            } else {
+                // 随机位置
+                const x = (Math.random() - 0.5) * 20;
+                const y = (Math.random() - 0.5) * 20;
+                atom.position.set(x, y, 0);
+            }
+            
+            atom.userData = {
+                type: 'uranium',
+                isFissile: true,
+                lifeTime: 0,
+                maxLife: 10
+            };
+            
+            return atom;
+        }
+        
+        // 创建中子
+        function createNeutron(position, velocity) {
+            const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x3498db,
+                emissive: 0x3498db,
+                emissiveIntensity: 0.3
+            });
+            const neutron = new THREE.Mesh(geometry, material);
+            
+            if (position) {
+                neutron.position.copy(position);
+            } else {
+                neutron.position.set(0, 0, 0);
+            }
+            
+            neutron.userData = {
+                type: 'neutron',
+                velocity: velocity || new THREE.Vector3(
+                    (Math.random() - 0.5) * 2,
+                    (Math.random() - 0.5) * 2,
+                    0
+                ),
+                lifeTime: 0,
+                maxLife: NEUTRON_LIFETIME
+            };
+            
+            return neutron;
+        }
+        
+        // 创建裂变碎片
+        function createFissionFragment(position) {
+            const geometry = new THREE.SphereGeometry(0.6, 12, 12);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x2ecc71,
+                emissive: 0x2ecc71,
+                emissiveIntensity: 0.4
+            });
+            const fragment = new THREE.Mesh(geometry, material);
+            
+            fragment.position.copy(position);
+            
+            fragment.userData = {
+                type: 'fragment',
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 3,
+                    (Math.random() - 0.5) * 3,
+                    0
+                ),
+                lifeTime: 0,
+                maxLife: 5
+            };
+            
+            return fragment;
+        }
+        
+        // 创建能量粒子
+        function createEnergyParticle(position) {
+            const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xf1c40f,
+                transparent: true,
+                opacity: 0.7
+            });
+            const energy = new THREE.Mesh(geometry, material);
+            
+            energy.position.copy(position);
+            
+            energy.userData = {
+                type: 'energy',
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 4,
+                    (Math.random() - 0.5) * 4,
+                    0
+                ),
+                lifeTime: 0,
+                maxLife: 2
+            };
+            
+            return energy;
+        }
+        
+        // 初始化模拟
+        function initSimulation() {
+            // 清除现有对象
+            while(scene.children.length > 0) { 
+                scene.remove(scene.children[0]); 
+            }
+            
+            // 重置状态
+            currentNeutrons = 0;
+            totalNeutrons = 0;
+            fissionCount = 0;
+            reactionRate = 0;
+            
+            uraniumAtoms = [];
+            neutrons = [];
+            fissionFragments = [];
+            energyParticles = [];
+            
+            // 添加灯光
+            addLights();
+            
+            // 创建铀原子矩阵
+            for (let i = 0; i < MAX_URANIUM; i++) {
+                const uranium = createUraniumAtom();
+                scene.add(uranium);
+                uraniumAtoms.push(uranium);
+            }
+            
+            // 创建初始中子
+            for (let i = 0; i < initialNeutrons; i++) {
+                const neutron = createNeutron(new THREE.Vector3(0, 0, 0));
+                scene.add(neutron);
+                neutrons.push(neutron);
+                currentNeutrons++;
+                totalNeutrons++;
+            }
+        }
+        
+        // 检查碰撞
+        function checkCollisions(neutron) {
+            for (let i = 0; i < uraniumAtoms.length; i++) {
+                const uranium = uraniumAtoms[i];
+                
+                if (uranium.userData.isFissile) {
+                    const distance = neutron.position.distanceTo(uranium.position);
+                    
+                    if (distance < 1.5) {  // 碰撞距离阈值
+                        // 根据裂变截面决定是否发生裂变
+                        if (Math.random() < crossSection * 0.3) {
+                            // 发生裂变！
+                            fissionCount++;
+                            
+                            // 标记铀原子为已裂变
+                            uranium.userData.isFissile = false;
+                            uranium.material.color.setHex(0x7f8c8d);
+                            uranium.material.emissive.setHex(0x7f8c8d);
+                            
+                            // 移除中子
+                            neutron.userData.lifeTime = neutron.userData.maxLife;  // 标记为死亡
+                            
+                            // 创建裂变碎片
+                            for (let j = 0; j < 2; j++) {
+                                const fragment = createFissionFragment(uranium.position.clone());
+                                scene.add(fragment);
+                                fissionFragments.push(fragment);
+                            }
+                            
+                            // 创建能量粒子
+                            for (let j = 0; j < 5; j++) {
+                                const energy = createEnergyParticle(uranium.position.clone());
+                                scene.add(energy);
+                                energyParticles.push(energy);
+                            }
+                            
+                            // 产生新的中子 (1-3个)
+                            const newNeutronCount = Math.floor(Math.random() * 3) + 1;
+                            for (let j = 0; j < newNeutronCount; j++) {
+                                const newNeutron = createNeutron(
+                                    uranium.position.clone(),
+                                    new THREE.Vector3(
+                                        (Math.random() - 0.5) * 4,
+                                        (Math.random() - 0.5) * 4,
+                                        0
+                                    )
+                                );
+                                scene.add(newNeutron);
+                                neutrons.push(newNeutron);
+                                currentNeutrons++;
+                                totalNeutrons++;
+                            }
+                            
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // 更新粒子
+        function updateParticles(deltaTime) {
+            // 更新中子
+            for (let i = neutrons.length - 1; i >= 0; i--) {
+                const neutron = neutrons[i];
+                
+                neutron.userData.lifeTime += deltaTime;
+                
+                if (neutron.userData.lifeTime >= neutron.userData.maxLife) {
+                    // 中子死亡
+                    scene.remove(neutron);
+                    neutrons.splice(i, 1);
+                    currentNeutrons--;
+                    continue;
+                }
+                
+                // 移动中子
+                neutron.position.add(neutron.userData.velocity.clone().multiplyScalar(deltaTime * 5));
+                
+                // 边界反弹
+                if (Math.abs(neutron.position.x) > 10) {
+                    neutron.userData.velocity.x *= -1;
+                }
+                if (Math.abs(neutron.position.y) > 10) {
+                    neutron.userData.velocity.y *= -1;
+                }
+                
+                // 检查碰撞
+                if (!checkCollisions(neutron)) {
+                    // 随机改变方向
+                    if (Math.random() < 0.1) {
+                        neutron.userData.velocity.set(
+                            (Math.random() - 0.5) * 2,
+                            (Math.random() - 0.5) * 2,
+                            0
+                        ).normalize();
+                    }
+                }
+            }
+            
+            // 更新裂变碎片
+            for (let i = fissionFragments.length - 1; i >= 0; i--) {
+                const fragment = fissionFragments[i];
+                
+                fragment.userData.lifeTime += deltaTime;
+                
+                if (fragment.userData.lifeTime >= fragment.userData.maxLife) {
+                    scene.remove(fragment);
+                    fissionFragments.splice(i, 1);
+                    continue;
+                }
+                
+                fragment.position.add(fragment.userData.velocity.clone().multiplyScalar(deltaTime * 3));
+                
+                // 减速
+                fragment.userData.velocity.multiplyScalar(0.95);
+            }
+            
+            // 更新能量粒子
+            for (let i = energyParticles.length - 1; i >= 0; i--) {
+                const energy = energyParticles[i];
+                
+                energy.userData.lifeTime += deltaTime;
+                
+                if (energy.userData.lifeTime >= energy.userData.maxLife) {
+                    scene.remove(energy);
+                    energyParticles.splice(i, 1);
+                    continue;
+                }
+                
+                energy.position.add(energy.userData.velocity.clone().multiplyScalar(deltaTime * 4));
+                
+                // 淡出效果
+                const opacity = 1 - (energy.userData.lifeTime / energy.userData.maxLife);
+                energy.material.opacity = opacity * 0.7;
+            }
+            
+            // 偶尔添加新的铀原子
+            if (Math.random() < 0.01 && uraniumAtoms.length < MAX_URANIUM) {
+                const uranium = createUraniumAtom();
+                scene.add(uranium);
+                uraniumAtoms.push(uranium);
+            }
+        }
+        
+        // 更新UI显示
+        function updateUI() {
+            // 更新数据
+            document.getElementById('currentNeutrons').textContent = currentNeutrons;
+            document.getElementById('fissionCount').textContent = fissionCount;
+            document.getElementById('totalNeutrons').textContent = totalNeutrons;
+            document.getElementById('reactionRate').textContent = Math.round(reactionRate);
+            
+            // 判断链式状态
+            let chainState = '';
+            if (kFactor > 1.1) {
+                chainState = '超临界';
+            } else if (kFactor > 0.9) {
+                chainState = '临界';
+            } else {
+                chainState = '次临界';
+            }
+            document.getElementById('chainState').textContent = chainState;
+            
+            // 更新状态栏
+            const statusElement = document.getElementById('statusBar');
+            const state = isPlaying ? '运行中' : '已暂停';
+            statusElement.textContent = `状态: ${state} | 中子数: ${currentNeutrons} | 裂变: ${fissionCount} | k=${kFactor.toFixed(2)}`;
+        }
+        
+        // 动画循环
+        function animate() {
+            animationFrameId = requestAnimationFrame(animate);
+            
+            if (isPlaying) {
+                const deltaTime = 0.016 * simulationSpeed;
+                simulationTime += deltaTime;
+                
+                // 更新粒子
+                updateParticles(deltaTime);
+                
+                // 计算反应速率
+                reactionRate = (fissionCount / (simulationTime + 1)) * simulationSpeed;
+                
+                // 更新UI
+                updateUI();
+                
+                // 自动调整中子数维持链式反应
+                if (simulationTime > 2 && currentNeutrons < 1 && Math.random() < 0.1) {
+                    // 添加一个种子中子维持反应
+                    const neutron = createNeutron(
+                        new THREE.Vector3(0, 0, 0),
+                        new THREE.Vector3(
+                            (Math.random() - 0.5) * 2,
+                            (Math.random() - 0.5) * 2,
+                            0
+                        )
+                    );
+                    scene.add(neutron);
+                    neutrons.push(neutron);
+                    currentNeutrons++;
+                    totalNeutrons++;
+                }
+                
+                // 根据倍增系数调整中子产生
+                if (kFactor > 1.0 && Math.random() < 0.1) {
+                    const extraNeutrons = Math.floor((kFactor - 1) * 0.5);
+                    for (let i = 0; i < extraNeutrons; i++) {
+                        const neutron = createNeutron(
+                            new THREE.Vector3(
+                                (Math.random() - 0.5) * 20,
+                                (Math.random() - 0.5) * 20,
+                                0
+                            )
+                        );
+                        scene.add(neutron);
+                        neutrons.push(neutron);
+                        currentNeutrons++;
+                        totalNeutrons++;
+                    }
+                }
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 控制滑块
+            document.getElementById('neutronSlider').addEventListener('input', function() {
+                initialNeutrons = parseInt(this.value);
+                document.getElementById('neutronValue').textContent = initialNeutrons;
+            });
+            
+            document.getElementById('crossSectionSlider').addEventListener('input', function() {
+                crossSection = parseFloat(this.value);
+                document.getElementById('crossSectionValue').textContent = crossSection.toFixed(1);
+            });
+            
+            document.getElementById('kSlider').addEventListener('input', function() {
+                kFactor = parseFloat(this.value);
+                document.getElementById('kValue').textContent = kFactor.toFixed(1);
+            });
+            
+            document.getElementById('speedSlider').addEventListener('input', function() {
+                simulationSpeed = parseFloat(this.value);
+                document.getElementById('speedValue').textContent = simulationSpeed.toFixed(1);
+            });
+            
+            // 控制按钮
+            document.getElementById('playBtn').addEventListener('click', function() {
+                isPlaying = true;
+                this.classList.add('active');
+                document.getElementById('pauseBtn').classList.remove('active');
+            });
+            
+            document.getElementById('pauseBtn').addEventListener('click', function() {
+                isPlaying = false;
+                this.classList.add('active');
+                document.getElementById('playBtn').classList.remove('active');
+            });
+            
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                simulationTime = 0;
+                initSimulation();
+            });
+            
+            // 速度按钮
+            document.getElementById('slowBtn').addEventListener('click', function() {
+                simulationSpeed = 0.5;
+                document.getElementById('speedValue').textContent = '0.5';
+                document.getElementById('speedSlider').value = 0.5;
+                updateButtonActiveState('slowBtn', ['slowBtn', 'normalBtn', 'fastBtn']);
+            });
+            
+            document.getElementById('normalBtn').addEventListener('click', function() {
+                simulationSpeed = 1.0;
+                document.getElementById('speedValue').textContent = '1.0';
+                document.getElementById('speedSlider').value = 1.0;
+                updateButtonActiveState('normalBtn', ['slowBtn', 'normalBtn', 'fastBtn']);
+            });
+            
+            document.getElementById('fastBtn').addEventListener('click', function() {
+                simulationSpeed = 2.0;
+                document.getElementById('speedValue').textContent = '2.0';
+                document.getElementById('speedSlider').value = 2.0;
+                updateButtonActiveState('fastBtn', ['slowBtn', 'normalBtn', 'fastBtn']);
+            });
+            
+            // 窗口大小调整
+            window.addEventListener('resize', function() {
+                initRenderer();
+                camera.aspect = (window.innerWidth * 0.75) / window.innerHeight;
+                camera.updateProjectionMatrix();
+            });
+            
+            // 添加手动裂变触发
+            document.querySelector('.simulation-area').addEventListener('click', function(event) {
+                if (!isPlaying) return;
+                
+                const rect = this.getBoundingClientRect();
+                const x = ((event.clientX - rect.left) / rect.width - 0.5) * 20;
+                const y = ((event.clientY - rect.top) / rect.height - 0.5) * 20;
+                
+                // 在点击位置添加中子
+                const neutron = createNeutron(new THREE.Vector3(x, y, 0));
+                scene.add(neutron);
+                neutrons.push(neutron);
+                currentNeutrons++;
+                totalNeutrons++;
+            });
+        }
+        
+        // 更新按钮激活状态
+        function updateButtonActiveState(activeButtonId, buttonIds) {
+            buttonIds.forEach(buttonId => {
+                const button = document.getElementById(buttonId);
+                if (buttonId === activeButtonId) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+        
+        // 初始化应用
+        function init() {
+            initRenderer();
+            initCamera();
+            initSimulation();
+            setupEventListeners();
+            animate();
+        }
+        
+        // 清理资源
+        function cleanup() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // 页面卸载时清理
+        window.addEventListener('unload', cleanup);
+    </script>
+</body>
+</html>```
+
+
+## 核裂变链式反应动画功能说明
+
+### 1. **核心动画效果**
+- **中子运动**：蓝色小球代表中子，在铀原子间随机运动
+- **裂变过程**：中子撞击红色铀原子（U-235）引发裂变
+- **裂变产物**：绿色碎片代表裂变产物，黄色粒子代表释放的能量
+- **链式反应**：每次裂变产生2-3个新中子，引发更多裂变
+
+### 2. **关键物理参数控制**
+- **初始中子数**：控制链式反应的起始种子数量
+- **裂变截面**：控制中子引发裂变的概率
+- **倍增系数 k**：控制链式反应的增长速度
+  - k < 1：次临界，反应逐渐停止
+  - k = 1：临界，稳定链式反应
+  - k > 1：超临界，指数增长链式反应
+- **模拟速度**：控制动画播放速度
+
+### 3. **实时数据显示**
+- 当前中子数
+- 裂变次数
+- 累计中子总数
+- 反应速率
+- 链式状态（次临界/临界/超临界）
+
+### 4. **交互功能**
+- **播放/暂停/重置**：控制动画运行
+- **速度调节**：慢速/常速/快速三种预设
+- **点击添加中子**：在点击位置手动添加中子
+- **参数实时调整**：所有参数可实时调节
+
+### 5. **物理过程演示**
+1. 初始中子（蓝色）在铀原子（红色）之间移动
+2. 中子撞击铀原子引发裂变
+3. 裂变产生：
+   - 裂变碎片（绿色）
+   - 能量粒子（黄色）
+   - 新的中子（2-3个）
+4. 新中子继续引发更多裂变，形成链式反应
+5. 铀原子裂变后变为灰色，不再参与反应
+
+### 6. **核裂变物理原理**
+- 中子被铀-235原子核吸收，形成不稳定的铀-236
+- 铀-236原子核分裂成两个中等质量原子核
+- 释放巨大能量（约200MeV/每次裂变）
+- 平均每次裂变释放2.4个中子
+- 新中子继续引发其他铀原子裂变
+
+这个动画直观展示了核裂变链式反应的基本原理，包括中子增殖、裂变能量释放和链式反应的维持条件。您可以直接将代码保存为HTML文件并在浏览器中打开运行。

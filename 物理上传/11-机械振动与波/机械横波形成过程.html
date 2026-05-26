@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机械横波形成过程 - 高中物理教学演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f7ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .simulation-container {
+            flex: 2;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: relative;
+        }
+        
+        .controls-container {
+            flex: 1;
+            min-width: 250px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .explanation-container {
+            flex: 100%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-top: 10px;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 400px;
+            background-color: #f8fdff;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .value-display {
+            display: inline-block;
+            width: 40px;
+            text-align: right;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:active {
+            transform: translateY(2px);
+        }
+        
+        button#resetBtn {
+            background-color: #e74c3c;
+        }
+        
+        button#resetBtn:hover {
+            background-color: #c0392b;
+        }
+        
+        .step-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .explanation-step {
+            display: none;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .explanation-step.active {
+            display: block;
+        }
+        
+        .explanation-step h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .explanation-step p {
+            margin-bottom: 10px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #bdc3c7;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        
+        .step-dot.active {
+            background-color: #3498db;
+        }
+        
+        .key-point {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 50%;
+        }
+        
+        .vibrating {
+            background-color: #e74c3c;
+        }
+        
+        .wave {
+            background-color: #3498db;
+        }
+        
+        .equilibrium {
+            background-color: #2ecc71;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>机械横波形成过程演示</h1>
+        <p class="subtitle">绳子上的横波传播模拟 | 高中物理教学工具</p>
+    </header>
+    
+    <div class="container">
+        <div class="simulation-container">
+            <h2>绳子上的横波模拟</h2>
+            <canvas id="waveCanvas"></canvas>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color vibrating"></div>
+                    <span>振动质点</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color wave"></div>
+                    <span>波传播方向</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color equilibrium"></div>
+                    <span>平衡位置</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-container">
+            <h2>控制面板</h2>
+            
+            <div class="control-group">
+                <label for="frequency">频率 (Hz): <span id="freqValue" class="value-display">2.0</span></label>
+                <input type="range" id="frequency" min="0.5" max="5" step="0.1" value="2">
+                
+                <label for="amplitude">振幅 (cm): <span id="ampValue" class="value-display">30</span></label>
+                <input type="range" id="amplitude" min="10" max="60" step="5" value="30">
+                
+                <label for="waveSpeed">波速 (m/s): <span id="speedValue" class="value-display">2.0</span></label>
+                <input type="range" id="waveSpeed" min="0.5" max="5" step="0.1" value="2">
+            </div>
+            
+            <div class="control-group">
+                <label>波状态控制</label>
+                <div>
+                    <button id="startBtn">开始波动</button>
+                    <button id="pauseBtn">暂停/继续</button>
+                    <button id="resetBtn">重置</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>显示选项</label>
+                <div>
+                    <input type="checkbox" id="showEquilibrium" checked>
+                    <label for="showEquilibrium" style="display: inline; font-weight: normal;">显示平衡位置</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="showParticles" checked>
+                    <label for="showParticles" style="display: inline; font-weight: normal;">显示质点</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="showWaveDirection" checked>
+                    <label for="showWaveDirection" style="display: inline; font-weight: normal;">显示波传播方向</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation-container">
+            <h2>横波形成原理讲解</h2>
+            <div class="step-controls">
+                <button id="prevStep">上一步</button>
+                <button id="nextStep">下一步</button>
+                <span style="margin-left: auto; color: #3498db; font-weight: bold;">步骤 <span id="currentStep">1</span>/5</span>
+            </div>
+            
+            <div class="explanation-step active" id="step1">
+                <h3>步骤 1: 初始状态</h3>
+                <p>绳子在自然状态下处于平衡位置，所有质点都静止在各自的平衡位置上。</p>
+                <p>在绳子一端有一个可以上下振动的质点（红色标记），我们称它为波源。</p>
+                <p>当波源开始振动时，它会带动相邻的质点振动，从而形成波。</p>
+            </div>
+            
+            <div class="explanation-step" id="step2">
+                <h3>步骤 2: 波源开始振动</h3>
+                <p>波源开始上下振动，它会带动相邻的质点离开平衡位置。</p>
+                <p>由于质点之间存在相互作用力，当波源向上运动时，会拉动相邻质点向上运动；当波源向下运动时，会拉动相邻质点向下运动。</p>
+                <p class="key-point">关键点：振动在介质中传播，但质点并不随波迁移，只在各自的平衡位置附近振动。</p>
+            </div>
+            
+            <div class="explanation-step" id="step3">
+                <h3>步骤 3: 振动依次传播</h3>
+                <p>每个质点的振动都会带动它后面的质点振动，但后面的质点开始振动的时间比前面的质点晚。</p>
+                <p>这样，振动状态（相位）就沿着绳子传播出去，形成机械波。</p>
+                <p>在横波中，质点的振动方向与波的传播方向垂直。</p>
+            </div>
+            
+            <div class="explanation-step" id="step4">
+                <h3>步骤 4: 形成完整的波</h3>
+                <p>当波源完成一次完整的振动时，绳子上会形成一个完整的波形。</p>
+                <p>波峰是质点向上偏离平衡位置的最大位移处，波谷是质点向下偏离平衡位置的最大位移处。</p>
+                <p>相邻两个波峰（或波谷）之间的距离称为波长。</p>
+            </div>
+            
+            <div class="explanation-step" id="step5">
+                <h3>步骤 5: 波的传播特性</h3>
+                <p>波在传播过程中，能量也从波源向远处传播，但介质质点本身并不迁移。</p>
+                <p>波的传播速度（波速）取决于介质的性质，与波源的振动频率无关。</p>
+                <p>波速、频率和波长之间的关系：<span class="key-point">波速 = 频率 × 波长</span>。</p>
+                <p>尝试调整上方的控制参数，观察波的变化规律。</p>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+                <div class="step-dot" data-step="4"></div>
+                <div class="step-dot" data-step="5"></div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 高中物理教学演示 | 机械横波形成过程 | 适用于课堂教学</p>
+        <p>设计说明：本动画展示了绳子上的机械横波形成过程，通过模拟质点的振动和波的传播，帮助学生理解横波的特性。</p>
+    </footer>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        // 波的参数
+        let waveParams = {
+            frequency: 2.0,      // 频率 (Hz)
+            amplitude: 30,       // 振幅 (像素)
+            waveSpeed: 2.0,      // 波速 (像素/秒)
+            particles: 80,       // 质点数量
+            equilibriumY: canvas.height / 2,  // 平衡位置Y坐标
+            time: 0,             // 时间变量
+            isRunning: false,    // 波动是否在进行
+            isPaused: false      // 是否暂停
+        };
+        
+        // 质点数组
+        let particles = [];
+        
+        // 讲解步骤控制
+        let currentStep = 1;
+        const totalSteps = 5;
+        
+        // 初始化质点
+        function initParticles() {
+            particles = [];
+            const spacing = canvas.width / (waveParams.particles - 1);
+            
+            for (let i = 0; i < waveParams.particles; i++) {
+                particles.push({
+                    x: i * spacing,
+                    y: waveParams.equilibriumY,
+                    originalX: i * spacing,
+                    originalY: waveParams.equilibriumY,
+                    vibrationDelay: i * 0.05, // 每个质点的振动延迟
+                    isVibrating: i === 0 // 第一个质点是波源
+                });
+            }
+        }
+        
+        // 绘制波
+        function drawWave() {
+            // 清除Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 如果需要，绘制平衡位置线
+            if (document.getElementById('showEquilibrium').checked) {
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(0, waveParams.equilibriumY);
+                ctx.lineTo(canvas.width, waveParams.equilibriumY);
+                ctx.strokeStyle = '#2ecc71';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // 计算波源质点的振动
+            const sourceVibration = waveParams.amplitude * Math.sin(2 * Math.PI * waveParams.frequency * waveParams.time);
+            particles[0].y = waveParams.equilibriumY + sourceVibration;
+            
+            // 绘制波传播方向箭头
+            if (document.getElementById('showWaveDirection').checked) {
+                drawWaveDirection();
+            }
+            
+            // 绘制质点之间的连线
+            ctx.beginPath();
+            ctx.moveTo(particles[0].x, particles[0].y);
+            
+            for (let i = 1; i < particles.length; i++) {
+                // 计算每个质点的位置
+                if (i > 0) {
+                    // 后面的质点会有振动延迟
+                    const delay = particles[i].vibrationDelay;
+                    const vibration = waveParams.amplitude * Math.sin(2 * Math.PI * waveParams.frequency * (waveParams.time - delay / waveParams.waveSpeed));
+                    particles[i].y = waveParams.equilibriumY + vibration;
+                    
+                    // 检查该质点是否在振动（振幅大于阈值的视为在振动）
+                    particles[i].isVibrating = Math.abs(vibration) > 2;
+                }
+                
+                // 绘制连线
+                ctx.lineTo(particles[i].x, particles[i].y);
+            }
+            
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制质点
+            if (document.getElementById('showParticles').checked) {
+                for (let i = 0; i < particles.length; i++) {
+                    // 绘制质点
+                    ctx.beginPath();
+                    
+                    // 根据质点是否在振动设置不同颜色
+                    if (particles[i].isVibrating) {
+                        ctx.fillStyle = '#e74c3c'; // 振动中的质点
+                    } else {
+                        ctx.fillStyle = '#3498db'; // 未振动的质点
+                    }
+                    
+                    // 波源质点特殊标记
+                    if (i === 0) {
+                        ctx.fillStyle = '#e74c3c';
+                        ctx.arc(particles[i].x, particles[i].y, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 波源标记
+                        ctx.fillStyle = '#2c3e50';
+                        ctx.font = '12px Arial';
+                        ctx.fillText('波源', particles[i].x - 15, particles[i].y - 15);
+                    } else {
+                        ctx.arc(particles[i].x, particles[i].y, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            
+            // 绘制波源振动轨迹
+            drawSourceTrajectory();
+            
+            // 显示当前参数
+            drawParameterInfo();
+        }
+        
+        // 绘制波传播方向箭头
+        function drawWaveDirection() {
+            const arrowX = canvas.width - 50;
+            const arrowY = 40;
+            
+            // 绘制箭头线
+            ctx.beginPath();
+            ctx.moveTo(arrowX - 40, arrowY);
+            ctx.lineTo(arrowX, arrowY);
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制箭头头部
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - 10, arrowY - 5);
+            ctx.lineTo(arrowX - 10, arrowY + 5);
+            ctx.closePath();
+            ctx.fillStyle = '#3498db';
+            ctx.fill();
+            
+            // 添加文字
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '14px Arial';
+            ctx.fillText('波传播方向', arrowX - 90, arrowY + 5);
+        }
+        
+        // 绘制波源振动轨迹
+        function drawSourceTrajectory() {
+            // 绘制振动轨迹线
+            ctx.beginPath();
+            ctx.moveTo(particles[0].x, waveParams.equilibriumY - waveParams.amplitude);
+            ctx.lineTo(particles[0].x, waveParams.equilibriumY + waveParams.amplitude);
+            ctx.strokeStyle = 'rgba(231, 76, 60, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 标记振幅
+            ctx.beginPath();
+            ctx.moveTo(particles[0].x - 10, waveParams.equilibriumY - waveParams.amplitude);
+            ctx.lineTo(particles[0].x + 10, waveParams.equilibriumY - waveParams.amplitude);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(particles[0].x - 10, waveParams.equilibriumY + waveParams.amplitude);
+            ctx.lineTo(particles[0].x + 10, waveParams.equilibriumY + waveParams.amplitude);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.stroke();
+            
+            // 振幅标注
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '12px Arial';
+            ctx.fillText('振幅A', particles[0].x + 15, waveParams.equilibriumY);
+        }
+        
+        // 绘制参数信息
+        function drawParameterInfo() {
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '14px Arial';
+            
+            // 计算波长
+            const wavelength = waveParams.waveSpeed / waveParams.frequency;
+            const wavelengthPx = wavelength * 50; // 转换为像素
+            
+            ctx.fillText(`频率: ${waveParams.frequency.toFixed(1)} Hz`, 20, 30);
+            ctx.fillText(`振幅: ${waveParams.amplitude} px`, 20, 50);
+            ctx.fillText(`波速: ${waveParams.waveSpeed.toFixed(1)} m/s`, 20, 70);
+            ctx.fillText(`波长: ${wavelength.toFixed(2)} m`, 20, 90);
+            
+            // 绘制波长示意图
+            if (currentStep >= 4) {
+                // 找到第一个波峰位置
+                let wavePeakX = null;
+                for (let i = 1; i < particles.length; i++) {
+                    if (particles[i-1].y > particles[i].y && particles[i].y < particles[i+1]?.y) {
+                        wavePeakX = particles[i].x;
+                        break;
+                    }
+                }
+                
+                if (wavePeakX) {
+                    // 找到下一个波峰位置
+                    let nextWavePeakX = null;
+                    for (let i = Math.floor(wavePeakX / (canvas.width / particles.length)) + 1; i < particles.length; i++) {
+                        if (particles[i-1].y > particles[i].y && particles[i].y < particles[i+1]?.y) {
+                            nextWavePeakX = particles[i].x;
+                            break;
+                        }
+                    }
+                    
+                    if (nextWavePeakX) {
+                        // 绘制波长线
+                        const wavelengthY = 120;
+                        ctx.beginPath();
+                        ctx.moveTo(wavePeakX, wavelengthY);
+                        ctx.lineTo(nextWavePeakX, wavelengthY);
+                        ctx.strokeStyle = '#e74c3c';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        
+                        // 绘制两端竖线
+                        ctx.beginPath();
+                        ctx.moveTo(wavePeakX, wavelengthY - 5);
+                        ctx.lineTo(wavePeakX, wavelengthY + 5);
+                        ctx.stroke();
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(nextWavePeakX, wavelengthY - 5);
+                        ctx.lineTo(nextWavePeakX, wavelengthY + 5);
+                        ctx.stroke();
+                        
+                        // 标注波长
+                        ctx.fillStyle = '#e74c3c';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.fillText('波长 λ', (wavePeakX + nextWavePeakX) / 2 - 20, wavelengthY - 10);
+                    }
+                }
+            }
+        }
+        
+        // 更新波的状态
+        function updateWave() {
+            if (!waveParams.isRunning || waveParams.isPaused) return;
+            
+            // 更新时间
+            waveParams.time += 0.02;
+            
+            // 重新绘制波
+            drawWave();
+            
+            // 请求下一帧动画
+            requestAnimationFrame(updateWave);
+        }
+        
+        // 开始波动
+        function startWave() {
+            waveParams.isRunning = true;
+            waveParams.isPaused = false;
+            updateWave();
+        }
+        
+        // 暂停/继续波动
+        function togglePause() {
+            waveParams.isPaused = !waveParams.isPaused;
+            if (!waveParams.isPaused && waveParams.isRunning) {
+                updateWave();
+            }
+        }
+        
+        // 重置波
+        function resetWave() {
+            waveParams.time = 0;
+            waveParams.isRunning = false;
+            waveParams.isPaused = false;
+            initParticles();
+            drawWave();
+        }
+        
+        // 更新控制值显示
+        function updateControlValues() {
+            document.getElementById('freqValue').textContent = waveParams.frequency.toFixed(1);
+            document.getElementById('ampValue').textContent = waveParams.amplitude;
+            document.getElementById('speedValue').textContent = waveParams.waveSpeed.toFixed(1);
+        }
+        
+        // 切换讲解步骤
+        function goToStep(step) {
+            currentStep = step;
+            
+            // 更新步骤指示器
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            document.querySelector(`.step-dot[data-step="${step}"]`).classList.add('active');
+            
+            // 更新步骤内容
+            document.querySelectorAll('.explanation-step').forEach(stepEl => {
+                stepEl.classList.remove('active');
+            });
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // 更新步骤编号显示
+            document.getElementById('currentStep').textContent = step;
+            
+            // 根据步骤调整动画
+            adjustAnimationForStep(step);
+        }
+        
+        // 根据步骤调整动画
+        function adjustAnimationForStep(step) {
+            switch(step) {
+                case 1:
+                    // 初始状态
+                    resetWave();
+                    break;
+                case 2:
+                    // 波源开始振动
+                    resetWave();
+                    waveParams.time = 0;
+                    drawWave();
+                    break;
+                case 3:
+                    // 振动传播
+                    if (!waveParams.isRunning) {
+                        startWave();
+                    }
+                    break;
+                case 4:
+                case 5:
+                    // 完整波形和特性
+                    if (!waveParams.isRunning) {
+                        startWave();
+                    }
+                    break;
+            }
+        }
+        
+        // 窗口大小改变时调整Canvas尺寸
+        window.addEventListener('resize', function() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            waveParams.equilibriumY = canvas.height / 2;
+            initParticles();
+            drawWave();
+        });
+        
+        // 初始化
+        function init() {
+            initParticles();
+            drawWave();
+            
+            // 添加事件监听器
+            document.getElementById('frequency').addEventListener('input', function() {
+                waveParams.frequency = parseFloat(this.value);
+                updateControlValues();
+                if (waveParams.isRunning) {
+                    drawWave();
+                }
+            });
+            
+            document.getElementById('amplitude').addEventListener('input', function() {
+                waveParams.amplitude = parseInt(this.value);
+                updateControlValues();
+                if (waveParams.isRunning) {
+                    drawWave();
+                }
+            });
+            
+            document.getElementById('waveSpeed').addEventListener('input', function() {
+                waveParams.waveSpeed = parseFloat(this.value);
+                updateControlValues();
+                if (waveParams.isRunning) {
+                    drawWave();
+                }
+            });
+            
+            document.getElementById('startBtn').addEventListener('click', startWave);
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('resetBtn').addEventListener('click', resetWave);
+            
+            document.getElementById('showEquilibrium').addEventListener('change', drawWave);
+            document.getElementById('showParticles').addEventListener('change', drawWave);
+            document.getElementById('showWaveDirection').addEventListener('change', drawWave);
+            
+            // 步骤控制
+            document.getElementById('prevStep').addEventListener('click', function() {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+            
+            document.getElementById('nextStep').addEventListener('click', function() {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            });
+            
+            // 步骤指示器点击事件
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const step = parseInt(this.getAttribute('data-step'));
+                    goToStep(step);
+                });
+            });
+            
+            // 初始化控制值显示
+            updateControlValues();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

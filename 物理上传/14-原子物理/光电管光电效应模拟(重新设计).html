@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光电管光电效应模拟</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a1a;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .simulation-area {
+            flex: 3;
+            position: relative;
+        }
+        
+        #sceneCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .control-panel {
+            flex: 1;
+            min-width: 320px;
+            background: rgba(20, 20, 40, 0.95);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 2px solid #00d4aa;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        
+        h1 {
+            color: #00d4aa;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #00d4aa;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ddd;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #00d4aa;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .value-display {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+            color: #00d4aa;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        
+        button {
+            flex: 1;
+            padding: 8px 5px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #00d4aa;
+        }
+        
+        button.active {
+            background: #00b894;
+        }
+        
+        .data-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        
+        .data-item {
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .info-box {
+            background: rgba(0, 212, 170, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+        
+        .checkbox-group {
+            margin: 8px 0;
+        }
+        
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 6px;
+        }
+        
+        .formula {
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .threshold-indicator {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 12px;
+        }
+        
+        .threshold-below {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+        }
+        
+        .threshold-above {
+            background: rgba(0, 255, 0, 0.2);
+            color: #66ff66;
+        }
+        
+        .visual-indicator {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin: 5px 0 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #00d4aa;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="simulation-area">
+            <canvas id="sceneCanvas"></canvas>
+            <div class="status-bar" id="statusBar">准备就绪</div>
+        </div>
+        
+        <div class="control-panel">
+            <h1>光电管光电效应模拟</h1>
+            <p class="subtitle">电子从阴极向阳极运动演示</p>
+            
+            <div class="control-group">
+                <h2>实验参数</h2>
+                
+                <div class="slider-container">
+                    <label>入射光能量: <span id="photonEnergyValue" class="value-display">4.0</span> eV</label>
+                    <input type="range" id="photonEnergySlider" min="1" max="6" step="0.1" value="4.0">
+                    <div class="visual-indicator">
+                        <div class="progress-bar" id="photonEnergyBar" style="width: 50%"></div>
+                    </div>
+                </div>
+                
+                <div class="slider-container">
+                    <label>反向电压: <span id="voltageValue" class="value-display">0.0</span> V</label>
+                    <input type="range" id="voltageSlider" min="-3" max="3" step="0.1" value="0.0">
+                </div>
+                
+                <div class="slider-container">
+                    <label>金属逸出功: <span id="workFunctionValue" class="value-display">2.5</span> eV</label>
+                    <input type="range" id="workFunctionSlider" min="1" max="5" step="0.1" value="2.5">
+                    <div class="visual-indicator">
+                        <div class="progress-bar" id="workFunctionBar" style="width: 37.5%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>控制面板</h2>
+                <div class="button-group">
+                    <button id="playBtn" class="active">开始</button>
+                    <button id="pauseBtn">暂停</button>
+                    <button id="resetBtn">重置</button>
+                </div>
+                
+                <div class="button-group">
+                    <button id="emitPhotonBtn">发射光子</button>
+                    <button id="emitElectronBtn">发射电子</button>
+                </div>
+                
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" id="showTrajectory" checked> 显示运动轨迹
+                    </label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>光电效应方程</h2>
+                <div class="formula">
+                    K = hν - W
+                </div>
+                <div class="info-box">
+                    物理原理：
+                    <br>• 光子能量 hν 必须大于逸出功 W
+                    <br>• 电子动能 K = hν - W
+                    <br>• 当 hν > W 时产生光电效应
+                    <br>• 反向电压阻止电子到达阳极
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>实验数据</h2>
+                <div class="data-display">
+                    <div class="data-item">
+                        <span>电子动能:</span>
+                        <span id="electronKinetic">1.5</span> eV
+                    </div>
+                    <div class="data-item">
+                        <span>能量阈值:</span>
+                        <span id="thresholdStatus" class="threshold-above">满足条件</span>
+                    </div>
+                    <div class="data-item">
+                        <span>发射电子:</span>
+                        <span id="electronsEmitted">0</span>
+                    </div>
+                    <div class="data-item">
+                        <span>到达阳极:</span>
+                        <span id="electronsReached">0</span>
+                    </div>
+                    <div class="data-item">
+                        <span>光电效应:</span>
+                        <span id="photoelectricEffect">可发生</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>图例说明</h2>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="color-dot" style="background-color: #00a8ff;"></div>
+                        <span>光子</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-dot" style="background-color: #ffff00;"></div>
+                        <span>束缚电子</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-dot" style="background-color: #00ff00;"></div>
+                        <span>光电子</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-dot" style="background-color: #ff00ff;"></div>
+                        <span>运动轨迹</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Three.js
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a1a);
+        
+        const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('sceneCanvas'),
+            antialias: true
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // 控制变量
+        let isPlaying = true;
+        let simulationTime = 0;
+        let lastFrameTime = 0;
+        let showTrajectory = true;
+        
+        // 物理参数
+        let photonEnergy = 4.0;  // 入射光能量 (eV)
+        let voltage = 0.0;  // 电压 (V)
+        let workFunction = 2.5;  // 金属逸出功 (eV)
+        
+        // 模拟状态
+        let electronsEmitted = 0;
+        let electronsReached = 0;
+        let photons = [];
+        let electrons = [];
+        let boundElectrons = [];
+        let trajectories = [];
+        
+        // 光电管参数
+        const photoTube = {
+            cathodeX: -4,
+            anodeX: 4,
+            distance: 8,
+            height: 3
+        };
+        
+        // 轨迹材质
+        const trajectoryMaterial = new THREE.LineBasicMaterial({ 
+            color: 0xff00ff,
+            transparent: true,
+            opacity: 0.5,
+            linewidth: 1
+        });
+        
+        // 初始化渲染器
+        function initRenderer() {
+            const container = document.querySelector('.simulation-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+        
+        // 初始化相机
+        function initCamera() {
+            camera.position.set(0, 2, 8);
+            camera.lookAt(0, 0, 0);
+        }
+        
+        // 添加光源
+        function addLights() {
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 5);
+            scene.add(directionalLight);
+        }
+        
+        // 创建光电管
+        function createPhotoTube() {
+            const tubeGroup = new THREE.Group();
+            
+            // 阴极
+            const cathodeGeometry = new THREE.BoxGeometry(0.8, photoTube.height, 0.1);
+            const cathodeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0xffcc00,
+                emissive: 0xffaa00,
+                emissiveIntensity: 0.3
+            });
+            const cathode = new THREE.Mesh(cathodeGeometry, cathodeMaterial);
+            cathode.position.set(photoTube.cathodeX, 0, 0);
+            tubeGroup.add(cathode);
+            
+            // 阳极
+            const anodeGeometry = new THREE.BoxGeometry(0.8, photoTube.height, 0.1);
+            const anodeMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x00a8ff,
+                emissive: 0x0088ff,
+                emissiveIntensity: 0.3
+            });
+            const anode = new THREE.Mesh(anodeGeometry, anodeMaterial);
+            anode.position.set(photoTube.anodeX, 0, 0);
+            tubeGroup.add(anode);
+            
+            // 连接线
+            const wireGeometry = new THREE.CylinderGeometry(0.02, 0.02, photoTube.distance, 8);
+            const wireMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+            const wire = new THREE.Mesh(wireGeometry, wireMaterial);
+            wire.position.set(0, photoTube.height/2, 0);
+            wire.rotation.z = Math.PI/2;
+            tubeGroup.add(wire);
+            
+            // 电源
+            const batteryGeometry = new THREE.BoxGeometry(0.6, 1.5, 0.4);
+            const batteryMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x666666
+            });
+            const battery = new THREE.Mesh(batteryGeometry, batteryMaterial);
+            battery.position.set(0, -2, 0);
+            tubeGroup.add(battery);
+            
+            return tubeGroup;
+        }
+        
+        // 创建束缚电子
+        function createBoundElectrons() {
+            const electrons = [];
+            const count = 12;
+            
+            for (let i = 0; i < count; i++) {
+                const electronGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const electronMaterial = new THREE.MeshPhongMaterial({ 
+                    color: 0xffff00,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 0.3
+                });
+                const electron = new THREE.Mesh(electronGeometry, electronMaterial);
+                
+                const x = photoTube.cathodeX - 0.4;
+                const y = (i/count - 0.5) * (photoTube.height - 0.3);
+                electron.position.set(x, y, 0);
+                
+                electron.userData = {
+                    isEjected: false,
+                    vibration: Math.random() * Math.PI * 2
+                };
+                
+                scene.add(electron);
+                electrons.push(electron);
+            }
+            
+            return electrons;
+        }
+        
+        // 计算电子动能
+        function calculateElectronKinetic() {
+            return Math.max(0, photonEnergy - workFunction);
+        }
+        
+        // 检查是否发生光电效应
+        function canEmitElectron() {
+            return photonEnergy > workFunction;
+        }
+        
+        // 创建光子
+        function createPhoton() {
+            const photonGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+            const photonMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x00a8ff,
+                emissive: 0x0088ff,
+                emissiveIntensity: 0.4
+            });
+            const photon = new THREE.Mesh(photonGeometry, photonMaterial);
+            
+            const x = -7;
+            const y = (Math.random() - 0.5) * 2;
+            photon.position.set(x, y, 0);
+            
+            photon.userData = {
+                velocity: 2.5,
+                hasCollided: false
+            };
+            
+            scene.add(photon);
+            photons.push(photon);
+            
+            return photon;
+        }
+        
+        // 创建光电子
+        function createPhotoelectron(yOffset = 0) {
+            if (!canEmitElectron()) return null;
+            
+            const electronKinetic = calculateElectronKinetic();
+            if (electronKinetic <= 0) return null;
+            
+            const electronGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const electronMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x00ff00,
+                emissive: 0x00ff00,
+                emissiveIntensity: 0.5
+            });
+            const electron = new THREE.Mesh(electronGeometry, electronMaterial);
+            
+            const x = photoTube.cathodeX;
+            const y = yOffset;
+            electron.position.set(x, y, 0);
+            
+            // 计算初始速度
+            const baseSpeed = 1.0 + electronKinetic * 0.3;
+            
+            // 计算电场影响
+            const electricForce = voltage / photoTube.distance;
+            const electricEffect = electricForce * 0.5;
+            
+            electron.userData = {
+                velocityX: baseSpeed + electricEffect,
+                velocityY: (Math.random() - 0.5) * 0.3,
+                trajectory: [],
+                hasReachedAnode: false
+            };
+            
+            // 创建轨迹
+            if (showTrajectory) {
+                const trajectoryGeometry = new THREE.BufferGeometry();
+                const trajectoryLine = new THREE.Line(trajectoryGeometry, trajectoryMaterial);
+                scene.add(trajectoryLine);
+                electron.userData.trajectoryLine = trajectoryLine;
+            }
+            
+            scene.add(electron);
+            electrons.push(electron);
+            electronsEmitted++;
+            
+            updateUI();
+            
+            return electron;
+        }
+        
+        // 更新轨迹
+        function updateTrajectory(electron) {
+            if (!electron.userData.trajectoryLine || !showTrajectory) return;
+            
+            electron.userData.trajectory.push(electron.position.clone());
+            
+            if (electron.userData.trajectory.length > 30) {
+                electron.userData.trajectory.shift();
+            }
+            
+            if (electron.userData.trajectory.length > 1) {
+                electron.userData.trajectoryLine.geometry.setFromPoints(electron.userData.trajectory);
+            }
+        }
+        
+        // 更新UI
+        function updateUI() {
+            const electronKinetic = calculateElectronKinetic();
+            const canEmit = canEmitElectron();
+            
+            // 更新阈值指示器
+            const thresholdElement = document.getElementById('thresholdStatus');
+            if (canEmit) {
+                thresholdElement.textContent = "满足条件";
+                thresholdElement.className = "threshold-indicator threshold-above";
+                document.getElementById('photoelectricEffect').textContent = "可发生";
+            } else {
+                thresholdElement.textContent = "不满足条件";
+                thresholdElement.className = "threshold-indicator threshold-below";
+                document.getElementById('photoelectricEffect').textContent = "不发生";
+            }
+            
+            // 更新进度条
+            const photonEnergyBar = document.getElementById('photonEnergyBar');
+            photonEnergyBar.style.width = ((photonEnergy - 1) / 5 * 100) + '%';
+            
+            const workFunctionBar = document.getElementById('workFunctionBar');
+            workFunctionBar.style.width = ((workFunction - 1) / 4 * 100) + '%';
+            
+            // 更新数据
+            document.getElementById('electronKinetic').textContent = electronKinetic.toFixed(2);
+            document.getElementById('electronsEmitted').textContent = electronsEmitted;
+            document.getElementById('electronsReached').textContent = electronsReached;
+            
+            // 更新状态栏
+            const statusElement = document.getElementById('statusBar');
+            const state = isPlaying ? '运行中' : '已暂停';
+            const effectStatus = canEmit ? "光电效应可发生" : "光子能量不足";
+            const voltageStatus = voltage < 0 ? "反向电压" : voltage > 0 ? "正向电压" : "无电压";
+            statusElement.textContent = 
+                `${state} | ${effectStatus} | 电压: ${voltage.toFixed(1)}V | 发射: ${electronsEmitted} | 到达: ${electronsReached}`;
+        }
+        
+        // 更新动画
+        function updateAnimation(deltaTime) {
+            simulationTime += deltaTime;
+            
+            // 自动发射光子
+            if (isPlaying && Math.random() < 0.2 && canEmitElectron()) {
+                createPhoton();
+            }
+            
+            // 更新光子
+            for (let i = photons.length - 1; i >= 0; i--) {
+                const photon = photons[i];
+                
+                if (photon.userData.hasCollided) {
+                    photon.userData.velocity *= 0.9;
+                    if (photon.userData.velocity < 0.1) {
+                        scene.remove(photon);
+                        photons.splice(i, 1);
+                    }
+                } else {
+                    photon.position.x += photon.userData.velocity * deltaTime;
+                    
+                    // 检查与阴极碰撞
+                    if (photon.position.x > photoTube.cathodeX - 0.5) {
+                        photon.userData.hasCollided = true;
+                        photon.material.opacity = 0.3;
+                        
+                        // 创建光电子
+                        createPhotoelectron(photon.position.y);
+                    }
+                }
+                
+                // 边界检查
+                if (photon.position.x > 10) {
+                    scene.remove(photon);
+                    photons.splice(i, 1);
+                }
+            }
+            
+            // 更新光电子
+            for (let i = electrons.length - 1; i >= 0; i--) {
+                const electron = electrons[i];
+                
+                if (electron.userData.hasReachedAnode) {
+                    electron.position.x += 0.5 * deltaTime;
+                    if (electron.position.x > 8) {
+                        scene.remove(electron);
+                        if (electron.userData.trajectoryLine) {
+                            scene.remove(electron.userData.trajectoryLine);
+                        }
+                        electrons.splice(i, 1);
+                    }
+                    continue;
+                }
+                
+                // 更新位置
+                const newX = electron.position.x + electron.userData.velocityX * deltaTime;
+                const newY = electron.position.y + electron.userData.velocityY * deltaTime;
+                
+                // 电场影响
+                const electricForce = voltage / photoTube.distance;
+                electron.userData.velocityX += electricForce * deltaTime;
+                
+                // 随机扰动
+                if (Math.random() < 0.1) {
+                    electron.userData.velocityY = (Math.random() - 0.5) * 0.3;
+                }
+                
+                electron.position.set(newX, newY, 0);
+                
+                // 更新轨迹
+                updateTrajectory(electron);
+                
+                // 检查是否到达阳极
+                if (electron.position.x > photoTube.anodeX - 0.5) {
+                    electron.userData.hasReachedAnode = true;
+                    electron.material.color.setHex(0x00a8ff);
+                    electronsReached++;
+                    
+                    if (electron.userData.trajectoryLine) {
+                        setTimeout(() => {
+                            scene.remove(electron.userData.trajectoryLine);
+                        }, 1000);
+                    }
+                    
+                    updateUI();
+                }
+                
+                // 检查是否被反向电压阻止
+                if (voltage < 0 && electron.userData.velocityX < 0) {
+                    electron.material.color.setHex(0xff4444);
+                    electron.userData.velocityX = 0;
+                    electron.userData.velocityY = 0;
+                }
+                
+                // 边界检查
+                if (Math.abs(electron.position.x) > 10 || Math.abs(electron.position.y) > 5) {
+                    scene.remove(electron);
+                    if (electron.userData.trajectoryLine) {
+                        scene.remove(electron.userData.trajectoryLine);
+                    }
+                    electrons.splice(i, 1);
+                }
+            }
+            
+            // 更新束缚电子振动
+            boundElectrons.forEach(electron => {
+                if (!electron.userData.isEjected) {
+                    const vibration = Math.sin(simulationTime + electron.userData.vibration) * 0.05;
+                    electron.position.y += vibration * deltaTime;
+                }
+            });
+        }
+        
+        // 初始化场景
+        function initScene() {
+            // 清除场景
+            while(scene.children.length > 0) { 
+                scene.remove(scene.children[0]); 
+            }
+            
+            // 重置状态
+            photons = [];
+            electrons = [];
+            trajectories = [];
+            electronsEmitted = 0;
+            electronsReached = 0;
+            simulationTime = 0;
+            
+            // 添加光源
+            addLights();
+            
+            // 创建光电管
+            const photoTubeGroup = createPhotoTube();
+            scene.add(photoTubeGroup);
+            
+            // 创建束缚电子
+            boundElectrons = createBoundElectrons();
+            
+            // 创建光源指示
+            const lightSourceGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const lightSourceMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x00a8ff,
+                transparent: true,
+                opacity: 0.3
+            });
+            const lightSource = new THREE.Mesh(lightSourceGeometry, lightSourceMaterial);
+            lightSource.position.set(-6, 0, 0);
+            scene.add(lightSource);
+            
+            // 更新UI
+            updateUI();
+        }
+        
+        // 动画循环
+        function animate(currentTime = 0) {
+            requestAnimationFrame(animate);
+            
+            const deltaTime = Math.min(0.1, (currentTime - lastFrameTime) * 0.001);
+            lastFrameTime = currentTime;
+            
+            if (isPlaying) {
+                updateAnimation(deltaTime);
+            }
+            
+            // 相机轻微旋转
+            const camX = 6 * Math.sin(simulationTime * 0.1);
+            const camY = 2 + Math.sin(simulationTime * 0.2);
+            const camZ = 8 + Math.cos(simulationTime * 0.1);
+            camera.position.set(camX, camY, camZ);
+            camera.lookAt(0, 0, 0);
+            
+            renderer.render(scene, camera);
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 参数滑块
+            document.getElementById('photonEnergySlider').addEventListener('input', function() {
+                photonEnergy = parseFloat(this.value);
+                document.getElementById('photonEnergyValue').textContent = photonEnergy.toFixed(1);
+                updateUI();
+            });
+            
+            document.getElementById('voltageSlider').addEventListener('input', function() {
+                voltage = parseFloat(this.value);
+                document.getElementById('voltageValue').textContent = voltage.toFixed(1);
+                updateUI();
+            });
+            
+            document.getElementById('workFunctionSlider').addEventListener('input', function() {
+                workFunction = parseFloat(this.value);
+                document.getElementById('workFunctionValue').textContent = workFunction.toFixed(1);
+                updateUI();
+            });
+            
+            // 控制按钮
+            document.getElementById('playBtn').addEventListener('click', function() {
+                isPlaying = true;
+                this.classList.add('active');
+                document.getElementById('pauseBtn').classList.remove('active');
+            });
+            
+            document.getElementById('pauseBtn').addEventListener('click', function() {
+                isPlaying = false;
+                this.classList.add('active');
+                document.getElementById('playBtn').classList.remove('active');
+            });
+            
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                isPlaying = false;
+                initScene();
+                
+                document.getElementById('playBtn').classList.add('active');
+                document.getElementById('pauseBtn').classList.remove('active');
+            });
+            
+            // 发射按钮
+            document.getElementById('emitPhotonBtn').addEventListener('click', function() {
+                createPhoton();
+            });
+            
+            document.getElementById('emitElectronBtn').addEventListener('click', function() {
+                if (canEmitElectron()) {
+                    const yOffset = (Math.random() - 0.5) * 2;
+                    createPhotoelectron(yOffset);
+                }
+            });
+            
+            // 复选框
+            document.getElementById('showTrajectory').addEventListener('change', function() {
+                showTrajectory = this.checked;
+                
+                // 更新现有电子的轨迹可见性
+                electrons.forEach(electron => {
+                    if (electron.userData.trajectoryLine) {
+                        electron.userData.trajectoryLine.visible = showTrajectory;
+                    }
+                });
+            });
+            
+            // 手动发射
+            document.querySelector('.simulation-area').addEventListener('click', function(event) {
+                if (!isPlaying) return;
+                
+                const rect = this.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width;
+                const y = (event.clientY - rect.top) / rect.height;
+                
+                if (x < 0.2) {  // 点击左侧区域
+                    createPhoton();
+                } else if (x > 0.3 && x < 0.4) {  // 点击阴极附近
+                    if (canEmitElectron()) {
+                        const yOffset = (y - 0.5) * 4;
+                        createPhotoelectron(yOffset);
+                    }
+                }
+            });
+            
+            // 窗口大小调整
+            window.addEventListener('resize', function() {
+                initRenderer();
+            });
+        }
+        
+        // 初始化应用
+        function init() {
+            initRenderer();
+            initCamera();
+            initScene();
+            setupEventListeners();
+            animate();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

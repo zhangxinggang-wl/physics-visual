@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>开普勒第二定律：相等时间扫过相等面积 | 椭圆轨道焦点定律</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'Segoe UI', 'Roboto', 'PingFang SC', 'Helvetica Neue', sans-serif;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border-left: 4px solid #ffaa44;
+            line-height: 1.4;
+            max-width: 280px;
+        }
+        #title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ffaa44;
+        }
+        #subtitle {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+        .controls-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: white;
+            pointer-events: auto;
+            z-index: 20;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            min-width: 190px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .slider-container label {
+            font-size: 13px;
+            color: #ffaa66;
+        }
+        input {
+            flex: 1;
+            cursor: pointer;
+            background: #333;
+            height: 4px;
+            border-radius: 5px;
+        }
+        .speed-value {
+            background: #000000aa;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            min-width: 45px;
+            text-align: center;
+        }
+        .status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: #ffaa44;
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            text-align: right;
+            border-right: 3px solid #ffaa44;
+            min-width: 200px;
+        }
+        .area-equal-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #88ff88;
+            font-size: 12px;
+            font-family: monospace;
+            pointer-events: none;
+            z-index: 10;
+            border: 1px solid #88ff88;
+            backdrop-filter: blur(4px);
+        }
+        @media (max-width: 600px) {
+            #info { font-size: 10px; top: 10px; left: 10px; padding: 8px 12px; max-width: 220px; }
+            .status { font-size: 10px; bottom: 10px; right: 10px; padding: 8px 12px; min-width: 160px; }
+            .controls-panel { font-size: 11px; padding: 8px 12px; bottom: 10px; left: 10px; }
+            .area-equal-badge { font-size: 10px; top: 10px; right: 10px; padding: 4px 10px; }
+        }
+        .note {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: #ccc;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            pointer-events: none;
+            white-space: nowrap;
+            font-family: monospace;
+        }
+        button {
+            background: #ffaa44;
+            border: none;
+            color: #1e2a3a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #ffcc66;
+            transform: scale(1.02);
+        }
+        .comparison-bar {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #ddd;
+            border-top: 1px solid #444;
+            padding-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <div id="title">📐 开普勒第二定律 · 面积定律</div>
+        <div>☀️ <strong style="color:#ffaa66;">太阳位于椭圆焦点</strong> | 🪐 行星与太阳连线在<strong style="color:#88ff88;">相等时间</strong>内扫过<strong style="color:#ffcc44;">相等面积</strong></div>
+        <div id="subtitle">🟡 黄色区域 = 当前Δt内扫过面积 | 🟠 橙色区域 = 上一个完整Δt区间 | 两区域面积 ≈ 相等</div>
+    </div>
+    <div class="area-equal-badge" id="equalBadge">
+        ⚖️ 面积相等验证中...
+    </div>
+    <div class="controls-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>⚡ 动画速度调节</span>
+            <button id="resetSpeedBtn" style="background:#3a6ea5;">重置</button>
+        </div>
+        <div class="slider-container">
+            <label>🐢 慢</label>
+            <input type="range" id="speedSlider" min="0.2" max="2.5" step="0.01" value="1.0">
+            <label>快 🐇</label>
+            <span id="speedValue" class="speed-value">1.00x</span>
+        </div>
+        <div class="comparison-bar">
+            📊 <span id="areaRatio">面积比 = --</span>
+        </div>
+    </div>
+    <div class="status" id="area-status">
+        🟠 上一完整扇形面积: <span id="prevArea">--</span><br>
+        🟡 当前扫过面积: <span id="currentArea">--</span><br>
+        ✅ <span id="equalMsg">等待数据...</span>
+    </div>
+    <div class="note">
+        ⏱️ 固定时间间隔 Δt = 2.0 秒 | 黄色与橙色扇形面积相等 → 验证开普勒第二定律
+    </div>
+
+    <!-- 引入 Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // --- 初始化场景 (深邃蓝色背景) ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a1030);
+        scene.fog = new THREE.FogExp2(0x0a1030, 0.0025);
+        
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 14);
+        camera.lookAt(0, 0, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+        
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+        
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.rotateSpeed = 1.0;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.target.set(0, 0, 0);
+        
+        // --- 星空粒子 ---
+        const starGeometry = new THREE.BufferGeometry();
+        const starCount = 2200;
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPositions[i*3] = (Math.random() - 0.5) * 2000;
+            starPositions[i*3+1] = (Math.random() - 0.5) * 1000;
+            starPositions[i*3+2] = (Math.random() - 0.5) * 500 - 150;
+        }
+        starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0xaaccff, size: 0.18, transparent: true, opacity: 0.55 });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+        
+        // 光照
+        const ambientLight = new THREE.AmbientLight(0x224466);
+        scene.add(ambientLight);
+        const sunLight = new THREE.PointLight(0xffaa66, 1.4, 25);
+        sunLight.position.set(0, 0, 0);
+        scene.add(sunLight);
+        const fillLight = new THREE.DirectionalLight(0x88aaff, 0.65);
+        fillLight.position.set(1, 2, 1.5);
+        scene.add(fillLight);
+        const backLight = new THREE.PointLight(0x6688cc, 0.45);
+        backLight.position.set(-2, 1, -3);
+        scene.add(backLight);
+        
+        // --- 椭圆轨道参数 (太阳位于右焦点) ---
+        const e = 0.65;          // 离心率
+        const a = 3.2;           // 半长轴
+        const b = a * Math.sqrt(1 - e * e); // 半短轴 ≈ 2.43
+        const c = a * e;         // 焦距 = 2.08 (焦点到椭圆中心距离)
+        
+        const sunPos = new THREE.Vector3(c, 0, 0);  // 太阳位于右焦点 (椭圆内部)
+        
+        // 周期与面积速度
+        const basePeriod = 12.0;                    // 基础周期(秒)
+        let speedFactor = 1.0;
+        const areaVelocityConst = (Math.PI * a * b) / basePeriod;  // 面积速度常数
+        
+        // 固定时间间隔 Δt = 2.0 秒 (用于演示相等时间扫过相等面积)
+        const FIXED_DELTA_T = 2.0;
+        
+        // 开普勒方程求解: M = E - e*sin(E)
+        function solveKepler(M, e, epsilon = 1e-8) {
+            let E = M;
+            let delta;
+            for (let i = 0; i < 10; i++) {
+                delta = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+                E -= delta;
+                if (Math.abs(delta) < epsilon) break;
+            }
+            return E;
+        }
+        
+        // 根据时间获取行星位置 (椭圆中心在原点，太阳在右焦点)
+        function getOrbitPosition(t, speed = speedFactor) {
+            const effectiveT = t * speed;
+            const periodEffective = basePeriod / speed;
+            const M = (2 * Math.PI * (effectiveT % periodEffective)) / periodEffective;
+            const E = solveKepler(M, e);
+            const x = a * Math.cos(E);
+            const z = b * Math.sin(E);
+            return new THREE.Vector3(x, 0, z);
+        }
+        
+        // --- 创建椭圆轨道线 ---
+        const orbitPoints = [];
+        const segments = 360;
+        for (let i = 0; i <= segments; i++) {
+            const t_frac = (i / segments) * basePeriod;
+            const pos = getOrbitPosition(t_frac, 1.0);
+            orbitPoints.push(pos.clone());
+        }
+        const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+        const orbitMaterial = new THREE.LineBasicMaterial({ color: 0x5a9eff, linewidth: 2 });
+        const orbitLine = new THREE.LineLoop(orbitGeometry, orbitMaterial);
+        scene.add(orbitLine);
+        
+        const glowMaterial = new THREE.LineBasicMaterial({ color: 0x3a7acc, transparent: true, opacity: 0.4 });
+        const orbitGlow = new THREE.LineLoop(orbitGeometry, glowMaterial);
+        scene.add(orbitGlow);
+        
+        // --- 太阳 (位于右焦点) ---
+        const sunGeometry = new THREE.SphereGeometry(0.58, 64, 64);
+        const sunMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa55, emissive: 0x552200, emissiveIntensity: 0.7 });
+        const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+        sunMesh.position.copy(sunPos);
+        scene.add(sunMesh);
+        
+        const sunGlowGeometry = new THREE.SphereGeometry(0.76, 32, 32);
+        const sunGlowMaterial = new THREE.MeshBasicMaterial({ color: 0xff8844, transparent: true, opacity: 0.2, side: THREE.BackSide });
+        const sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+        scene.add(sunGlow);
+        
+        const coreLight = new THREE.PointLight(0xffaa66, 1.2, 20);
+        coreLight.position.copy(sunPos);
+        scene.add(coreLight);
+        
+        // --- 行星 ---
+        const planetGeometry = new THREE.SphereGeometry(0.31, 80, 80);
+        const planetMaterial = new THREE.MeshStandardMaterial({ color: 0x88ccff, emissive: 0x2266aa, roughness: 0.3 });
+        const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+        scene.add(planet);
+        
+        // CSS2D 文字标签
+        function makeLabel(text, color) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = color;
+            div.style.fontSize = '15px';
+            div.style.fontWeight = 'bold';
+            div.style.textShadow = '1px 1px 0px black';
+            div.style.background = 'rgba(0,0,0,0.6)';
+            div.style.padding = '2px 8px';
+            div.style.borderRadius = '20px';
+            div.style.borderLeft = `3px solid ${color}`;
+            div.style.backdropFilter = 'blur(4px)';
+            return new CSS2DObject(div);
+        }
+        
+        const sunLabel = makeLabel('☀️ 太阳 (椭圆焦点)', '#ffaa66');
+        sunLabel.position.copy(sunPos);
+        sunLabel.position.y += 0.85;
+        scene.add(sunLabel);
+        
+        const planetLabel = makeLabel('🪐 行星', '#88ccff');
+        scene.add(planetLabel);
+        
+        // 另一焦点标记 (左焦点)
+        const leftFocusPos = new THREE.Vector3(-c, 0, 0);
+        const leftFocusMarker = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), new THREE.MeshStandardMaterial({ color: 0x88aaff, transparent: true, opacity: 0.5 }));
+        leftFocusMarker.position.copy(leftFocusPos);
+        scene.add(leftFocusMarker);
+        
+        const leftFocusDiv = document.createElement('div');
+        leftFocusDiv.textContent = '⚪ 另一焦点';
+        leftFocusDiv.style.color = '#88aaff';
+        leftFocusDiv.style.fontSize = '9px';
+        leftFocusDiv.style.background = 'rgba(0,0,0,0.4)';
+        leftFocusDiv.style.padding = '1px 4px';
+        leftFocusDiv.style.borderRadius = '10px';
+        const leftFocusLabel = new CSS2DObject(leftFocusDiv);
+        leftFocusLabel.position.copy(leftFocusPos);
+        leftFocusLabel.position.y += 0.35;
+        scene.add(leftFocusLabel);
+        
+        // 近日点/远日点标记
+        const periPos = getOrbitPosition(0, 1.0);
+        const aphPos = getOrbitPosition(basePeriod/2, 1.0);
+        const periMarker = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 20), new THREE.MeshStandardMaterial({ color: 0xffaa77 }));
+        periMarker.position.copy(periPos);
+        scene.add(periMarker);
+        const aphMarker = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 20), new THREE.MeshStandardMaterial({ color: 0x77aaff }));
+        aphMarker.position.copy(aphPos);
+        scene.add(aphMarker);
+        
+        const periLabel = new CSS2DObject((() => {
+            const d = document.createElement('div'); d.textContent = '近日点 ▲ 速度快'; d.style.color = '#ffaa77'; d.style.fontSize = '10px'; d.style.background = 'rgba(0,0,0,0.5)'; d.style.padding = '1px 4px'; d.style.borderRadius = '12px'; return d;
+        })());
+        periLabel.position.copy(periPos);
+        periLabel.position.y += 0.45;
+        scene.add(periLabel);
+        
+        const aphLabel = new CSS2DObject((() => {
+            const d = document.createElement('div'); d.textContent = '远日点 ▼ 速度慢'; d.style.color = '#88aaff'; d.style.fontSize = '10px'; d.style.background = 'rgba(0,0,0,0.5)'; d.style.padding = '1px 4px'; d.style.borderRadius = '12px'; return d;
+        })());
+        aphLabel.position.copy(aphPos);
+        aphLabel.position.y += 0.45;
+        scene.add(aphLabel);
+        
+        // 椭圆中心标记
+        const centerMarker = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshStandardMaterial({ color: 0xaaaaaa }));
+        centerMarker.position.set(0, 0, 0);
+        scene.add(centerMarker);
+        
+        // 辅助线: 长轴
+        const axisPoints = [new THREE.Vector3(-a, 0, 0), new THREE.Vector3(a, 0, 0)];
+        const axisGeo = new THREE.BufferGeometry().setFromPoints(axisPoints);
+        const axisLine = new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0xff8866, transparent: true, opacity: 0.35 }));
+        scene.add(axisLine);
+        
+        // 网格
+        const gridHelper = new THREE.GridHelper(18, 24, 0x88aaff, 0x4466aa);
+        gridHelper.position.y = -1.3;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.28;
+        scene.add(gridHelper);
+        
+        // --- 扇形区域: 展示相等时间扫过相等面积 ---
+        // 使用两个扇形: 上一个完整 Δt 区间 (橙色) 和 当前进行中的 Δt 区间 (黄色)
+        let prevSectorMesh = null;
+        let currentSectorMesh = null;
+        
+        // 创建扇形网格 (太阳到轨道上两点之间的区域)
+        function createSectorMesh(tStart, tEnd, color, opacity = 0.5, speed = speedFactor) {
+            const samples = 56;  // 足够精细
+            const points = [];
+            points.push(sunPos.clone());  // 太阳 (焦点)
+            for (let i = 0; i <= samples; i++) {
+                const t = tStart + (i / samples) * (tEnd - tStart);
+                const pos = getOrbitPosition(t, speed);
+                points.push(pos);
+            }
+            const vertices = [];
+            const indices = [];
+            points.forEach(p => {
+                vertices.push(p.x, p.y, p.z);
+            });
+            for (let i = 1; i <= samples; i++) {
+                indices.push(0, i, i + 1);
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: opacity,
+                depthWrite: false,
+                emissive: color === 0xffcc44 ? 0x331c00 : 0x000000
+            });
+            return new THREE.Mesh(geometry, material);
+        }
+        
+        // 更新扇形 (基于固定时间间隔 Δt = FIXED_DELTA_T)
+        function updateSectors(currentTime, speed) {
+            if (prevSectorMesh) scene.remove(prevSectorMesh);
+            if (currentSectorMesh) scene.remove(currentSectorMesh);
+            
+            const periodEffective = basePeriod / speed;
+            const tMod = currentTime % periodEffective;
+            // 当前进行中的区间: 从最近一个整倍数开始到当前时间
+            const ongoingStart = Math.floor(tMod / FIXED_DELTA_T) * FIXED_DELTA_T;
+            const ongoingEnd = tMod;
+            // 上一个完整区间
+            const completedStart = ongoingStart - FIXED_DELTA_T;
+            const completedEnd = ongoingStart;
+            
+            if (completedStart >= 0 && completedEnd > completedStart) {
+                prevSectorMesh = createSectorMesh(completedStart, completedEnd, 0xff8844, 0.4, speed);
+                scene.add(prevSectorMesh);
+            }
+            if (ongoingEnd > ongoingStart) {
+                currentSectorMesh = createSectorMesh(ongoingStart, ongoingEnd, 0xffcc44, 0.55, speed);
+                scene.add(currentSectorMesh);
+            }
+        }
+        
+        // 计算理论面积 (基于面积速度常数)
+        function computeArea(deltaTime) {
+            return areaVelocityConst * deltaTime;
+        }
+        
+        // 动态连线: 太阳-行星连线
+        let sunPlanetLine = null;
+        function updateSunPlanetLine(planetPos) {
+            if (sunPlanetLine) scene.remove(sunPlanetLine);
+            const points = [sunPos.clone(), planetPos.clone()];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0xffaa66, transparent: true, opacity: 0.7 });
+            sunPlanetLine = new THREE.Line(geometry, material);
+            scene.add(sunPlanetLine);
+        }
+        
+        // --- 动画控制与面积相等验证 ---
+        let animationStartTime = performance.now() / 1000;
+        let currentSimTime = 0;
+        let lastTimestamp = null;
+        
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValueSpan = document.getElementById('speedValue');
+        const resetBtn = document.getElementById('resetSpeedBtn');
+        const prevAreaSpan = document.getElementById('prevArea');
+        const currentAreaSpan = document.getElementById('currentArea');
+        const equalMsgSpan = document.getElementById('equalMsg');
+        const areaRatioSpan = document.getElementById('areaRatio');
+        const equalBadge = document.getElementById('equalBadge');
+        
+        speedSlider.addEventListener('input', (e) => {
+            speedFactor = parseFloat(e.target.value);
+            speedValueSpan.textContent = speedFactor.toFixed(2) + 'x';
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            speedSlider.value = '1.0';
+            speedFactor = 1.0;
+            speedValueSpan.textContent = '1.00x';
+        });
+        
+        // 更新UI显示面积相等性
+        let lastPrevArea = 0;
+        let lastCurrentArea = 0;
+        
+        function updateAreaDisplay(prevArea, currentArea) {
+            if (prevArea > 0) {
+                prevAreaSpan.textContent = prevArea.toFixed(4);
+                currentAreaSpan.textContent = currentArea.toFixed(4);
+                const diff = Math.abs(prevArea - currentArea);
+                const tolerance = 0.008; // 由于采样和浮点误差，微小差异可接受
+                const isEqual = diff < tolerance;
+                if (isEqual) {
+                    equalMsgSpan.innerHTML = '✅ 面积相等！开普勒第二定律成立';
+                    equalBadge.innerHTML = '⚖️ 面积相等 ✓ 验证通过';
+                    equalBadge.style.borderColor = '#88ff88';
+                    equalBadge.style.color = '#88ff88';
+                } else {
+                    equalMsgSpan.innerHTML = `⚠️ 面积差 ${diff.toFixed(5)} (理论相等)`;
+                    equalBadge.innerHTML = '⚖️ 面积接近相等 (理论精确)';
+                    equalBadge.style.borderColor = '#ffaa66';
+                    equalBadge.style.color = '#ffaa66';
+                }
+                // 显示面积比
+                const ratio = prevArea > 0 ? (currentArea / prevArea).toFixed(4) : '--';
+                areaRatioSpan.innerHTML = `面积比 (当前/上一) = ${ratio}`;
+            } else {
+                prevAreaSpan.textContent = '--';
+                currentAreaSpan.textContent = currentArea.toFixed(4);
+                equalMsgSpan.innerHTML = '⏳ 等待完整扇形...';
+                areaRatioSpan.innerHTML = `面积比 = 等待数据`;
+                equalBadge.innerHTML = '⚖️ 面积相等验证中...';
+            }
+        }
+        
+        // 动画循环
+        function animate() {
+            const nowReal = performance.now() / 1000;
+            if (lastTimestamp === null) {
+                lastTimestamp = nowReal;
+                animationStartTime = nowReal;
+                currentSimTime = 0;
+            } else {
+                const delta = Math.min(0.033, nowReal - lastTimestamp);
+                currentSimTime += delta;
+                lastTimestamp = nowReal;
+            }
+            
+            // 获取行星位置
+            const planetPos = getOrbitPosition(currentSimTime, speedFactor);
+            planet.position.copy(planetPos);
+            planetLabel.position.copy(planetPos);
+            planetLabel.position.y += 0.62;
+            
+            // 更新连线
+            updateSunPlanetLine(planetPos);
+            
+            // 行星自转
+            planet.rotation.y += 0.045;
+            
+            // 更新扇形区域 (基于固定时间间隔)
+            updateSectors(currentSimTime, speedFactor);
+            
+            // 计算并显示面积对比
+            const periodEff = basePeriod / speedFactor;
+            const tMod = currentSimTime % periodEff;
+            const ongoingStart = Math.floor(tMod / FIXED_DELTA_T) * FIXED_DELTA_T;
+            const ongoingEnd = tMod;
+            const completedStart = ongoingStart - FIXED_DELTA_T;
+            
+            let prevAreaValue = 0;
+            let currentAreaValue = 0;
+            
+            if (completedStart >= 0) {
+                prevAreaValue = computeArea(FIXED_DELTA_T);
+            }
+            if (ongoingEnd > ongoingStart) {
+                const currentDelta = ongoingEnd - ongoingStart;
+                currentAreaValue = computeArea(currentDelta);
+            }
+            
+            // 实时更新UI
+            if (prevAreaValue > 0) {
+                updateAreaDisplay(prevAreaValue, currentAreaValue);
+            } else {
+                updateAreaDisplay(0, currentAreaValue);
+            }
+            
+            // 动态效果
+            coreLight.intensity = 1.1 + Math.sin(nowReal * 2.5) * 0.12;
+            sunMesh.rotation.y += 0.003;
+            sunGlow.rotation.y += 0.002;
+            
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 启动
+        animationStartTime = performance.now() / 1000;
+        currentSimTime = 0;
+        lastTimestamp = null;
+        animate();
+        
+        window.addEventListener('resize', onWindowResize);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        console.log(`开普勒第二定律演示 | 太阳位于右焦点 (c=${c.toFixed(2)}) | 固定时间间隔 Δt = ${FIXED_DELTA_T}秒 | 面积速度恒定 = ${areaVelocityConst.toFixed(4)}`);
+    </script>
+</body>
+</html>

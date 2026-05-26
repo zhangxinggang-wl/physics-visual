@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>带电粒子在电磁复合场中的运动 - 配速法演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .simulation-area {
+            flex: 1;
+            min-width: 600px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .controls {
+            flex-basis: 320px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #1a1a2e;
+        }
+        
+        #simulationCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .field-indicators {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .field-indicator {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .field-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .electric-field-icon {
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+            border-radius: 4px;
+        }
+        
+        .magnetic-field-icon {
+            color: #3498db;
+            border: 2px solid #3498db;
+            border-radius: 50%;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            border-radius: 50%;
+        }
+        
+        .legend-label {
+            white-space: nowrap;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .slider-container {
+            margin-bottom: 18px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e0e6ed;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .buttons-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #startBtn {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        #startBtn:hover {
+            background-color: #27ae60;
+        }
+        
+        #pauseBtn {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        #pauseBtn:hover {
+            background-color: #d68910;
+        }
+        
+        #resetBtn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #resetBtn:hover {
+            background-color: #c0392b;
+        }
+        
+        .theory-section {
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        
+        .theory-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .theory-content {
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+        
+        .theory-content p {
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+            font-family: 'Cambria', 'Times New Roman', serif;
+            font-size: 1.1rem;
+        }
+        
+        .decomposition {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .decomp-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            width: 180px;
+            margin: 10px;
+        }
+        
+        .decomp-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        @media (max-width: 1000px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .simulation-area, .controls {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>带电粒子在电磁复合场中的运动</h1>
+        <div class="subtitle">配速法可视化教学演示</div>
+    </div>
+    
+    <div class="container">
+        <div class="simulation-area">
+            <div class="canvas-container">
+                <canvas id="simulationCanvas"></canvas>
+                
+                <div class="field-indicators">
+                    <div class="field-indicator">
+                        <div class="field-icon electric-field-icon">E</div>
+                        <div>电场方向: +Y 方向</div>
+                    </div>
+                    <div class="field-indicator">
+                        <div class="field-icon magnetic-field-icon">B</div>
+                        <div>磁场方向: 垂直纸面向里</div>
+                    </div>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <div class="legend-label">带电粒子</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2ecc71;"></div>
+                        <div class="legend-label">粒子实际轨迹</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <div class="legend-label">匀速直线分量</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f39c12;"></div>
+                        <div class="legend-label">匀速圆周分量</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3 class="control-title">电场与磁场参数</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>电场强度 E</span>
+                        <span class="slider-value" id="eValue">1.0</span>
+                    </div>
+                    <input type="range" id="eSlider" min="0.1" max="3.0" step="0.1" value="1.0">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>磁感应强度 B</span>
+                        <span class="slider-value" id="bValue">1.0</span>
+                    </div>
+                    <input type="range" id="bSlider" min="0.1" max="3.0" step="0.1" value="1.0">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>粒子电荷量 q</span>
+                        <span class="slider-value" id="qValue">+1.0</span>
+                    </div>
+                    <input type="range" id="qSlider" min="-2.0" max="2.0" step="0.1" value="1.0">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3 class="control-title">粒子初始状态</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>初始速度 Vx</span>
+                        <span class="slider-value" id="vxValue">2.0</span>
+                    </div>
+                    <input type="range" id="vxSlider" min="0.0" max="5.0" step="0.1" value="2.0">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>初始速度 Vy</span>
+                        <span class="slider-value" id="vyValue">0.0</span>
+                    </div>
+                    <input type="range" id="vySlider" min="-3.0" max="3.0" step="0.1" value="0.0">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>粒子质量 m</span>
+                        <span class="slider-value" id="mValue">1.0</span>
+                    </div>
+                    <input type="range" id="mSlider" min="0.5" max="3.0" step="0.1" value="1.0">
+                </div>
+            </div>
+            
+            <div class="buttons-container">
+                <button id="startBtn">开始/继续</button>
+                <button id="pauseBtn">暂停</button>
+                <button id="resetBtn">重置</button>
+            </div>
+            
+            <div style="margin-top: 25px; font-size: 0.9rem; color: #7f8c8d; line-height: 1.5;">
+                <p><strong>配速法说明：</strong>将粒子的初速度分解为两个分量：一个使粒子受力平衡（匀速直线运动），另一个使粒子在洛伦兹力作用下做匀速圆周运动，两者合成复杂的摆线轨迹。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="theory-section">
+        <h3 class="theory-title">配速法原理</h3>
+        <div class="theory-content">
+            <p>当带电粒子以任意初速度进入互相垂直的匀强电场和匀强磁场时，其运动轨迹往往非常复杂。配速法通过巧妙的速度分解，将这种复杂运动分解为两个简单运动的合成，便于分析和理解。</p>
+            
+            <div class="formula">
+                设电场强度为 E（沿 Y 轴正向），磁感应强度为 B（垂直纸面向里），带电粒子电荷量为 q，质量为 m。<br>
+                速度分解：将初速度 v₀ 分解为两个分量 v₁ 和 v₂，其中 v₁ = E/B，方向与 E 和 B 均垂直。
+            </div>
+            
+            <div class="decomposition">
+                <div class="decomp-item">
+                    <div class="decomp-title">速度分量 v₁</div>
+                    <div>v₁ = E/B</div>
+                    <div>粒子以该速度运动时，电场力 qE 与洛伦兹力 qv₁B 恰好平衡：</div>
+                    <div>qE = qv₁B ⇒ v₁ = E/B</div>
+                    <div>对应<strong>匀速直线运动</strong></div>
+                </div>
+                
+                <div class="decomp-item">
+                    <div class="decomp-title">速度分量 v₂</div>
+                    <div>v₂ = v₀ - v₁</div>
+                    <div>粒子以该速度运动时，只受洛伦兹力作用：</div>
+                    <div>F = qv₂B</div>
+                    <div>对应<strong>匀速圆周运动</strong></div>
+                </div>
+            </div>
+            
+            <p>因此，带电粒子在电磁复合场中的实际运动是这两个分运动的合成：一个匀速直线运动和一个匀速圆周运动的叠加，其轨迹为摆线（旋轮线）。通过调整初始速度分量，可以观察到不同类型的摆线轨迹。</p>
+            
+            <p>在动画演示中，您可以调整电场强度、磁感应强度、粒子电荷量和初始速度等参数，观察粒子运动轨迹的变化，直观理解配速法的物理原理。</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        本动画用于高中物理教学演示 | 带电粒子在电磁复合场中的运动 | 配速法可视化
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        // 物理参数
+        let params = {
+            E: 1.0,  // 电场强度
+            B: 1.0,  // 磁感应强度
+            q: 1.0,  // 电荷量
+            m: 1.0,  // 粒子质量
+            vx: 2.0, // 初始速度x分量
+            vy: 0.0  // 初始速度y分量
+        };
+        
+        // 计算平衡速度 v1 = E/B
+        function calculateV1() {
+            return params.E / params.B;
+        }
+        
+        // 计算圆周运动半径
+        function calculateRadius() {
+            const v2x = params.vx;
+            const v2y = params.vy - calculateV1();
+            const v2 = Math.sqrt(v2x*v2x + v2y*v2y);
+            return params.m * v2 / (Math.abs(params.q) * params.B);
+        }
+        
+        // 计算圆周运动角速度
+        function calculateOmega() {
+            return Math.abs(params.q) * params.B / params.m;
+        }
+        
+        // 动画状态
+        let animationId = null;
+        let isAnimating = false;
+        let time = 0;
+        const dt = 0.02; // 时间步长
+        
+        // 轨迹点存储
+        const trajectory = [];
+        const maxTrajectoryPoints = 500;
+        
+        // 颜色定义
+        const colors = {
+            particle: '#e74c3c',
+            trajectory: '#2ecc71',
+            lineMotion: '#3498db',
+            circleMotion: '#f39c12',
+            electricField: 'rgba(231, 76, 60, 0.3)',
+            magneticField: 'rgba(52, 152, 219, 0.1)'
+        };
+        
+        // 绘制电场和磁场指示
+        function drawFields() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 绘制磁场背景（垂直纸面向里）
+            ctx.fillStyle = colors.magneticField;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制磁场符号（圆圈表示垂直纸面向里）
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
+            const circleRadius = 15;
+            const circleSpacing = 50;
+            
+            for (let x = circleSpacing; x < width; x += circleSpacing) {
+                for (let y = circleSpacing; y < height; y += circleSpacing) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 绘制表示"垂直纸面向里"的十字
+                    ctx.strokeStyle = 'rgba(52, 152, 219, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x - circleRadius/2, y);
+                    ctx.lineTo(x + circleRadius/2, y);
+                    ctx.moveTo(x, y - circleRadius/2);
+                    ctx.lineTo(x, y + circleRadius/2);
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制电场方向箭头（沿Y轴正向）
+            ctx.strokeStyle = colors.electricField;
+            ctx.fillStyle = colors.electricField;
+            ctx.lineWidth = 2;
+            
+            const arrowSpacing = 40;
+            const arrowLength = 25;
+            
+            for (let x = arrowSpacing; x < width; x += arrowSpacing) {
+                for (let y = arrowSpacing; y < height; y += arrowSpacing) {
+                    // 绘制箭头线
+                    ctx.beginPath();
+                    ctx.moveTo(x, y - arrowLength/2);
+                    ctx.lineTo(x, y + arrowLength/2);
+                    ctx.stroke();
+                    
+                    // 绘制箭头头部
+                    ctx.beginPath();
+                    ctx.moveTo(x - 4, y + arrowLength/2 - 6);
+                    ctx.lineTo(x, y + arrowLength/2);
+                    ctx.lineTo(x + 4, y + arrowLength/2 - 6);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // 绘制坐标轴
+        function drawAxes() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            // 绘制X轴
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            
+            // 绘制Y轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // 绘制坐标轴标签
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText('X', canvas.width - 10, centerY - 10);
+            ctx.textAlign = 'center';
+            ctx.fillText('Y', centerX + 10, 20);
+        }
+        
+        // 计算粒子位置
+        function calculateParticlePosition(t) {
+            const v1 = calculateV1();
+            const omega = calculateOmega();
+            const radius = calculateRadius();
+            
+            // 计算v2分量
+            const v2x = params.vx;
+            const v2y = params.vy - v1;
+            
+            // 计算v2的初始角度
+            let theta0 = Math.atan2(v2y, v2x);
+            
+            // 计算圆周运动的位置
+            const circleX = radius * Math.cos(omega * t + theta0 + Math.PI/2);
+            const circleY = radius * Math.sin(omega * t + theta0 + Math.PI/2);
+            
+            // 计算直线运动的位置
+            const lineX = v1 * t;
+            const lineY = 0; // 直线运动在Y方向无速度
+            
+            // 合成位置（加上初始偏移）
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = 40; // 缩放因子，使轨迹适合Canvas
+            
+            const x = centerX + (lineX + circleX) * scale;
+            const y = centerY + (lineY + circleY) * scale;
+            
+            // 返回各个分量用于绘制
+            return {
+                x, y,
+                lineX: centerX + lineX * scale,
+                lineY: centerY + lineY * scale,
+                circleX: centerX + (lineX + circleX) * scale,
+                circleY: centerY + (lineY + circleY) * scale,
+                radius: radius * scale,
+                omega
+            };
+        }
+        
+        // 绘制粒子轨迹
+        function drawTrajectory() {
+            if (trajectory.length < 2) return;
+            
+            ctx.strokeStyle = colors.trajectory;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(trajectory[0].x, trajectory[0].y);
+            
+            for (let i = 1; i < trajectory.length; i++) {
+                ctx.lineTo(trajectory[i].x, trajectory[i].y);
+            }
+            
+            ctx.stroke();
+        }
+        
+        // 绘制速度分解示意
+        function drawVelocityDecomposition(pos) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            const v1 = calculateV1();
+            const scale = 40;
+            
+            // 绘制直线运动分量（v1）
+            ctx.strokeStyle = colors.lineMotion;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([]);
+            
+            // 直线运动路径
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pos.lineX, pos.lineY);
+            ctx.stroke();
+            
+            // 绘制圆周运动分量（v2）
+            ctx.strokeStyle = colors.circleMotion;
+            ctx.setLineDash([5, 3]);
+            
+            // 圆周运动路径（虚线圆）
+            ctx.beginPath();
+            ctx.arc(pos.lineX, pos.lineY, pos.radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            
+            // 绘制从圆心到粒子的连线
+            ctx.strokeStyle = colors.circleMotion;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pos.lineX, pos.lineY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+        
+        // 绘制粒子
+        function drawParticle(pos) {
+            // 绘制粒子
+            ctx.fillStyle = colors.particle;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制粒子发光效果
+            const gradient = ctx.createRadialGradient(
+                pos.x, pos.y, 0,
+                pos.x, pos.y, 15
+            );
+            gradient.addColorStop(0, 'rgba(231, 76, 60, 0.8)');
+            gradient.addColorStop(1, 'rgba(231, 76, 60, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制电荷符号
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(params.q > 0 ? '+' : '−', pos.x, pos.y);
+        }
+        
+        // 绘制参数信息
+        function drawParameters(pos) {
+            const v1 = calculateV1();
+            const radius = calculateRadius();
+            const omega = calculateOmega();
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            
+            const infoX = 20;
+            let infoY = 80;
+            const lineHeight = 22;
+            
+            ctx.fillText(`平衡速度 v₁ = E/B = ${v1.toFixed(2)}`, infoX, infoY);
+            infoY += lineHeight;
+            ctx.fillText(`圆周半径 r = mv₂/(qB) = ${radius.toFixed(2)}`, infoX, infoY);
+            infoY += lineHeight;
+            ctx.fillText(`角速度 ω = qB/m = ${omega.toFixed(2)}`, infoX, infoY);
+            infoY += lineHeight;
+            ctx.fillText(`时间 t = ${time.toFixed(2)}`, infoX, infoY);
+        }
+        
+        // 更新参数显示
+        function updateParameterDisplays() {
+            document.getElementById('eValue').textContent = params.E.toFixed(1);
+            document.getElementById('bValue').textContent = params.B.toFixed(1);
+            document.getElementById('qValue').textContent = params.q.toFixed(1);
+            document.getElementById('mValue').textContent = params.m.toFixed(1);
+            document.getElementById('vxValue').textContent = params.vx.toFixed(1);
+            document.getElementById('vyValue').textContent = params.vy.toFixed(1);
+        }
+        
+        // 动画主循环
+        function animate() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制场和坐标轴
+            drawFields();
+            drawAxes();
+            
+            // 计算粒子当前位置
+            const pos = calculateParticlePosition(time);
+            
+            // 存储轨迹点
+            trajectory.push({x: pos.x, y: pos.y});
+            if (trajectory.length > maxTrajectoryPoints) {
+                trajectory.shift();
+            }
+            
+            // 绘制轨迹
+            drawTrajectory();
+            
+            // 绘制速度分解
+            drawVelocityDecomposition(pos);
+            
+            // 绘制粒子
+            drawParticle(pos);
+            
+            // 绘制参数信息
+            drawParameters(pos);
+            
+            // 更新时间
+            if (isAnimating) {
+                time += dt;
+            }
+            
+            // 循环动画
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 滑块事件监听
+            document.getElementById('eSlider').addEventListener('input', function() {
+                params.E = parseFloat(this.value);
+                updateParameterDisplays();
+                resetAnimation();
+            });
+            
+            document.getElementById('bSlider').addEventListener('input', function() {
+                params.B = parseFloat(this.value);
+                updateParameterDisplays();
+                resetAnimation();
+            });
+            
+            document.getElementById('qSlider').addEventListener('input', function() {
+                params.q = parseFloat(this.value);
+                updateParameterDisplays();
+                resetAnimation();
+            });
+            
+            document.getElementById('mSlider').addEventListener('input', function() {
+                params.m = parseFloat(this.value);
+                updateParameterDisplays();
+                resetAnimation();
+            });
+            
+            document.getElementById('vxSlider').addEventListener('input', function() {
+                params.vx = parseFloat(this.value);
+                updateParameterDisplays();
+                resetAnimation();
+            });
+            
+            document.getElementById('vySlider').addEventListener('input', function() {
+                params.vy = parseFloat(this.value);
+                updateParameterDisplays();
+                resetAnimation();
+            });
+            
+            // 按钮事件监听
+            document.getElementById('startBtn').addEventListener('click', function() {
+                isAnimating = true;
+            });
+            
+            document.getElementById('pauseBtn').addEventListener('click', function() {
+                isAnimating = false;
+            });
+            
+            document.getElementById('resetBtn').addEventListener('click', resetAnimation);
+            
+            // 窗口大小调整
+            window.addEventListener('resize', function() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                resetAnimation();
+            });
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            time = 0;
+            trajectory.length = 0;
+            if (!isAnimating) {
+                animate();
+            }
+        }
+        
+        // 初始化
+        function init() {
+            updateParameterDisplays();
+            initEventListeners();
+            animate();
+        }
+        
+        // 启动
+        init();
+    </script>
+</body>
+</html>

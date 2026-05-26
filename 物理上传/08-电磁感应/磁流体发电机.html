@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0">
+  <title>磁流体发电机原理模拟 · 平衡状态 | 高中物理·人教版选修二</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Roboto', 'Noto Sans', system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    .simulation-container {
+      max-width: 950px;
+      width: 100%;
+      background: rgba(20, 30, 45, 0.7);
+      backdrop-filter: blur(25px);
+      border-radius: 48px;
+      padding: 25px 30px 30px;
+      box-shadow: 0 30px 55px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    h1 {
+      text-align: center;
+      color: #f0e6d3;
+      font-weight: 400;
+      letter-spacing: 3px;
+      margin-bottom: 12px;
+      font-size: 2rem;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    h1 span {
+      background: #d4a373;
+      color: #1e2b38;
+      padding: 4px 18px;
+      border-radius: 40px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      height: auto;
+      background: #1e2f3f;
+      border-radius: 36px;
+      box-shadow: inset 0 0 35px rgba(0,0,0,0.9), 0 20px 35px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 210, 0.3);
+      touch-action: none;
+    }
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      margin-top: 22px;
+      background: rgba(10, 18, 28, 0.6);
+      backdrop-filter: blur(18px);
+      border-radius: 60px;
+      padding: 18px 25px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 12px 22px rgba(0,0,0,0.6);
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: #eedbb0;
+      font-weight: 500;
+      font-size: 0.95rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .slider-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,0,0,0.4);
+      padding: 7px 18px;
+      border-radius: 30px;
+      letter-spacing: 0.6px;
+    }
+    input[type="range"] {
+      width: 110px;
+      height: 6px;
+      -webkit-appearance: none;
+      background: #c9a87c;
+      border-radius: 5px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      background: #f5e7d3;
+      border-radius: 50%;
+      box-shadow: 0 0 14px #ffd78b;
+      border: 2px solid #b78b5a;
+    }
+    .value-display {
+      display: inline-block;
+      min-width: 55px;
+      text-align: center;
+      background: #0d1820;
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: #f5d78c;
+      font-weight: 700;
+      box-shadow: inset 0 0 6px black;
+    }
+    button {
+      background: #d4a373;
+      border: none;
+      color: #1e272e;
+      font-weight: bold;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #7f5d42, 0 12px 20px rgba(0,0,0,0.5);
+      transition: all 0.08s ease;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #efd5b3 0%, #c89b6b 100%);
+      border: 1px solid #ffddb0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button:active {
+      transform: translateY(3px);
+      box-shadow: 0 3px 0 #5e4330, 0 8px 12px rgba(0,0,0,0.6);
+      background: linear-gradient(180deg, #dbb07b 0%, #b17e4b 100%);
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #0f1b26;
+      padding: 6px 22px;
+      border-radius: 30px;
+      color: #fadf9e;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.8px;
+    }
+    .led {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffaa33;
+      box-shadow: 0 0 16px #ff9900;
+    }
+    .legend {
+      display: flex;
+      gap: 20px;
+      color: #ccc6b5;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend i {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+    }
+    @media (max-width: 700px) {
+      .control-panel {
+        flex-direction: column;
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="simulation-container">
+  <h1>
+    ⚡磁流体发电机
+    <span>选修二 · 平衡状态</span>
+  </h1>
+  
+  <canvas id="generatorCanvas" width="820" height="460" aria-label="磁流体发电机原理模拟动画，展示电场力与洛伦兹力平衡"></canvas>
+  
+  <div class="control-panel">
+    <div class="slider-group">
+      <label>
+        <span style="color:#f5c97b;">🔵 磁场 B</span>
+        <input type="range" id="bFieldSlider" min="0.3" max="2.2" value="1.0" step="0.1">
+        <span class="value-display" id="bValue">1.0 T</span>
+      </label>
+      <label>
+        <span style="color:#f08080;">⚡ 流速 v</span>
+        <input type="range" id="velocitySlider" min="0.4" max="2.4" value="1.2" step="0.1">
+        <span class="value-display" id="vValue">1.2</span>
+      </label>
+    </div>
+    <button id="resetButton">
+      <span>↺</span> 重置系统
+    </button>
+    <div class="status-indicator" id="balanceIndicator">
+      <span class="led" id="balanceLed" style="background:#ffaa33;"></span>
+      <span id="balanceText">充电中…</span>
+    </div>
+  </div>
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; color: #bbaa8c; font-size: 0.8rem; flex-wrap: wrap;">
+    <div class="legend">
+      <span><i style="background:#ffb347;"></i> 正离子</span>
+      <span><i style="background:#6c9bd2;"></i> 负离子</span>
+      <span><i style="background:#e0cfa5;"></i> 电极</span>
+    </div>
+    <div style="color:#eedbba;">⚖️ 平衡时：qE = qvB → 粒子直行</div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const canvas = document.getElementById('generatorCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // DOM 元素
+    const bSlider = document.getElementById('bFieldSlider');
+    const vSlider = document.getElementById('velocitySlider');
+    const bValueDisplay = document.getElementById('bValue');
+    const vValueDisplay = document.getElementById('vValue');
+    const balanceLed = document.getElementById('balanceLed');
+    const balanceText = document.getElementById('balanceText');
+
+    // 物理参数
+    let magneticField = 1.0;        // 特斯拉
+    let flowVelocity = 1.2;        // 流速系数
+    
+    // 动态电场系统：电荷积累导致电场建立
+    let topCharge = 0;             // 上电极正电荷积累量 (相对)
+    let bottomCharge = 0;         // 下电极负电荷积累量 (绝对值)
+    const CHARGE_CAPACITY = 80;   // 最大积累量 (饱和)
+    const CHARGE_RATE = 0.012;    // 每个粒子到达电极带来的电荷增量系数
+    
+    // 平衡阈值：当电场力接近洛伦兹力时视为平衡
+    let isBalanced = false;
+    let balanceCounter = 0;
+    
+    // 几何定义
+    const ductX = 190;
+    const ductWidth = 440;
+    const ductY = 115;
+    const ductHeight = 220;
+    const electrodeThickness = 26;
+    
+    // 电极位置 (上下)
+    const topElectrodeY = ductY;
+    const bottomElectrodeY = ductY + ductHeight - electrodeThickness;
+    
+    // 粒子系统
+    let particles = [];
+    const PARTICLE_COUNT = 68;
+    
+    // 动画控制
+    let animationId = null;
+    let lastTimestamp = 0;
+
+    // 粒子类
+    class Particle {
+      constructor(type, x, y) {
+        this.type = type;         // 'positive' 或 'negative'
+        this.x = x;
+        this.y = y;
+        this.vx = flowVelocity * (0.9 + Math.random() * 0.25);
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.radius = 5 + Math.random() * 3.5;
+        this.phase = Math.random() * Math.PI * 2;
+        this.active = true;
+      }
+
+      update(electricFieldStrength) {
+        // 电场方向：上正下负 → 电场E向下 (对正电荷力向下，对负电荷力向上)
+        // 洛伦兹力：正电荷qvB向上，负电荷向下。
+        // 合力决定垂直加速度。
+        
+        const lorentzCoeff = 0.021 * magneticField;   // 洛伦兹力系数
+        const electricCoeff = 0.019 * electricFieldStrength; // 电场力系数
+        
+        // 水平速度保持 (含微小波动)
+        this.vx = flowVelocity * (0.91 + Math.random() * 0.18);
+        
+        // 计算垂直加速度
+        let verticalAcc = 0;
+        if (this.type === 'positive') {
+          // 洛伦兹力向上 (负y方向) , 电场力向下 (正y方向)
+          verticalAcc = -lorentzCoeff * this.vx + electricCoeff;
+        } else {
+          // 负离子：洛伦兹力向下 (正y方向) , 电场力向上 (负y方向)
+          verticalAcc = lorentzCoeff * this.vx - electricCoeff;
+        }
+        
+        this.vy += verticalAcc;
+        
+        // 限制最大垂直速度
+        const maxVy = 2.9;
+        if (this.vy > maxVy) this.vy = maxVy;
+        if (this.vy < -maxVy) this.vy = -maxVy;
+        
+        // 更新位置
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // 检查是否到达电极 (上下边界)
+        this.checkElectrodeCollision();
+        
+        // 边界重置
+        const margin = 10;
+        if (this.x > ductX + ductWidth + 25 || 
+            this.x < ductX - 25 ||
+            this.y < ductY - margin || 
+            this.y > ductY + ductHeight + margin) {
+          this.resetPosition();
+        }
+      }
+
+      checkElectrodeCollision() {
+        // 上电极区域 (正电荷聚集)
+        if (this.y <= topElectrodeY + electrodeThickness && this.y >= topElectrodeY - 2) {
+          if (this.type === 'positive') {
+            // 正离子到达上电极，贡献电荷
+            topCharge = Math.min(topCharge + CHARGE_RATE * 2.5, CHARGE_CAPACITY);
+            this.resetPosition();
+          } else if (this.type === 'negative' && this.y < topElectrodeY) {
+            // 负离子误入上电极区域，轻微排斥重置
+            this.y = topElectrodeY + electrodeThickness + 2;
+            this.vy = Math.abs(this.vy) * 0.5;
+          }
+        }
+        
+        // 下电极区域 (负电荷聚集)
+        if (this.y >= bottomElectrodeY - 2 && this.y <= bottomElectrodeY + electrodeThickness) {
+          if (this.type === 'negative') {
+            bottomCharge = Math.min(bottomCharge + CHARGE_RATE * 2.5, CHARGE_CAPACITY);
+            this.resetPosition();
+          } else if (this.type === 'positive' && this.y > bottomElectrodeY + electrodeThickness - 2) {
+            this.y = bottomElectrodeY - 2;
+            this.vy = -Math.abs(this.vy) * 0.5;
+          }
+        }
+      }
+
+      resetPosition() {
+        this.x = ductX - 8 - Math.random() * 30;
+        this.y = ductY + electrodeThickness + 8 + Math.random() * (ductHeight - 2*electrodeThickness - 16);
+        this.vx = flowVelocity * (0.9 + Math.random() * 0.25);
+        this.vy = (Math.random() - 0.5) * 0.6;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        if (this.type === 'positive') {
+          ctx.fillStyle = '#ffb347';
+          ctx.shadowColor = '#ff8c00';
+        } else {
+          ctx.fillStyle = '#6c9bd2';
+          ctx.shadowColor = '#3a6ea5';
+        }
+        ctx.shadowBlur = 9;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 12px "Segoe UI"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.type === 'positive' ? '+' : '−', this.x, this.y-0.5);
+        ctx.restore();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const type = i < PARTICLE_COUNT/2 ? 'positive' : 'negative';
+        const x = ductX + Math.random() * ductWidth;
+        const y = ductY + electrodeThickness + 5 + Math.random() * (ductHeight - 2*electrodeThickness - 10);
+        particles.push(new Particle(type, x, y));
+      }
+    }
+
+    function resetSimulation() {
+      topCharge = 0;
+      bottomCharge = 0;
+      isBalanced = false;
+      balanceCounter = 0;
+      for (let p of particles) {
+        p.resetPosition();
+      }
+      updateUI();
+    }
+
+    // 计算当前电场强度 (与积累电荷成正比)
+    function getElectricFieldStrength() {
+      // 电荷差决定电场，实际与上下电荷平均值相关
+      const avgCharge = (topCharge + bottomCharge) / 2;
+      return avgCharge * 0.028;  // 映射到合理范围
+    }
+
+    function checkBalanceState(eField) {
+      // 理论平衡电场：E_bal = v * B (对应系数)
+      const targetE = flowVelocity * magneticField * 0.78; 
+      const tolerance = 0.25;
+      
+      if (Math.abs(eField - targetE) < tolerance && topCharge > 15 && bottomCharge > 15) {
+        balanceCounter++;
+        if (balanceCounter > 25) {
+          isBalanced = true;
+        }
+      } else {
+        balanceCounter = Math.max(0, balanceCounter - 2);
+        if (balanceCounter < 5) isBalanced = false;
+      }
+      
+      // 更新UI指示器
+      if (isBalanced) {
+        balanceLed.style.background = '#4caf50';
+        balanceLed.style.boxShadow = '0 0 20px #4caf50';
+        balanceText.textContent = '⚖️ 平衡 (粒子直行)';
+        balanceText.style.color = '#c5e0b7';
+      } else {
+        balanceLed.style.background = '#ffaa33';
+        balanceLed.style.boxShadow = '0 0 16px #ff9900';
+        balanceText.textContent = '🔄 充电建立电场中';
+        balanceText.style.color = '#fadf9e';
+      }
+    }
+
+    function drawBackground(eField, balanced) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 背景磁场符号
+      ctx.fillStyle = '#1e3142';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#8aa4bc';
+      ctx.font = '15px "Times New Roman"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 55; i < canvas.width; i += 58) {
+        for (let j = 35; j < canvas.height; j += 52) {
+          ctx.fillText('×', i, j);
+        }
+      }
+      
+      // 通道
+      ctx.fillStyle = 'rgba(18, 28, 42, 0.85)';
+      ctx.strokeStyle = '#d4b483';
+      ctx.lineWidth = 3;
+      ctx.fillRect(ductX, ductY, ductWidth, ductHeight);
+      ctx.strokeRect(ductX, ductY, ductWidth, ductHeight);
+      
+      // 电极绘制
+      ctx.fillStyle = '#e6d7b8';
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = '#b09060';
+      ctx.fillRect(ductX, topElectrodeY, ductWidth, electrodeThickness);
+      ctx.fillRect(ductX, bottomElectrodeY, ductWidth, electrodeThickness);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#8b7a62';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(ductX, topElectrodeY, ductWidth, electrodeThickness);
+      ctx.strokeRect(ductX, bottomElectrodeY, ductWidth, electrodeThickness);
+      
+      // 电极标签与电荷量显示
+      ctx.fillStyle = '#2d1e0f';
+      ctx.font = 'bold 14px "Segoe UI"';
+      ctx.fillText(`正电极 (+) 电荷: ${Math.floor(topCharge)}`, ductX + ductWidth/2, topElectrodeY + electrodeThickness/2);
+      ctx.fillText(`负电极 (−) 电荷: ${Math.floor(bottomCharge)}`, ductX + ductWidth/2, bottomElectrodeY + electrodeThickness/2);
+      
+      // 电场线示意 (从上指向下)
+      if (topCharge > 3) {
+        ctx.strokeStyle = 'rgba(255, 240, 180, 0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 8]);
+        for (let lx = ductX + 25; lx < ductX+ductWidth-20; lx += 45) {
+          ctx.beginPath();
+          ctx.moveTo(lx, topElectrodeY + electrodeThickness + 4);
+          ctx.lineTo(lx, bottomElectrodeY - 4);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#eedbba';
+        ctx.font = 'italic 13px "Segoe UI"';
+        ctx.fillText('E 电场 ↓', ductX+15, ductY+ductHeight/2);
+      }
+      
+      // 平衡高亮边框
+      if (balanced) {
+        ctx.strokeStyle = '#7cc96b';
+        ctx.lineWidth = 4;
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = '#5fa04a';
+        ctx.strokeRect(ductX-2, ductY-2, ductWidth+4, ductHeight+4);
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+      }
+      
+      // 外部电路示意
+      ctx.beginPath();
+      ctx.strokeStyle = '#ddcca0';
+      ctx.lineWidth = 2.8;
+      ctx.moveTo(ductX+ductWidth+12, topElectrodeY+electrodeThickness/2);
+      ctx.lineTo(ductX+ductWidth+38, topElectrodeY+electrodeThickness/2);
+      ctx.lineTo(ductX+ductWidth+38, bottomElectrodeY+electrodeThickness/2);
+      ctx.lineTo(ductX+ductWidth+12, bottomElectrodeY+electrodeThickness/2);
+      ctx.stroke();
+      ctx.fillStyle = '#f0e3c8';
+      ctx.beginPath();
+      ctx.arc(ductX+ductWidth+38, ductY+ductHeight/2, 15, 0, 2*Math.PI);
+      ctx.fill();
+      ctx.fillStyle = '#1e272e';
+      ctx.font = 'bold 13px "Segoe UI"';
+      ctx.fillText('V', ductX+ductWidth+38, ductY+ductHeight/2+4);
+      
+      const emf = (magneticField * flowVelocity * 1.05).toFixed(2);
+      ctx.fillStyle = '#fadf9e';
+      ctx.fillText(`ε ≈ ${emf} (a.u.)`, ductX+ductWidth+8, ductY+ductHeight/2+45);
+    }
+
+    function animate() {
+      const eField = getElectricFieldStrength();
+      checkBalanceState(eField);
+      
+      // 更新粒子
+      for (let p of particles) {
+        p.update(eField);
+      }
+      
+      // 缓慢泄漏电荷 (模拟负载或自然损耗，使系统动态)
+      if (!isBalanced) {
+        topCharge = Math.max(0, topCharge - 0.008);
+        bottomCharge = Math.max(0, bottomCharge - 0.008);
+      }
+      
+      drawBackground(eField, isBalanced);
+      
+      for (let p of particles) {
+        p.draw(ctx);
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+
+    function updateUI() {
+      bValueDisplay.textContent = magneticField.toFixed(1) + ' T';
+      vValueDisplay.textContent = flowVelocity.toFixed(1);
+    }
+
+    function bindEvents() {
+      bSlider.addEventListener('input', (e) => {
+        magneticField = parseFloat(e.target.value);
+        updateUI();
+        // 改变参数打破平衡
+        isBalanced = false;
+        balanceCounter = 0;
+      });
+      
+      vSlider.addEventListener('input', (e) => {
+        flowVelocity = parseFloat(e.target.value);
+        updateUI();
+        isBalanced = false;
+        balanceCounter = 0;
+      });
+      
+      document.getElementById('resetButton').addEventListener('click', () => {
+        magneticField = 1.0;
+        flowVelocity = 1.2;
+        bSlider.value = magneticField;
+        vSlider.value = flowVelocity;
+        updateUI();
+        resetSimulation();
+      });
+      
+      canvas.addEventListener('touchstart', (e) => e.preventDefault());
+      canvas.addEventListener('touchmove', (e) => e.preventDefault());
+    }
+
+    function start() {
+      if (animationId) cancelAnimationFrame(animationId);
+      initParticles();
+      updateUI();
+      bindEvents();
+      animate();
+    }
+
+    window.addEventListener('load', start);
+    window.addEventListener('beforeunload', () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    });
+  })();
+</script>
+</body>
+</html>

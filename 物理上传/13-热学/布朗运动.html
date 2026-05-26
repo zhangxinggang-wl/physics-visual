@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>布朗运动模拟 - 温度影响 | 水分子运动 | 高中物理教学</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef2f9 0%, #e2e8f2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Roboto', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+            padding: 20px;
+        }
+
+        .sim-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 1.2rem 1.5rem 1.8rem 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            border-radius: 1.2rem;
+            background: #ffffff;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.03), 0 8px 20px rgba(0, 0, 0, 0.12);
+            padding: 8px;
+        }
+
+        canvas {
+            display: block;
+            background-color: #eef5ff;
+            border-radius: 1rem;
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .title-section h1 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: #1a3f5c;
+            letter-spacing: -0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-section h1:before {
+            content: "🌡️";
+            font-size: 1.8rem;
+        }
+
+        .sub {
+            color: #3a6b8c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            border-top: 1px solid #caddf0;
+            display: inline-block;
+            padding-top: 5px;
+        }
+
+        .controls {
+            margin-top: 1.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem 1rem;
+            align-items: center;
+        }
+
+        .ctrl-group {
+            background: #f0f5fc;
+            padding: 0.4rem 1rem;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .ctrl-group label {
+            font-weight: 600;
+            color: #1a5d7a;
+            font-size: 0.85rem;
+        }
+
+        button {
+            background: #ffffff;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1a5d7a;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #e3f0ff;
+            transform: scale(0.96);
+        }
+
+        button:active {
+            background: #c8d9f0;
+            transform: scale(0.94);
+        }
+
+        input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+            background: #c2d4e8;
+            height: 4px;
+            border-radius: 4px;
+        }
+
+        .value-display {
+            background: #e2edf9;
+            padding: 4px 10px;
+            border-radius: 28px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1e6a8f;
+            min-width: 58px;
+            text-align: center;
+        }
+
+        .temp-display {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #c23b1c;
+            font-weight: bold;
+            min-width: 70px;
+        }
+
+        .legend {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.6rem;
+            font-size: 0.75rem;
+            color: #2c6282;
+            background: #eaf1f9;
+            padding: 6px 16px;
+            border-radius: 40px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            flex-wrap: wrap;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-brown {
+            width: 14px;
+            height: 14px;
+            background: #c97e4a;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #fff0e0;
+            display: inline-block;
+        }
+
+        .badge-water {
+            width: 12px;
+            height: 12px;
+            background: #4aa3cf;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 1px #ffffff;
+        }
+
+        .badge-trail {
+            width: 16px;
+            height: 2px;
+            background: #f0a56e;
+            display: inline-block;
+            border-radius: 2px;
+        }
+
+        .badge-hot {
+            width: 12px;
+            height: 12px;
+            background: #ff6b4a;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 1rem;
+            color: #5f86a3;
+        }
+
+        @media (max-width: 640px) {
+            .sim-card {
+                padding: 1rem;
+            }
+            .ctrl-group {
+                padding: 0.2rem 0.8rem;
+            }
+            button {
+                padding: 4px 12px;
+            }
+            .title-section h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="sim-card">
+        <div class="title-section">
+            <h1>布朗运动 · 温度对分子运动的影响</h1>
+            <div class="sub">🌡️ 温度越高 → 水分子运动越剧烈 → 布朗粒子无规则运动越明显</div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="brownianCanvas" width="950" height="550" style="width:100%; height:auto; max-width:950px; aspect-ratio:950/550"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="ctrl-group">
+                <label>🎯 粒子数量</label>
+                <input type="range" id="particleCountSlider" min="1" max="40" step="1" value="16">
+                <span id="countValue" class="value-display">16</span>
+            </div>
+            <div class="ctrl-group">
+                <label>🔘 微粒大小</label>
+                <input type="range" id="particleSizeSlider" min="50" max="200" step="5" value="100">
+                <span id="sizeValue" class="value-display">100%</span>
+            </div>
+            <div class="ctrl-group" style="background: linear-gradient(135deg, #fff5e8, #ffe0cc);">
+                <label>🌡️ 温度调节</label>
+                <input type="range" id="temperatureSlider" min="0" max="100" step="1" value="45">
+                <span id="tempValue" class="value-display temp-display">45°C</span>
+            </div>
+            <div class="ctrl-group">
+                <button id="resetBtn">⟳ 重置位置</button>
+                <button id="clearTrailBtn">🧹 清除轨迹</button>
+            </div>
+        </div>
+
+        <div class="legend">
+            <span><i class="badge-water"></i> 水分子 (温度越高运动越快)</span>
+            <span><i class="badge-brown"></i> 布朗微粒</span>
+            <span><i class="badge-trail"></i> 运动轨迹</span>
+            <span><i class="badge-hot"></i> 高温区域颜色越红</span>
+            <span>💧 温度直接影响分子动能</span>
+        </div>
+        <footer>※ 温度升高 → 水分子速度加快 → 撞击频率和强度增加 → 微粒运动更剧烈 | 点击画布可额外产生撞击扰动</footer>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // 获取canvas元素
+        const canvas = document.getElementById('brownianCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 固定画布实际分辨率
+        const width = 950;
+        const height = 550;
+        canvas.width = width;
+        canvas.height = height;
+        
+        // ----- 模拟参数 -----
+        let particleCount = 16;          // 布朗粒子数量
+        let particleSizePercent = 100;    // 粒子大小百分比 50~200
+        let baseParticleRadius = 5.2;     // 基础半径 (100%时半径约5.2px)
+        
+        // 温度参数 (0-100°C)
+        let temperature = 45;             // 当前温度 0-100
+        let minTemp = 0;
+        let maxTemp = 100;
+        
+        // 水分子系统参数
+        let waterMolecules = [];
+        const WATER_COUNT = 200;           // 水分子数量
+        
+        // 布朗粒子数据
+        let particles = [];
+        const TRAIL_LENGTH = 100;           // 每个粒子轨迹长度
+        
+        // 动画控制
+        let animationId = null;
+        
+        // ---- 根据温度计算分子运动速度因子 ----
+        // 温度越高，分子平均动能越大，速度越快 (与绝对温度平方根成正比，简化用线性)
+        // 模拟范围: 0°C -> 速度因子0.4, 100°C -> 速度因子2.4
+        function getWaterSpeedFactor() {
+            // 温度影响因子: 0°C时约0.45，100°C时约2.2
+            const t = temperature / 100;
+            return 0.45 + t * 1.85;
+        }
+        
+        // 根据温度计算布朗粒子撞击强度因子 (温度越高，分子撞击越强，布朗粒子步长越大)
+        function getBrownianIntensityFactor() {
+            // 温度越高，布朗运动越剧烈
+            const t = temperature / 100;
+            return 0.5 + t * 1.8;   // 0°C时0.5倍，100°C时2.3倍
+        }
+        
+        // 根据温度获取背景颜色 (冷色到暖色)
+        function getTemperatureColor() {
+            const t = temperature / 100;
+            const r = Math.floor(180 + t * 75);
+            const g = Math.floor(200 - t * 80);
+            const b = Math.floor(240 - t * 100);
+            return `rgb(${Math.min(255, r)}, ${Math.max(120, g)}, ${Math.max(100, b)})`;
+        }
+        
+        // ---- 辅助函数: 高斯随机 ----
+        function gaussRandom() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+        }
+        
+        // 获取布朗粒子位移 (受温度和粒子大小影响)
+        function getBrownianDisplacement(particleRadius) {
+            // 基础步长标准差
+            const baseSigma = 1.6;
+            // 粒子大小影响因子: 半径越大，步长越小
+            const refRadius = 5.2;
+            let sizeFactor = refRadius / particleRadius;
+            sizeFactor = Math.min(1.5, Math.max(0.45, sizeFactor));
+            // 温度影响因子
+            const tempFactor = getBrownianIntensityFactor();
+            const sigma = baseSigma * tempFactor * sizeFactor;
+            let dx = gaussRandom() * sigma;
+            let dy = gaussRandom() * sigma;
+            const maxStep = 14;
+            dx = Math.min(maxStep, Math.max(-maxStep, dx));
+            dy = Math.min(maxStep, Math.max(-maxStep, dy));
+            return { dx, dy };
+        }
+        
+        // 边界处理
+        function applyBoundary(particle, radius) {
+            const margin = radius + 2;
+            if (particle.x < margin) particle.x = margin;
+            if (particle.x > width - margin) particle.x = width - margin;
+            if (particle.y < margin) particle.y = margin;
+            if (particle.y > height - margin) particle.y = height - margin;
+        }
+        
+        // 更新布朗粒子位置
+        function updateBrownianParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const currentRadius = getParticleRadius();
+                // 保存轨迹
+                p.trail.push({ x: p.x, y: p.y });
+                if (p.trail.length > TRAIL_LENGTH) p.trail.shift();
+                
+                const { dx, dy } = getBrownianDisplacement(currentRadius);
+                p.x += dx;
+                p.y += dy;
+                applyBoundary(p, currentRadius);
+            }
+        }
+        
+        // 获取当前粒子半径
+        function getParticleRadius() {
+            let radius = baseParticleRadius * (particleSizePercent / 100);
+            return Math.min(12, Math.max(2.5, radius));
+        }
+        
+        // ========== 水分子模拟 (受温度影响) ==========
+        // 初始化水分子
+        function initWaterMolecules() {
+            const molecules = [];
+            for (let i = 0; i < WATER_COUNT; i++) {
+                molecules.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 1.2,
+                    vy: (Math.random() - 0.5) * 1.2,
+                });
+            }
+            return molecules;
+        }
+        
+        // 根据温度更新水分子的运动 (温度越高，速度变化越快，最大速度越大)
+        function updateWaterMolecules() {
+            const tempFactor = getWaterSpeedFactor();
+            // 温度影响随机扰动的强度
+            const randomStrength = 0.2 + temperature / 100 * 0.45;
+            const maxSpeedBase = 1.2 + temperature / 100 * 2.3;  // 0°C最大1.2，100°C最大3.5
+            
+            for (let i = 0; i < waterMolecules.length; i++) {
+                const w = waterMolecules[i];
+                // 随机改变速度方向，模拟分子碰撞，温度越高扰动越大
+                w.vx += (Math.random() - 0.5) * randomStrength;
+                w.vy += (Math.random() - 0.5) * randomStrength;
+                // 温度越高，最大速度限制越大
+                let maxSpeed = maxSpeedBase;
+                let spd = Math.hypot(w.vx, w.vy);
+                if (spd > maxSpeed) {
+                    w.vx = (w.vx / spd) * maxSpeed;
+                    w.vy = (w.vy / spd) * maxSpeed;
+                }
+                // 低温时偶尔补充动能防止完全静止
+                if (spd < 0.3 && Math.random() < 0.05) {
+                    w.vx += (Math.random() - 0.5) * 0.6;
+                    w.vy += (Math.random() - 0.5) * 0.6;
+                }
+                // 移动速度受温度影响 (基础移动速度)
+                const moveSpeed = 0.85 * tempFactor;
+                w.x += w.vx * moveSpeed;
+                w.y += w.vy * moveSpeed;
+                // 边界反弹
+                const margin = 4;
+                if (w.x < margin) { w.x = margin; w.vx = -w.vx * 0.9; }
+                if (w.x > width - margin) { w.x = width - margin; w.vx = -w.vx * 0.9; }
+                if (w.y < margin) { w.y = margin; w.vy = -w.vy * 0.9; }
+                if (w.y > height - margin) { w.y = height - margin; w.vy = -w.vy * 0.9; }
+            }
+        }
+        
+        // 绘制水分子 (根据温度改变颜色和大小)
+        function drawWaterMolecules() {
+            const tempFactor = temperature / 100;
+            // 水分子颜色: 低温蓝色，高温偏红/橙色
+            const baseR = 70 + Math.floor(tempFactor * 100);
+            const baseG = 140 - Math.floor(tempFactor * 40);
+            const baseB = 220 - Math.floor(tempFactor * 100);
+            
+            for (let i = 0; i < waterMolecules.length; i++) {
+                const w = waterMolecules[i];
+                const speedVal = Math.min(1, Math.hypot(w.vx, w.vy) / 2.5);
+                // 温度影响透明度
+                const alpha = 0.55 + speedVal * 0.3 + tempFactor * 0.15;
+                // 动态颜色: 随温度变化
+                const r = Math.min(230, baseR + Math.floor(speedVal * 40));
+                const g = Math.max(80, baseG - Math.floor(speedVal * 20));
+                const b = Math.max(60, baseB - Math.floor(speedVal * 40));
+                
+                ctx.beginPath();
+                // 高温时分子略微变大
+                const moleculeSize = 2.2 + tempFactor * 0.8;
+                ctx.arc(w.x, w.y, moleculeSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.fill();
+                // 高光
+                ctx.beginPath();
+                ctx.arc(w.x - 0.6, w.y - 0.6, moleculeSize * 0.35, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 245, 200, 0.6)`;
+                ctx.fill();
+            }
+        }
+        
+        // 绘制水分子运动轨迹残影 (增强温度影响视觉效果)
+        function drawWaterTrails() {
+            if (temperature < 20) return;
+            ctx.save();
+            ctx.globalAlpha = 0.12 + temperature / 100 * 0.15;
+            for (let i = 0; i < waterMolecules.length; i++) {
+                const w = waterMolecules[i];
+                const spd = Math.hypot(w.vx, w.vy);
+                if (spd > 0.4) {
+                    ctx.beginPath();
+                    ctx.moveTo(w.x, w.y);
+                    ctx.lineTo(w.x - w.vx * 1.8, w.y - w.vy * 1.8);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = `rgba(255, 120, 80, 0.4)`;
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+        
+        // 绘制撞击光晕 (水分子撞击微粒的效果)
+        function drawCollisionGlow() {
+            const particleRadius = getParticleRadius();
+            const tempFactor = temperature / 100;
+            const collisionChance = 0.12 + tempFactor * 0.2; // 温度越高撞击越频繁
+            
+            for (let p of particles) {
+                for (let w of waterMolecules) {
+                    const dx = p.x - w.x;
+                    const dy = p.y - w.y;
+                    const dist = Math.hypot(dx, dy);
+                    const collisionDist = particleRadius + 4.5;
+                    if (dist < collisionDist && Math.random() < collisionChance) {
+                        ctx.save();
+                        ctx.globalAlpha = 0.45 + tempFactor * 0.25;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, particleRadius + 3 + tempFactor * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = tempFactor > 0.6 ? "#ffa05e" : "#ffc48a";
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.moveTo(w.x, w.y);
+                        ctx.lineTo(p.x, p.y);
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeStyle = tempFactor > 0.6 ? "#ff7a3a" : "#ffb26e";
+                        ctx.stroke();
+                        ctx.restore();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // 绘制布朗粒子
+        function drawBrownianParticles() {
+            const radius = getParticleRadius();
+            const tempFactor = temperature / 100;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                // 温度影响粒子颜色微调 (高温略红)
+                const grad = ctx.createRadialGradient(p.x - radius*0.3, p.y - radius*0.3, radius*0.2, p.x, p.y, radius);
+                const mainColor = tempFactor > 0.6 ? "#e08a4a" : "#c97e4a";
+                const darkColor = tempFactor > 0.6 ? "#a5461a" : "#9c5832";
+                grad.addColorStop(0, mainColor);
+                grad.addColorStop(1, darkColor);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = "#f3bc8c";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                // 高光
+                ctx.beginPath();
+                ctx.arc(p.x - radius*0.25, p.y - radius*0.25, radius*0.28, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffecb3";
+                ctx.fill();
+            }
+        }
+        
+        // 绘制轨迹
+        function drawTrails() {
+            const tempFactor = temperature / 100;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const trail = p.trail;
+                if (trail.length < 2) continue;
+                for (let j = 0; j < trail.length - 1; j++) {
+                    const a = trail[j];
+                    const b = trail[j+1];
+                    if (!a || !b) continue;
+                    const alpha = 0.12 + (j / trail.length) * 0.45 + tempFactor * 0.1;
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.lineWidth = 1.6;
+                    ctx.strokeStyle = `rgba(210, 125, 70, ${alpha * 0.8})`;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // 绘制背景 (温度影响背景色)
+        function drawBackground() {
+            ctx.clearRect(0, 0, width, height);
+            const tempColor = getTemperatureColor();
+            const gradBg = ctx.createLinearGradient(0, 0, width, height);
+            gradBg.addColorStop(0, tempColor);
+            gradBg.addColorStop(1, `rgba(${parseInt(tempColor.match(/\d+/g)[0]) - 20}, ${parseInt(tempColor.match(/\d+/g)[1]) - 15}, ${parseInt(tempColor.match(/\d+/g)[2]) + 10}, 1)`);
+            ctx.fillStyle = gradBg;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制温度指示热浪效果 (高温时添加)
+            if (temperature > 60) {
+                ctx.save();
+                ctx.globalAlpha = 0.08;
+                for (let i = 0; i < 40; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30 + 15, height);
+                    ctx.lineTo(i * 30 - 15, height);
+                    ctx.fillStyle = "#ff8844";
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+        
+        // 绘制温度计指示器
+        function drawTemperatureIndicator() {
+            ctx.save();
+            ctx.font = "bold 14px 'Segoe UI'";
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = temperature > 60 ? "#c23b1c" : "#2c6282";
+            ctx.fillText(`🌡️ ${temperature}°C`, width - 85, 28);
+            ctx.restore();
+        }
+        
+        // 主渲染
+        function render() {
+            drawBackground();           // 温度影响背景
+            drawWaterMolecules();       // 动态水分子
+            if (temperature > 40) drawWaterTrails(); // 高温显示水分子轨迹
+            drawTrails();              // 布朗粒子轨迹
+            drawBrownianParticles();    // 布朗颗粒
+            drawCollisionGlow();        // 碰撞闪光效果
+            drawTemperatureIndicator(); // 温度显示
+        }
+        
+        // 动画循环更新逻辑
+        function updateSimulation() {
+            updateWaterMolecules();      // 水分子运动 (受温度影响)
+            updateBrownianParticles();   // 布朗粒子运动 (受温度影响)
+        }
+        
+        // 动画帧驱动
+        let lastFrameTime = 0;
+        function animate(currentTime) {
+            animationId = requestAnimationFrame(animate);
+            updateSimulation();
+            render();
+            lastFrameTime = currentTime;
+        }
+        
+        // ----- 粒子系统管理 -----
+        function initBrownianParticles(count) {
+            const radius = getParticleRadius();
+            const newParticles = [];
+            for (let i = 0; i < count; i++) {
+                const margin = radius + 25;
+                const x = Math.random() * (width - margin * 2) + margin;
+                const y = Math.random() * (height - margin * 2) + margin;
+                newParticles.push({
+                    x: x,
+                    y: y,
+                    trail: []
+                });
+            }
+            for (let p of newParticles) {
+                p.trail = [{ x: p.x, y: p.y }];
+            }
+            return newParticles;
+        }
+        
+        function changeParticleCount(newCount) {
+            particleCount = newCount;
+            particles = initBrownianParticles(particleCount);
+        }
+        
+        function resetPositions() {
+            const radius = getParticleRadius();
+            for (let i = 0; i < particles.length; i++) {
+                const margin = radius + 25;
+                particles[i].x = Math.random() * (width - margin * 2) + margin;
+                particles[i].y = Math.random() * (height - margin * 2) + margin;
+                particles[i].trail = [{ x: particles[i].x, y: particles[i].y }];
+            }
+        }
+        
+        function clearAllTrails() {
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].trail = [{ x: particles[i].x, y: particles[i].y }];
+            }
+        }
+        
+        function onParticleSizeChanged() {
+            const newRadius = getParticleRadius();
+            for (let p of particles) {
+                applyBoundary(p, newRadius);
+                if (p.trail.length > 0) {
+                    p.trail[p.trail.length - 1] = { x: p.x, y: p.y };
+                }
+            }
+        }
+        
+        function updateTemperatureUI() {
+            const val = parseInt(temperatureSlider.value, 10);
+            tempValue.innerText = val + "°C";
+            temperature = val;
+        }
+        
+        // ----- UI绑定 -----
+        const countSlider = document.getElementById('particleCountSlider');
+        const countVal = document.getElementById('countValue');
+        const sizeSlider = document.getElementById('particleSizeSlider');
+        const sizeVal = document.getElementById('sizeValue');
+        const temperatureSlider = document.getElementById('temperatureSlider');
+        const tempValue = document.getElementById('tempValue');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearTrailBtn = document.getElementById('clearTrailBtn');
+        
+        function updateCountUI() {
+            const val = parseInt(countSlider.value, 10);
+            countVal.innerText = val;
+            if (particleCount !== val) changeParticleCount(val);
+        }
+        
+        function updateSizeUI() {
+            const val = parseInt(sizeSlider.value, 10);
+            sizeVal.innerText = val + "%";
+            particleSizePercent = val;
+            onParticleSizeChanged();
+        }
+        
+        countSlider.addEventListener('input', updateCountUI);
+        sizeSlider.addEventListener('input', updateSizeUI);
+        temperatureSlider.addEventListener('input', updateTemperatureUI);
+        resetBtn.addEventListener('click', resetPositions);
+        clearTrailBtn.addEventListener('click', clearAllTrails);
+        
+        // 点击画布产生撞击扰动
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let mouseX = (e.clientX - rect.left) * scaleX;
+            let mouseY = (e.clientY - rect.top) * scaleY;
+            mouseX = Math.min(width-10, Math.max(10, mouseX));
+            mouseY = Math.min(height-10, Math.max(10, mouseY));
+            
+            for (let p of particles) {
+                const dx = p.x - mouseX;
+                const dy = p.y - mouseY;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 55) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = 8.5 * (1 - dist/70);
+                    p.x += Math.cos(angle) * force;
+                    p.y += Math.sin(angle) * force;
+                    const rad = getParticleRadius();
+                    applyBoundary(p, rad);
+                    p.trail.push({ x: p.x, y: p.y });
+                    if (p.trail.length > TRAIL_LENGTH) p.trail.shift();
+                }
+            }
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, 25, 0, Math.PI*2);
+            ctx.fillStyle = "#ffbf77";
+            ctx.fill();
+            ctx.restore();
+        });
+        
+        // 启动系统
+        function setup() {
+            updateCountUI();
+            updateSizeUI();
+            updateTemperatureUI();
+            waterMolecules = initWaterMolecules();
+            particles = initBrownianParticles(particleCount);
+            animate();
+        }
+        
+        setup();
+    })();
+</script>
+</body>
+</html>

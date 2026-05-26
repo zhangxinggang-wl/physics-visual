@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜡块的运动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            color: #bbdefb;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .author-info {
+            font-size: 1.1rem;
+            color: #e3f2fd;
+            text-align: right;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .experiment-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .animation-container {
+            flex: 2;
+            min-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: rgba(0, 20, 40, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-group h3 {
+            color: #bbdefb;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-group h3 i {
+            font-size: 1.2rem;
+        }
+        
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .slider-value {
+            background: rgba(30, 136, 229, 0.3);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #1e88e5;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(30, 136, 229, 0.7);
+            transition: all 0.2s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            background: #42a5f5;
+            transform: scale(1.1);
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1e88e5, #1565c0);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(30, 136, 229, 0.5);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #ef5350, #f44336);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(244, 67, 54, 0.5);
+        }
+        
+        .presets-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: #bbdefb;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(30, 136, 229, 0.2);
+            border-color: rgba(30, 136, 229, 0.5);
+        }
+        
+        .data-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-panel h2 {
+            color: #bbdefb;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .data-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #1e88e5;
+        }
+        
+        .data-label {
+            font-size: 0.9rem;
+            color: #bbdefb;
+            margin-bottom: 8px;
+        }
+        
+        .data-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .data-unit {
+            font-size: 0.9rem;
+            color: #90caf9;
+            margin-left: 5px;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .instructions h2 {
+            color: #bbdefb;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .experiment-states {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #4fc3f7;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 10px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        
+        .water-color {
+            background: rgba(33, 150, 243, 0.7);
+        }
+        
+        .wax-color {
+            background: #ff5722;
+        }
+        
+        .trajectory-color {
+            background: #4caf50;
+        }
+        
+        .horizontal-trajectory-color {
+            background: #ff9800;
+        }
+        
+        .vertical-trajectory-color {
+            background: #2196f3;
+        }
+        
+        .reference-color {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        @media (max-width: 1000px) {
+            .experiment-area {
+                flex-direction: column;
+            }
+            
+            .animation-container, .controls-panel {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .buttons-container {
+                flex-direction: column;
+            }
+            
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .presets-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>蜡块的运动</h1>
+            <div class="author-info">制作：张兴刚燕赵名师工作室 耿春辉</div>
+        </header>
+        
+        <div class="experiment-area">
+            <div class="animation-container">
+                <div class="experiment-states" id="experimentState">实验状态: 准备开始</div>
+                <div class="canvas-wrapper">
+                    <canvas id="experimentCanvas" width="800" height="500"></canvas>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color water-color"></div>
+                            <span>清水</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color wax-color"></div>
+                            <span>蜡块A</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color trajectory-color"></div>
+                            <span>合运动轨迹</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color horizontal-trajectory-color"></div>
+                            <span>水平轨迹</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color vertical-trajectory-color"></div>
+                            <span>竖直轨迹</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>运动控制</h3>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>蜡块上升速度</span>
+                            <span class="slider-value" id="riseSpeedValue">2.0 cm/s</span>
+                        </div>
+                        <input type="range" min="0.5" max="5" step="0.1" value="2" class="slider" id="riseSpeedSlider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>玻璃管水平速度</span>
+                            <span class="slider-value" id="horizontalSpeedValue">3.0 cm/s</span>
+                        </div>
+                        <input type="range" min="0" max="8" step="0.1" value="3" class="slider" id="horizontalSpeedSlider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>玻璃管长度</span>
+                            <span class="slider-value" id="tubeLengthValue">100 cm</span>
+                        </div>
+                        <input type="range" min="60" max="120" step="5" value="100" class="slider" id="tubeLengthSlider">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>显示选项</h3>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>轨迹显示长度</span>
+                            <span class="slider-value" id="trailLengthValue">50</span>
+                        </div>
+                        <input type="range" min="10" max="100" step="5" value="50" class="slider" id="trailLengthSlider">
+                    </div>
+                    
+                    <div class="buttons-container" style="margin-top: 10px;">
+                        <button id="toggleTrajectoryBtn" class="btn-secondary">
+                            <span id="trajectoryIcon">✓</span>
+                            <span id="trajectoryText">合运动轨迹</span>
+                        </button>
+                        <button id="toggleHorizontalTrajectoryBtn" class="btn-secondary">
+                            <span id="horizontalTrajectoryIcon">✓</span>
+                            <span id="horizontalTrajectoryText">水平轨迹</span>
+                        </button>
+                        <button id="toggleVerticalTrajectoryBtn" class="btn-secondary">
+                            <span id="verticalTrajectoryIcon">✓</span>
+                            <span id="verticalTrajectoryText">竖直轨迹</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>预设实验</h3>
+                    <div class="presets-container">
+                        <div class="preset-btn" data-rise="2" data-horizontal="0">仅竖直上升</div>
+                        <div class="preset-btn" data-rise="2" data-horizontal="2">等速匀速合成</div>
+                        <div class="preset-btn" data-rise="1" data-horizontal="4">快速水平移动</div>
+                        <div class="preset-btn" data-rise="3" data-horizontal="1">快速上升</div>
+                    </div>
+                </div>
+                
+                <div class="buttons-container">
+                    <button id="startBtn" class="btn-primary">
+                        <span id="startIcon">▶</span>
+                        <span id="startText">开始实验</span>
+                    </button>
+                    <button id="pauseBtn" class="btn-secondary">
+                        <span id="pauseIcon">⏸</span>
+                        <span>暂停</span>
+                    </button>
+                    <button id="resetBtn" class="btn-reset">
+                        <span>↺</span>
+                        <span>重置实验</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-panel">
+            <h2>实验数据</h2>
+            <div class="data-grid">
+                <div class="data-item">
+                    <div class="data-label">蜡块合速度</div>
+                    <div class="data-value">
+                        <span id="resultantSpeed">0.00</span>
+                        <span class="data-unit">cm/s</span>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">运动方向</div>
+                    <div class="data-value">
+                        <span id="resultantAngle">0.00</span>
+                        <span class="data-unit">°</span>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">实验时间</div>
+                    <div class="data-value">
+                        <span id="experimentTime">0.00</span>
+                        <span class="data-unit">秒</span>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">蜡块位置 (x, y)</div>
+                    <div class="data-value">
+                        <span id="waxPosition">(0, 0)</span>
+                        <span class="data-unit">cm</span>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">水平位移</div>
+                    <div class="data-value">
+                        <span id="horizontalDisplacement">0.00</span>
+                        <span class="data-unit">cm</span>
+                    </div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">竖直位移</div>
+                    <div class="data-value">
+                        <span id="verticalDisplacement">0.00</span>
+                        <span class="data-unit">cm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>物理原理说明</h2>
+            <ol>
+                <li><strong>运动的独立性原理</strong>：竖直方向的运动与水平方向的运动相互独立，互不影响。</li>
+                <li><strong>匀速直线运动</strong>：玻璃管水平匀速运动时，蜡块同时参与竖直匀速运动和水平匀速运动。</li>
+                <li><strong>运动合成原理</strong>：两个相互垂直的匀速直线运动的合运动仍是匀速直线运动。</li>
+                <li><strong>合运动轨迹</strong>：蜡块相对于地面的运动轨迹是一条直线，其方向由两个分运动的速度大小决定。</li>
+                <li>实验验证了：当一个物体同时参与两个相互垂直的匀速直线运动时，其合运动仍是匀速直线运动。</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas和上下文
+        const canvas = document.getElementById('experimentCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取控制元素
+        const riseSpeedSlider = document.getElementById('riseSpeedSlider');
+        const horizontalSpeedSlider = document.getElementById('horizontalSpeedSlider');
+        const tubeLengthSlider = document.getElementById('tubeLengthSlider');
+        const trailLengthSlider = document.getElementById('trailLengthSlider');
+        
+        const riseSpeedValue = document.getElementById('riseSpeedValue');
+        const horizontalSpeedValue = document.getElementById('horizontalSpeedValue');
+        const tubeLengthValue = document.getElementById('tubeLengthValue');
+        const trailLengthValue = document.getElementById('trailLengthValue');
+        
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const toggleTrajectoryBtn = document.getElementById('toggleTrajectoryBtn');
+        const toggleHorizontalTrajectoryBtn = document.getElementById('toggleHorizontalTrajectoryBtn');
+        const toggleVerticalTrajectoryBtn = document.getElementById('toggleVerticalTrajectoryBtn');
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        
+        // 数据展示元素
+        const resultantSpeed = document.getElementById('resultantSpeed');
+        const resultantAngle = document.getElementById('resultantAngle');
+        const experimentTime = document.getElementById('experimentTime');
+        const waxPosition = document.getElementById('waxPosition');
+        const horizontalDisplacement = document.getElementById('horizontalDisplacement');
+        const verticalDisplacement = document.getElementById('verticalDisplacement');
+        const experimentState = document.getElementById('experimentState');
+        
+        // 实验参数
+        let params = {
+            riseSpeed: 2.0,          // 蜡块上升速度 (cm/s)
+            horizontalSpeed: 3.0,    // 玻璃管水平速度 (cm/s)
+            tubeLength: 100,         // 玻璃管长度 (cm)
+            trailLength: 50,         // 轨迹显示点数
+            showTrajectory: true,    // 显示合运动轨迹
+            showHorizontalTrajectory: true,  // 显示水平轨迹
+            showVerticalTrajectory: true,    // 显示竖直轨迹
+            time: 0,
+            scale: 4,                // 像素/cm 的比例尺
+            waxDiameter: 12          // 蜡块直径 (像素)
+        };
+        
+        // 实验状态
+        let experiment = {
+            // 玻璃管初始位置
+            initialTubeX: 100,
+            tubeY: 100,
+            tubeWidth: 30,
+            
+            // 蜡块初始位置（相对于地面）
+            initialWaxX: 0,
+            initialWaxY: 0,
+            
+            // 蜡块当前位置（相对于地面）
+            waxX: 0,
+            waxY: 0,
+            
+            // 轨迹记录
+            trajectoryPoints: [],          // 合运动轨迹点
+            horizontalProjectionPoints: [], // 水平轨迹投影点
+            verticalProjectionPoints: [],   // 竖直轨迹投影点
+            
+            // 位移记录
+            displacementX: 0,
+            displacementY: 0,
+            
+            // 实验阶段: 0-准备, 1-仅上升, 2-合成运动
+            phase: 0,
+            
+            // 玻璃管运动开始时间
+            horizontalStartTime: 0,
+            
+            // 实验控制状态
+            isRunning: false,
+            isPaused: false
+        };
+        
+        // 初始化实验
+        function initExperiment() {
+            params.time = 0;
+            experiment.phase = 0;
+            experiment.isRunning = false;
+            experiment.isPaused = false;
+            experiment.horizontalStartTime = 0;
+            
+            // 重置玻璃管位置
+            experiment.tubeY = 100;
+            experiment.initialTubeX = 100;
+            
+            // 重置蜡块初始位置（在玻璃管底部，相对于地面）
+            const tubeHeight = params.tubeLength * params.scale;
+            experiment.initialWaxX = experiment.initialTubeX + experiment.tubeWidth / 2;
+            experiment.initialWaxY = experiment.tubeY + tubeHeight;
+            
+            // 重置蜡块当前位置
+            experiment.waxX = experiment.initialWaxX;
+            experiment.waxY = experiment.initialWaxY;
+            
+            // 清空轨迹点
+            experiment.trajectoryPoints = [];
+            experiment.horizontalProjectionPoints = [];
+            experiment.verticalProjectionPoints = [];
+            
+            // 记录初始点
+            experiment.trajectoryPoints.push({x: experiment.waxX, y: experiment.waxY});
+            experiment.horizontalProjectionPoints.push({x: experiment.waxX, y: experiment.waxY});
+            experiment.verticalProjectionPoints.push({x: experiment.waxX, y: experiment.waxY});
+            
+            // 更新状态显示
+            experimentState.textContent = "实验状态: 准备开始";
+            startBtn.innerHTML = '<span id="startIcon">▶</span><span id="startText">开始实验</span>';
+            
+            // 更新数据显示
+            updateDataDisplay();
+            
+            // 绘制初始状态
+            drawExperiment();
+        }
+        
+        // 开始实验
+        function startExperiment() {
+            if (experiment.phase === 2) {
+                // 如果实验已经完成，重新开始
+                initExperiment();
+            }
+            
+            experiment.isRunning = true;
+            experiment.isPaused = false;
+            experimentState.textContent = "实验状态: 进行中";
+            startBtn.innerHTML = '<span id="startIcon">▶</span><span id="startText">继续实验</span>';
+        }
+        
+        // 暂停/继续实验
+        function togglePause() {
+            if (!experiment.isRunning) return;
+            
+            experiment.isPaused = !experiment.isPaused;
+            
+            if (experiment.isPaused) {
+                experimentState.textContent = "实验状态: 已暂停";
+                pauseBtn.innerHTML = '<span id="pauseIcon">▶</span><span>继续</span>';
+            } else {
+                experimentState.textContent = "实验状态: 进行中";
+                pauseBtn.innerHTML = '<span id="pauseIcon">⏸</span><span>暂停</span>';
+            }
+        }
+        
+        // 更新实验状态
+        function updateExperiment(dt) {
+            if (!experiment.isRunning || experiment.isPaused) return;
+            
+            params.time += dt;
+            
+            // 第一阶段：仅蜡块上升（前2秒）
+            if (params.time < 2.0 && experiment.phase === 0) {
+                experiment.phase = 1;
+                experimentState.textContent = "实验状态: 蜡块上升中";
+            }
+            
+            // 第二阶段：蜡块上升同时玻璃管水平移动（2秒后）
+            if (params.time >= 2.0 && experiment.phase === 1) {
+                experiment.phase = 2;
+                experimentState.textContent = "实验状态: 合成运动中";
+                if (experiment.horizontalStartTime === 0) {
+                    experiment.horizontalStartTime = params.time;
+                }
+            }
+            
+            const tubeHeight = params.tubeLength * params.scale;
+            
+            // 1. 计算蜡块在玻璃管中的相对高度（相对于玻璃管底部）
+            // 蜡块在玻璃管中匀速上升
+            const riseDisplacement = params.riseSpeed * params.time; // cm
+            const relativeHeight = tubeHeight - riseDisplacement * params.scale; // 像素
+            
+            // 2. 计算玻璃管水平位移（第二阶段才开始）
+            let tubeDisplacement = 0;
+            let horizontalElapsedTime = 0;
+            
+            if (experiment.phase >= 2) {
+                horizontalElapsedTime = params.time - experiment.horizontalStartTime;
+                // 玻璃管水平位移：x = v*t (匀速运动)
+                tubeDisplacement = params.horizontalSpeed * horizontalElapsedTime * params.scale;
+            }
+            
+            // 3. 计算蜡块相对于地面的绝对位置
+            // 水平位置：玻璃管中心位置 + 水平位移
+            experiment.waxX = experiment.initialTubeX + experiment.tubeWidth / 2 + tubeDisplacement;
+            
+            // 竖直位置：玻璃管底部位置 - 相对高度
+            experiment.waxY = experiment.tubeY + Math.max(0, relativeHeight);
+            
+            // 4. 记录位移数据
+            experiment.displacementX = tubeDisplacement / params.scale;
+            experiment.displacementY = riseDisplacement;
+            
+            // 5. 记录合运动轨迹点
+            experiment.trajectoryPoints.push({x: experiment.waxX, y: experiment.waxY});
+            
+            // 6. 计算水平投影位置（假设只有水平运动）
+            const horizontalProjX = experiment.initialWaxX + experiment.displacementX * params.scale;
+            const horizontalProjY = experiment.initialWaxY;
+            experiment.horizontalProjectionPoints.push({x: horizontalProjX, y: horizontalProjY});
+            
+            // 7. 计算竖直投影位置（假设只有竖直运动）
+            const verticalProjX = experiment.initialWaxX;
+            const verticalProjY = experiment.initialWaxY - experiment.displacementY * params.scale;
+            experiment.verticalProjectionPoints.push({x: verticalProjX, y: verticalProjY});
+            
+            // 限制轨迹点数量
+            if (experiment.trajectoryPoints.length > params.trailLength) {
+                experiment.trajectoryPoints.shift();
+            }
+            if (experiment.horizontalProjectionPoints.length > params.trailLength) {
+                experiment.horizontalProjectionPoints.shift();
+            }
+            if (experiment.verticalProjectionPoints.length > params.trailLength) {
+                experiment.verticalProjectionPoints.shift();
+            }
+            
+            // 检查实验是否结束（蜡块到达玻璃管顶部）
+            if (relativeHeight <= 0) {
+                experiment.isRunning = false;
+                experimentState.textContent = "实验状态: 已完成";
+                startBtn.innerHTML = '<span id="startIcon">↺</span><span id="startText">重新开始</span>';
+            }
+            
+            // 更新数据显示
+            updateDataDisplay();
+        }
+        
+        // 更新数据显示
+        function updateDataDisplay() {
+            // 计算水平速度（匀速运动）
+            let speedX = 0;
+            
+            if (experiment.phase >= 2) {
+                speedX = params.horizontalSpeed;
+            }
+            
+            const speedY = params.riseSpeed;
+            const resultant = Math.sqrt(speedX * speedX + speedY * speedY);
+            
+            // 计算合速度方向（与水平方向夹角）
+            let angle = 0;
+            if (speedX > 0 && speedY > 0) {
+                angle = Math.atan(speedY / speedX) * 180 / Math.PI;
+            } else if (speedY > 0) {
+                angle = 90;
+            }
+            
+            // 更新数据显示
+            resultantSpeed.textContent = resultant.toFixed(2);
+            resultantAngle.textContent = angle.toFixed(2);
+            experimentTime.textContent = params.time.toFixed(2);
+            
+            // 计算蜡块位置（以cm为单位，原点在玻璃管起始位置）
+            const waxXcm = (experiment.waxX - 100) / params.scale;
+            const waxYcm = params.tubeLength - (experiment.waxY - 100) / params.scale;
+            waxPosition.textContent = `(${waxXcm.toFixed(1)}, ${waxYcm.toFixed(1)})`;
+            
+            horizontalDisplacement.textContent = experiment.displacementX.toFixed(2);
+            verticalDisplacement.textContent = experiment.displacementY.toFixed(2);
+            
+            // 更新滑块值显示
+            riseSpeedValue.textContent = params.riseSpeed.toFixed(1) + " cm/s";
+            horizontalSpeedValue.textContent = params.horizontalSpeed.toFixed(1) + " cm/s";
+            tubeLengthValue.textContent = params.tubeLength + " cm";
+            trailLengthValue.textContent = params.trailLength;
+        }
+        
+        // 绘制实验场景
+        function drawExperiment() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景网格
+            drawGrid();
+            
+            // 绘制轨迹线
+            drawTrajectories();
+            
+            // 绘制玻璃管（在轨迹后面，这样轨迹不会被遮挡）
+            drawGlassTube();
+            
+            // 绘制蜡块
+            drawWaxBlock();
+            
+            // 绘制标签和刻度
+            drawLabels();
+        }
+        
+        // 绘制背景网格
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        // 绘制玻璃管
+        function drawGlassTube() {
+            const tubeHeight = params.tubeLength * params.scale;
+            
+            // 计算玻璃管当前位置
+            let currentTubeX = experiment.initialTubeX;
+            if (experiment.phase >= 2) {
+                const horizontalElapsedTime = params.time - experiment.horizontalStartTime;
+                const tubeDisplacement = params.horizontalSpeed * horizontalElapsedTime * params.scale;
+                currentTubeX = experiment.initialTubeX + tubeDisplacement;
+            }
+            
+            // 绘制玻璃管外框
+            ctx.strokeStyle = 'rgba(200, 230, 255, 0.8)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(currentTubeX, experiment.tubeY, experiment.tubeWidth, tubeHeight);
+            
+            // 绘制玻璃管内水
+            ctx.fillStyle = 'rgba(33, 150, 243, 0.3)';
+            ctx.fillRect(currentTubeX, experiment.tubeY, experiment.tubeWidth, tubeHeight);
+            
+            // 绘制玻璃管底部（封闭端）
+            ctx.fillStyle = 'rgba(150, 150, 150, 0.8)';
+            ctx.fillRect(currentTubeX, experiment.tubeY + tubeHeight, experiment.tubeWidth, 8);
+            
+            // 绘制玻璃管顶部（开口端，用橡胶塞塞紧）
+            ctx.fillStyle = 'rgba(121, 85, 72, 0.8)';
+            ctx.fillRect(currentTubeX, experiment.tubeY - 5, experiment.tubeWidth, 5);
+            
+            // 绘制刻度尺
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 1;
+            ctx.font = '12px Arial';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            
+            // 在玻璃管旁边绘制刻度
+            const scaleX = currentTubeX + experiment.tubeWidth + 10;
+            
+            for (let i = 0; i <= params.tubeLength; i += 10) {
+                const yPos = experiment.tubeY + tubeHeight - i * params.scale;
+                
+                // 绘制刻度线
+                ctx.beginPath();
+                ctx.moveTo(scaleX, yPos);
+                ctx.lineTo(scaleX + 10, yPos);
+                ctx.stroke();
+                
+                // 绘制刻度值
+                if (i % 20 === 0) {
+                    ctx.fillText(i + ' cm', scaleX + 15, yPos + 4);
+                }
+            }
+            
+            // 绘制刻度尺标签
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('刻度尺', scaleX, experiment.tubeY - 10);
+        }
+        
+        // 绘制蜡块
+        function drawWaxBlock() {
+            // 绘制蜡块（红色圆柱体）
+            const radius = params.waxDiameter / 2;
+            
+            // 圆柱体侧面
+            ctx.fillStyle = '#ff5722';
+            ctx.beginPath();
+            ctx.ellipse(experiment.waxX, experiment.waxY - radius, radius, radius/3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.ellipse(experiment.waxX, experiment.waxY + radius, radius, radius/3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ff8a50';
+            ctx.fillRect(experiment.waxX - radius, experiment.waxY - radius, radius * 2, radius * 2);
+            
+            // 圆柱体顶部和底部
+            ctx.fillStyle = '#d84315';
+            ctx.beginPath();
+            ctx.ellipse(experiment.waxX, experiment.waxY - radius, radius, radius/3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制蜡块标签
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('A', experiment.waxX, experiment.waxY + 5);
+            ctx.textAlign = 'left';
+            
+            // 绘制蜡块速度指示
+            drawVelocityIndicator();
+        }
+        
+        // 绘制速度指示
+        function drawVelocityIndicator() {
+            // 绘制上升速度指示
+            ctx.strokeStyle = '#2196f3';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            
+            const indicatorLength = 30;
+            ctx.beginPath();
+            ctx.moveTo(experiment.waxX, experiment.waxY);
+            ctx.lineTo(experiment.waxX, experiment.waxY - indicatorLength);
+            ctx.stroke();
+            
+            // 绘制箭头
+            ctx.fillStyle = '#2196f3';
+            ctx.beginPath();
+            ctx.moveTo(experiment.waxX, experiment.waxY - indicatorLength);
+            ctx.lineTo(experiment.waxX - 5, experiment.waxY - indicatorLength + 8);
+            ctx.lineTo(experiment.waxX + 5, experiment.waxY - indicatorLength + 8);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 绘制水平速度指示（仅在合成运动阶段）
+            if (experiment.phase >= 2) {
+                ctx.strokeStyle = '#ff9800';
+                ctx.beginPath();
+                ctx.moveTo(experiment.waxX, experiment.waxY);
+                ctx.lineTo(experiment.waxX + indicatorLength, experiment.waxY);
+                ctx.stroke();
+                
+                // 绘制箭头
+                ctx.fillStyle = '#ff9800';
+                ctx.beginPath();
+                ctx.moveTo(experiment.waxX + indicatorLength, experiment.waxY);
+                ctx.lineTo(experiment.waxX + indicatorLength - 8, experiment.waxY - 5);
+                ctx.lineTo(experiment.waxX + indicatorLength - 8, experiment.waxY + 5);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            ctx.setLineDash([]);
+            
+            // 绘制合速度方向（仅在合成运动阶段）
+            if (experiment.phase >= 2 && experiment.trajectoryPoints.length >= 2) {
+                // 计算合速度方向
+                const speedX = params.horizontalSpeed;
+                const speedY = params.riseSpeed;
+                
+                if (speedX > 0 || speedY > 0) {
+                    const angle = Math.atan2(speedY, speedX);
+                    const length = Math.sqrt(speedX * speedX + speedY * speedY) * 10; // 放大显示
+                    
+                    ctx.strokeStyle = '#4caf50';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([5, 3]);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(experiment.waxX, experiment.waxY);
+                    ctx.lineTo(
+                        experiment.waxX + length * Math.cos(angle),
+                        experiment.waxY - length * Math.sin(angle) // 注意：canvas Y轴向下为正
+                    );
+                    ctx.stroke();
+                    
+                    // 绘制箭头
+                    ctx.fillStyle = '#4caf50';
+                    ctx.beginPath();
+                    const arrowX = experiment.waxX + length * Math.cos(angle);
+                    const arrowY = experiment.waxY - length * Math.sin(angle);
+                    ctx.moveTo(arrowX, arrowY);
+                    ctx.lineTo(arrowX - 8 * Math.cos(angle - Math.PI/6), arrowY + 8 * Math.sin(angle - Math.PI/6));
+                    ctx.lineTo(arrowX - 8 * Math.cos(angle + Math.PI/6), arrowY + 8 * Math.sin(angle + Math.PI/6));
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+        
+        // 绘制所有轨迹
+        function drawTrajectories() {
+            // 绘制水平轨迹线（从初始位置到水平投影位置）
+            if (params.showHorizontalTrajectory && experiment.horizontalProjectionPoints.length >= 2) {
+                ctx.strokeStyle = '#ff9800';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                
+                ctx.beginPath();
+                // 从初始位置开始
+                ctx.moveTo(experiment.initialWaxX, experiment.initialWaxY);
+                
+                // 绘制完整的水平轨迹线
+                for (let i = 1; i < experiment.horizontalProjectionPoints.length; i++) {
+                    ctx.lineTo(experiment.horizontalProjectionPoints[i].x, experiment.horizontalProjectionPoints[i].y);
+                }
+                ctx.stroke();
+                
+                // 绘制水平轨迹上的点
+                ctx.fillStyle = '#ff9800';
+                for (let i = 0; i < experiment.horizontalProjectionPoints.length; i += 3) {
+                    const point = experiment.horizontalProjectionPoints[i];
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 标记水平轨迹的终点
+                if (experiment.horizontalProjectionPoints.length > 0) {
+                    const lastPoint = experiment.horizontalProjectionPoints[experiment.horizontalProjectionPoints.length - 1];
+                    ctx.beginPath();
+                    ctx.arc(lastPoint.x, lastPoint.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // 绘制竖直轨迹线（从初始位置到竖直投影位置）
+            if (params.showVerticalTrajectory && experiment.verticalProjectionPoints.length >= 2) {
+                ctx.strokeStyle = '#2196f3';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                
+                ctx.beginPath();
+                // 从初始位置开始
+                ctx.moveTo(experiment.initialWaxX, experiment.initialWaxY);
+                
+                // 绘制完整的竖直轨迹线
+                for (let i = 1; i < experiment.verticalProjectionPoints.length; i++) {
+                    ctx.lineTo(experiment.verticalProjectionPoints[i].x, experiment.verticalProjectionPoints[i].y);
+                }
+                ctx.stroke();
+                
+                // 绘制竖直轨迹上的点
+                ctx.fillStyle = '#2196f3';
+                for (let i = 0; i < experiment.verticalProjectionPoints.length; i += 3) {
+                    const point = experiment.verticalProjectionPoints[i];
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 标记竖直轨迹的终点
+                if (experiment.verticalProjectionPoints.length > 0) {
+                    const lastPoint = experiment.verticalProjectionPoints[experiment.verticalProjectionPoints.length - 1];
+                    ctx.beginPath();
+                    ctx.arc(lastPoint.x, lastPoint.y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // 绘制合运动轨迹线（从初始位置到当前位置）
+            if (params.showTrajectory && experiment.trajectoryPoints.length >= 2) {
+                ctx.strokeStyle = '#4caf50';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([]);
+                
+                ctx.beginPath();
+                // 从初始位置开始
+                ctx.moveTo(experiment.initialWaxX, experiment.initialWaxY);
+                
+                // 绘制到当前位置
+                for (let i = 1; i < experiment.trajectoryPoints.length; i++) {
+                    ctx.lineTo(experiment.trajectoryPoints[i].x, experiment.trajectoryPoints[i].y);
+                }
+                ctx.stroke();
+                
+                // 绘制合运动轨迹上的点
+                ctx.fillStyle = '#4caf50';
+                for (let i = 0; i < experiment.trajectoryPoints.length; i += 3) {
+                    const point = experiment.trajectoryPoints[i];
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 标记当前位置
+                ctx.beginPath();
+                ctx.arc(experiment.waxX, experiment.waxY, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.setLineDash([]);
+            
+            // 绘制投影连接线（从当前位置到水平和竖直投影位置）
+            if (experiment.phase >= 1 && experiment.horizontalProjectionPoints.length > 0 && experiment.verticalProjectionPoints.length > 0) {
+                const lastHorizontalPoint = experiment.horizontalProjectionPoints[experiment.horizontalProjectionPoints.length - 1];
+                const lastVerticalPoint = experiment.verticalProjectionPoints[experiment.verticalProjectionPoints.length - 1];
+                
+                // 从当前位置到水平投影位置
+                ctx.strokeStyle = 'rgba(255, 152, 0, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(experiment.waxX, experiment.waxY);
+                ctx.lineTo(lastHorizontalPoint.x, lastHorizontalPoint.y);
+                ctx.stroke();
+                
+                // 从当前位置到竖直投影位置
+                ctx.strokeStyle = 'rgba(33, 150, 243, 0.4)';
+                ctx.beginPath();
+                ctx.moveTo(experiment.waxX, experiment.waxY);
+                ctx.lineTo(lastVerticalPoint.x, lastVerticalPoint.y);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+            }
+        }
+        
+        // 绘制标签
+        function drawLabels() {
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'left';
+            
+            // 绘制实验阶段标签
+            let phaseText = "";
+            if (experiment.phase === 0) {
+                phaseText = "准备阶段";
+            } else if (experiment.phase === 1) {
+                phaseText = "阶段1: 蜡块匀速上升";
+            } else if (experiment.phase === 2) {
+                phaseText = "阶段2: 蜡块上升 + 玻璃管水平匀速运动";
+                phaseText += " (直线轨迹)";
+            }
+            
+            ctx.fillText(phaseText, 20, 30);
+            
+            // 绘制速度信息
+            ctx.font = '14px Arial';
+            ctx.fillText(`上升速度: ${params.riseSpeed.toFixed(1)} cm/s`, 20, 60);
+            
+            if (experiment.phase >= 2) {
+                ctx.fillText(`水平速度: ${params.horizontalSpeed.toFixed(1)} cm/s`, 20, 85);
+                
+                // 计算合速度
+                const speedX = params.horizontalSpeed;
+                const speedY = params.riseSpeed;
+                const resultant = Math.sqrt(speedX * speedX + speedY * speedY);
+                ctx.fillText(`合速度: ${resultant.toFixed(1)} cm/s`, 20, 110);
+                
+                // 显示运动类型
+                ctx.fillStyle = '#4caf50';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText("✓ 匀速直线运动：两个相互垂直的匀速直线运动的合成", 20, 140);
+                ctx.fillStyle = 'white';
+            }
+        }
+        
+        // 动画循环
+        let lastTime = 0;
+        function animate(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // 限制最大时间步长
+            lastTime = timestamp;
+            
+            updateExperiment(dt);
+            drawExperiment();
+            requestAnimationFrame(animate);
+        }
+        
+        // 事件监听器
+        riseSpeedSlider.addEventListener('input', function() {
+            params.riseSpeed = parseFloat(this.value);
+            updateDataDisplay();
+        });
+        
+        horizontalSpeedSlider.addEventListener('input', function() {
+            params.horizontalSpeed = parseFloat(this.value);
+            updateDataDisplay();
+        });
+        
+        tubeLengthSlider.addEventListener('input', function() {
+            params.tubeLength = parseInt(this.value);
+            initExperiment();
+        });
+        
+        trailLengthSlider.addEventListener('input', function() {
+            params.trailLength = parseInt(this.value);
+        });
+        
+        startBtn.addEventListener('click', startExperiment);
+        
+        pauseBtn.addEventListener('click', togglePause);
+        
+        resetBtn.addEventListener('click', initExperiment);
+        
+        toggleTrajectoryBtn.addEventListener('click', function() {
+            params.showTrajectory = !params.showTrajectory;
+            const icon = document.getElementById('trajectoryIcon');
+            const text = document.getElementById('trajectoryText');
+            
+            if (params.showTrajectory) {
+                icon.textContent = '✓';
+                text.textContent = '合运动轨迹';
+            } else {
+                icon.textContent = '□';
+                text.textContent = '合运动轨迹';
+            }
+        });
+        
+        toggleHorizontalTrajectoryBtn.addEventListener('click', function() {
+            params.showHorizontalTrajectory = !params.showHorizontalTrajectory;
+            const icon = document.getElementById('horizontalTrajectoryIcon');
+            const text = document.getElementById('horizontalTrajectoryText');
+            
+            if (params.showHorizontalTrajectory) {
+                icon.textContent = '✓';
+                text.textContent = '水平轨迹';
+            } else {
+                icon.textContent = '□';
+                text.textContent = '水平轨迹';
+            }
+        });
+        
+        toggleVerticalTrajectoryBtn.addEventListener('click', function() {
+            params.showVerticalTrajectory = !params.showVerticalTrajectory;
+            const icon = document.getElementById('verticalTrajectoryIcon');
+            const text = document.getElementById('verticalTrajectoryText');
+            
+            if (params.showVerticalTrajectory) {
+                icon.textContent = '✓';
+                text.textContent = '竖直轨迹';
+            } else {
+                icon.textContent = '□';
+                text.textContent = '竖直轨迹';
+            }
+        });
+        
+        // 预置实验按钮
+        presetButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const rise = parseFloat(this.getAttribute('data-rise'));
+                const horizontal = parseFloat(this.getAttribute('data-horizontal'));
+                
+                params.riseSpeed = rise;
+                params.horizontalSpeed = horizontal;
+                
+                riseSpeedSlider.value = rise;
+                horizontalSpeedSlider.value = horizontal;
+                
+                initExperiment();
+                startExperiment();
+            });
+        });
+        
+        // 初始化并启动动画
+        initExperiment();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

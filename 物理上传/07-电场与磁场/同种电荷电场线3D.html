@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同种点电荷电场线3D演示 | 高中物理教学</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        #infoPanel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 15, 40, 0.85);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 380px;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 10, 30, 0.4);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #6ee7ff;
+            border-bottom: 2px solid #4a6fff;
+            padding-bottom: 8px;
+            text-shadow: 0 0 10px rgba(110, 231, 255, 0.5);
+        }
+        
+        h2 {
+            font-size: 18px;
+            margin: 18px 0 12px 0;
+            color: #ff6b9d;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: #d0e0ff;
+        }
+        
+        .highlight {
+            color: #6ee7ff;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(110, 231, 255, 0.5);
+        }
+        
+        .charge-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .positive {
+            background-color: #ff6b9d;
+            box-shadow: 0 0 10px #ff6b9d;
+        }
+        
+        .negative {
+            background-color: #6ee7ff;
+            box-shadow: 0 0 10px #6ee7ff;
+        }
+        
+        .controls {
+            margin-top: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #4a6fff, #6a5af9);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            flex: 1;
+            min-width: 140px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #3a5fef, #5a4ae9);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button.active {
+            background: linear-gradient(to right, #ff6b9d, #ff8fab);
+            box-shadow: 0 0 15px rgba(255, 107, 157, 0.6);
+        }
+        
+        #chargeCount {
+            color: #6ee7ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .control-group {
+            margin-top: 15px;
+            background: rgba(20, 30, 70, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4a6fff;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .control-row label {
+            font-weight: 500;
+            color: #b0c8ff;
+        }
+        
+        .control-row input[type="range"] {
+            width: 60%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(100, 150, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #6ee7ff;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(110, 231, 255, 0.8);
+        }
+        
+        .control-row input[type="number"] {
+            width: 70px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #4a6fff;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .control-row .value-display {
+            color: #6ee7ff;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 15, 40, 0.85);
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            max-width: 320px;
+            z-index: 100;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px rgba(0, 10, 30, 0.4);
+        }
+        
+        #instructions h3 {
+            color: #6ee7ff;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            padding-bottom: 6px;
+        }
+        
+        #instructions ul {
+            padding-left: 20px;
+        }
+        
+        #instructions li {
+            margin-bottom: 8px;
+            color: #d0e0ff;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            color: #6ee7ff;
+            z-index: 1000;
+            text-shadow: 0 0 10px rgba(110, 231, 255, 0.7);
+        }
+        
+        .charge-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(20, 30, 70, 0.5);
+            border-radius: 8px;
+        }
+        
+        .charge-info div {
+            text-align: center;
+        }
+        
+        .charge-info .charge-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .charge-info .positive .charge-value {
+            color: #ff6b9d;
+            text-shadow: 0 0 8px rgba(255, 107, 157, 0.6);
+        }
+        
+        .charge-info .negative .charge-value {
+            color: #6ee7ff;
+            text-shadow: 0 0 8px rgba(110, 231, 255, 0.6);
+        }
+        
+        .physics-principle {
+            background: rgba(255, 107, 157, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b9d;
+            margin-top: 10px;
+        }
+        
+        .physics-principle h3 {
+            color: #ff8fab;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .key-point {
+            background: rgba(74, 111, 255, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border-left: 3px solid #4a6fff;
+        }
+        
+        #canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        .coordinate-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 15, 40, 0.7);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 180px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .coordinate-display div {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .coordinate-label {
+            color: #b0c8ff;
+        }
+        
+        .coordinate-value {
+            color: #6ee7ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="infoPanel">
+            <h1>同种点电荷电场线3D教学演示</h1>
+            <p>本动画展示了<span class="highlight">两个正点电荷</span>形成的电场线分布，可用于高中物理教学。</p>
+            
+            <div class="physics-principle">
+                <h3>物理原理</h3>
+                <p>同种电荷相互排斥，电场线从正电荷出发，延伸到无穷远。在两个同种点电荷之间，电场线相互排斥，形成电场强度为零的中性区域。</p>
+            </div>
+            
+            <div class="charge-info">
+                <div class="positive">
+                    <div><span class="charge-indicator positive"></span> 正点电荷</div>
+                    <div class="charge-value" id="positiveChargeCount">2</div>
+                </div>
+                <div class="negative">
+                    <div><span class="charge-indicator negative"></span> 负点电荷</div>
+                    <div class="charge-value" id="negativeChargeCount">0</div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2>电荷参数调节</h2>
+                
+                <div class="control-row">
+                    <label for="chargeValue1">电荷1电量 (Q):</label>
+                    <div>
+                        <input type="range" id="chargeValue1" min="1" max="5" step="0.5" value="1">
+                        <span class="value-display" id="chargeValue1Display">1.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-row">
+                    <label for="chargeValue2">电荷2电量 (Q):</label>
+                    <div>
+                        <input type="range" id="chargeValue2" min="1" max="5" step="0.5" value="1">
+                        <span class="value-display" id="chargeValue2Display">1.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-row">
+                    <label for="chargeDistance">电荷间距:</label>
+                    <div>
+                        <input type="range" id="chargeDistance" min="2" max="10" step="0.5" value="6">
+                        <span class="value-display" id="chargeDistanceDisplay">6.0</span>
+                    </div>
+                </div>
+                
+                <div class="control-row">
+                    <label for="lineCount">电场线数量:</label>
+                    <div>
+                        <input type="range" id="lineCount" min="10" max="80" step="5" value="40">
+                        <span class="value-display" id="lineCountDisplay">40</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="toggleAnimation" class="active">暂停动画</button>
+                <button id="addCharge">添加正电荷</button>
+                <button id="reset">重置场景</button>
+            </div>
+            
+            <div class="key-point">
+                <p><strong>教学提示：</strong>调整电荷电量，观察电场线密度的变化。电量越大，电场线越密集。</p>
+            </div>
+        </div>
+        
+        <div id="instructions">
+            <h3>操作指南</h3>
+            <ul>
+                <li><strong>鼠标拖拽</strong>：旋转视角</li>
+                <li><strong>鼠标滚轮</strong>：缩放场景</li>
+                <li><strong>右键拖拽</strong>：平移场景</li>
+                <li><strong>双击空白处</strong>：添加点电荷</li>
+                <li><strong>双击电荷</strong>：删除该电荷</li>
+            </ul>
+        </div>
+        
+        <div class="coordinate-display">
+            <div>
+                <span class="coordinate-label">X轴:</span>
+                <span class="coordinate-value" id="coordX">0.0</span>
+            </div>
+            <div>
+                <span class="coordinate-label">Y轴:</span>
+                <span class="coordinate-value" id="coordY">0.0</span>
+            </div>
+            <div>
+                <span class="coordinate-label">Z轴:</span>
+                <span class="coordinate-value" id="coordZ">0.0</span>
+            </div>
+            <div>
+                <span class="coordinate-label">视角距离:</span>
+                <span class="coordinate-value" id="cameraDistance">0.0</span>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">加载电场模型...</div>
+    </div>
+
+    <script>
+        // 等待页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移除加载提示
+            const loading = document.getElementById('loading');
+            
+            // 基本变量
+            let scene, camera, renderer, controls;
+            let charges = [];
+            let fieldLines = [];
+            let animationId = null;
+            let isAnimating = true;
+            let chargeValues = [1.0, 1.0]; // 电荷电量值
+            let chargeDistance = 6.0; // 电荷间距
+            let fieldLineCount = 40;
+            
+            // 坐标显示
+            let coordX = document.getElementById('coordX');
+            let coordY = document.getElementById('coordY');
+            let coordZ = document.getElementById('coordZ');
+            let cameraDistance = document.getElementById('cameraDistance');
+            
+            // 初始化Three.js场景
+            function init() {
+                // 创建场景
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x0a0a1a);
+                
+                // 创建相机
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(12, 10, 12);
+                
+                // 创建渲染器
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                document.getElementById('container').appendChild(renderer.domElement);
+                
+                // 添加轨道控制器
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.maxDistance = 50;
+                controls.minDistance = 5;
+                
+                // 添加环境光
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+                scene.add(ambientLight);
+                
+                // 添加定向光
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 20, 5);
+                directionalLight.castShadow = true;
+                scene.add(directionalLight);
+                
+                // 添加点光源（用于电荷发光效果）
+                const pointLight = new THREE.PointLight(0x4a6fff, 0.5, 30);
+                pointLight.position.set(0, 5, 0);
+                scene.add(pointLight);
+                
+                // 创建坐标轴辅助（更细更透明）
+                const axesHelper = new THREE.AxesHelper(8);
+                axesHelper.lineWidth = 1;
+                scene.add(axesHelper);
+                
+                // 创建网格平面
+                const gridHelper = new THREE.GridHelper(20, 20, 0x3a3a5a, 0x2a2a4a);
+                gridHelper.position.y = -0.5;
+                scene.add(gridHelper);
+                
+                // 创建初始点电荷
+                createCharges();
+                
+                // 开始动画循环
+                animate();
+                
+                // 移除加载提示
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 800);
+                
+                // 窗口大小调整事件
+                window.addEventListener('resize', onWindowResize);
+                
+                // 双击添加点电荷
+                renderer.domElement.addEventListener('dblclick', onCanvasDoubleClick);
+                
+                // 鼠标移动事件（更新坐标显示）
+                renderer.domElement.addEventListener('mousemove', onMouseMove);
+                
+                // 设置UI事件监听
+                setupUIListeners();
+            }
+            
+            // 创建点电荷（根据当前参数）
+            function createCharges() {
+                // 移除所有现有电荷
+                removeAllCharges();
+                
+                // 计算电荷位置
+                const halfDistance = chargeDistance / 2;
+                
+                // 创建第一个电荷
+                createCharge(-halfDistance, 0, 0, chargeValues[0], 0);
+                
+                // 创建第二个电荷
+                createCharge(halfDistance, 0, 0, chargeValues[1], 1);
+                
+                // 生成电场线
+                generateFieldLines();
+            }
+            
+            // 创建单个点电荷
+            function createCharge(x, y, z, chargeValue, index) {
+                // 根据电荷值选择颜色（正电荷为粉色，负电荷为蓝色）
+                const color = chargeValue > 0 ? 0xff6b9d : 0x6ee7ff;
+                const emissiveColor = chargeValue > 0 ? 0xcc3366 : 0x3399cc;
+                
+                // 创建球体表示点电荷（尺寸调小为0.3）
+                const geometry = new THREE.SphereGeometry(0.3, 24, 24);
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: color,
+                    emissive: emissiveColor,
+                    emissiveIntensity: 0.3,
+                    shininess: 100,
+                    specular: 0x555555
+                });
+                
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.set(x, y, z);
+                sphere.castShadow = true;
+                sphere.receiveShadow = true;
+                scene.add(sphere);
+                
+                // 添加电荷标签
+                const chargeText = chargeValue > 0 ? `+${chargeValue.toFixed(1)}Q` : `${chargeValue.toFixed(1)}Q`;
+                const label = createLabel(chargeText, color);
+                label.position.set(x, y + 0.8, z);
+                scene.add(label);
+                
+                // 添加电荷索引标签
+                const indexLabel = createLabel(`电荷${index+1}`, 0xffffff);
+                indexLabel.position.set(x, y - 0.8, z);
+                indexLabel.scale.set(0.8, 0.4, 1);
+                scene.add(indexLabel);
+                
+                // 保存电荷信息
+                const charge = {
+                    mesh: sphere,
+                    label: label,
+                    indexLabel: indexLabel,
+                    position: sphere.position,
+                    charge: chargeValue,
+                    index: index,
+                    velocity: new THREE.Vector3(0, 0, 0)
+                };
+                
+                charges.push(charge);
+                updateChargeCount();
+                
+                return charge;
+            }
+            
+            // 移除所有电荷
+            function removeAllCharges() {
+                for (const charge of charges) {
+                    scene.remove(charge.mesh);
+                    scene.remove(charge.label);
+                    scene.remove(charge.indexLabel);
+                }
+                charges = [];
+            }
+            
+            // 创建电荷标签
+            function createLabel(text, color) {
+                // 创建画布并绘制文字
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 128;
+                
+                // 绘制背景
+                context.fillStyle = 'rgba(10, 15, 40, 0.85)';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制边框
+                context.strokeStyle = `#${color.toString(16).padStart(6, '0')}`;
+                context.lineWidth = 3;
+                context.strokeRect(2, 2, canvas.width-4, canvas.height-4);
+                
+                // 绘制文字
+                context.font = 'bold 42px Arial, Microsoft YaHei';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+                context.fillText(text, canvas.width / 2, canvas.height / 2);
+                
+                // 创建纹理
+                const texture = new THREE.CanvasTexture(canvas);
+                
+                // 创建精灵材质
+                const spriteMaterial = new THREE.SpriteMaterial({ 
+                    map: texture,
+                    transparent: true
+                });
+                
+                // 创建精灵
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.scale.set(2, 1, 1);
+                
+                return sprite;
+            }
+            
+            // 计算电场强度
+            function calculateElectricField(position) {
+                const field = new THREE.Vector3(0, 0, 0);
+                const k = 9; // 简化常数
+                
+                for (const charge of charges) {
+                    const chargePos = charge.position;
+                    const r = new THREE.Vector3().subVectors(position, chargePos);
+                    const distance = r.length();
+                    
+                    if (distance < 0.3) {
+                        // 避免在电荷位置处计算，防止无限大
+                        continue;
+                    }
+                    
+                    const fieldMagnitude = k * Math.abs(charge.charge) / (distance * distance);
+                    r.normalize();
+                    
+                    // 根据电荷正负调整方向
+                    if (charge.charge > 0) {
+                        r.multiplyScalar(fieldMagnitude);
+                    } else {
+                        r.multiplyScalar(-fieldMagnitude);
+                    }
+                    
+                    field.add(r);
+                }
+                
+                return field;
+            }
+            
+            // 生成电场线
+            function generateFieldLines() {
+                // 清除现有的电场线
+                for (const line of fieldLines) {
+                    scene.remove(line);
+                }
+                fieldLines = [];
+                
+                // 为每个电荷生成电场线
+                for (const charge of charges) {
+                    // 从电荷向外发射电场线
+                    // 根据电荷电量决定电场线数量比例
+                    const linesForThisCharge = Math.max(5, Math.floor(fieldLineCount * Math.abs(charge.charge) / 2));
+                    
+                    for (let i = 0; i < linesForThisCharge; i++) {
+                        // 计算球面上的均匀分布点
+                        const phi = Math.acos(1 - 2 * (i / linesForThisCharge));
+                        const theta = Math.PI * (1 + Math.sqrt(5)) * i; // 黄金角度
+                        
+                        const startDirection = new THREE.Vector3(
+                            Math.sin(phi) * Math.cos(theta),
+                            Math.sin(phi) * Math.sin(theta),
+                            Math.cos(phi)
+                        );
+                        
+                        // 电场线起始位置（稍微离开电荷表面）
+                        const startPosition = new THREE.Vector3().addVectors(
+                            charge.position,
+                            startDirection.multiplyScalar(0.4)
+                        );
+                        
+                        // 创建一条电场线
+                        createFieldLine(startPosition, charge.charge > 0, charge.charge);
+                    }
+                }
+            }
+            
+            // 创建单条电场线
+            function createFieldLine(startPosition, isPositive, chargeValue) {
+                const points = [];
+                const maxSteps = 300;
+                const stepSize = 0.15;
+                
+                // 设置起始点
+                let currentPosition = startPosition.clone();
+                points.push(currentPosition.clone());
+                
+                // 追踪电场线
+                for (let i = 0; i < maxSteps; i++) {
+                    // 计算当前位置的电场强度
+                    const field = calculateElectricField(currentPosition);
+                    
+                    // 如果电场强度太小，停止追踪
+                    if (field.length() < 0.005) {
+                        break;
+                    }
+                    
+                    // 根据电场方向移动
+                    field.normalize();
+                    
+                    // 对于正电荷发出的电场线，沿电场方向移动
+                    // 对于负电荷发出的电场线，沿电场反方向移动
+                    const direction = isPositive ? field : field.multiplyScalar(-1);
+                    
+                    currentPosition.add(direction.multiplyScalar(stepSize));
+                    
+                    // 检查是否超出边界
+                    if (Math.abs(currentPosition.x) > 20 || 
+                        Math.abs(currentPosition.y) > 20 || 
+                        Math.abs(currentPosition.z) > 20) {
+                        break;
+                    }
+                    
+                    // 检查是否太接近另一个电荷
+                    let tooClose = false;
+                    for (const charge of charges) {
+                        if (currentPosition.distanceTo(charge.position) < 0.4) {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+                    
+                    if (tooClose) {
+                        break;
+                    }
+                    
+                    points.push(currentPosition.clone());
+                }
+                
+                // 如果没有足够的点，不创建电场线
+                if (points.length < 5) {
+                    return;
+                }
+                
+                // 创建曲线
+                const curve = new THREE.CatmullRomCurve3(points);
+                const curvePoints = curve.getPoints(300);
+                
+                // 创建几何体
+                const geometry = new THREE.BufferGeometry().setFromPoints(curvePoints);
+                
+                // 根据电荷电量设置线宽
+                const lineWidth = Math.min(3, 1 + Math.abs(chargeValue) * 0.5);
+                
+                // 创建材质
+                const material = new THREE.LineBasicMaterial({ 
+                    color: isPositive ? 0xff6b9d : 0x6ee7ff,
+                    transparent: true,
+                    opacity: 0.8,
+                    linewidth: lineWidth
+                });
+                
+                // 创建线对象
+                const line = new THREE.Line(geometry, material);
+                scene.add(line);
+                fieldLines.push(line);
+            }
+            
+            // 更新电荷数量显示
+            function updateChargeCount() {
+                const positiveCount = charges.filter(c => c.charge > 0).length;
+                const negativeCount = charges.filter(c => c.charge < 0).length;
+                
+                document.getElementById('positiveChargeCount').textContent = positiveCount;
+                document.getElementById('negativeChargeCount').textContent = negativeCount;
+            }
+            
+            // 重置场景
+            function resetScene() {
+                // 重置参数
+                chargeValues = [1.0, 1.0];
+                chargeDistance = 6.0;
+                fieldLineCount = 40;
+                
+                // 更新UI显示
+                document.getElementById('chargeValue1').value = chargeValues[0];
+                document.getElementById('chargeValue1Display').textContent = chargeValues[0].toFixed(1);
+                document.getElementById('chargeValue2').value = chargeValues[1];
+                document.getElementById('chargeValue2Display').textContent = chargeValues[1].toFixed(1);
+                document.getElementById('chargeDistance').value = chargeDistance;
+                document.getElementById('chargeDistanceDisplay').textContent = chargeDistance.toFixed(1);
+                document.getElementById('lineCount').value = fieldLineCount;
+                document.getElementById('lineCountDisplay').textContent = fieldLineCount;
+                
+                // 重新创建电荷
+                createCharges();
+                
+                // 重置视图
+                camera.position.set(12, 10, 12);
+                controls.reset();
+            }
+            
+            // 添加电荷
+            function addCharge() {
+                // 随机位置
+                const x = (Math.random() - 0.5) * 8;
+                const y = (Math.random() - 0.5) * 3;
+                const z = (Math.random() - 0.5) * 8;
+                
+                // 创建正电荷
+                const newIndex = charges.length;
+                createCharge(x, y, z, 1.0, newIndex);
+                
+                // 添加电量调节控件
+                addChargeControl(newIndex);
+                
+                // 重新生成电场线
+                generateFieldLines();
+            }
+            
+            // 添加电荷调节控件
+            function addChargeControl(index) {
+                // 在实际应用中，这里可以动态添加UI控件
+                console.log(`添加了电荷${index+1}，需要扩展UI来调节其电量`);
+            }
+            
+            // 更新电荷参数
+            function updateChargeParameters() {
+                // 更新电荷电量
+                chargeValues[0] = parseFloat(document.getElementById('chargeValue1').value);
+                chargeValues[1] = parseFloat(document.getElementById('chargeValue2').value);
+                
+                // 更新电荷间距
+                chargeDistance = parseFloat(document.getElementById('chargeDistance').value);
+                
+                // 更新电场线数量
+                fieldLineCount = parseInt(document.getElementById('lineCount').value);
+                
+                // 重新创建电荷
+                createCharges();
+                
+                // 更新显示值
+                document.getElementById('chargeValue1Display').textContent = chargeValues[0].toFixed(1);
+                document.getElementById('chargeValue2Display').textContent = chargeValues[1].toFixed(1);
+                document.getElementById('chargeDistanceDisplay').textContent = chargeDistance.toFixed(1);
+                document.getElementById('lineCountDisplay').textContent = fieldLineCount;
+            }
+            
+            // 窗口大小调整处理
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            // 鼠标移动事件处理
+            function onMouseMove(event) {
+                // 更新坐标显示
+                updateCoordinateDisplay();
+            }
+            
+            // 更新坐标显示
+            function updateCoordinateDisplay() {
+                // 获取相机位置
+                const cameraPos = camera.position;
+                coordX.textContent = cameraPos.x.toFixed(1);
+                coordY.textContent = cameraPos.y.toFixed(1);
+                coordZ.textContent = cameraPos.z.toFixed(1);
+                
+                // 计算相机到原点的距离
+                const distance = cameraPos.length();
+                cameraDistance.textContent = distance.toFixed(1);
+            }
+            
+            // 画布双击事件
+            function onCanvasDoubleClick(event) {
+                // 计算鼠标点击位置对应的3D坐标
+                const mouse = new THREE.Vector2();
+                const rect = renderer.domElement.getBoundingClientRect();
+                
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                // 创建射线投射器
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, camera);
+                
+                // 检查是否点击到了现有电荷
+                const intersects = raycaster.intersectObjects(charges.map(c => c.mesh));
+                
+                if (intersects.length > 0) {
+                    // 如果点击到了电荷，删除它
+                    const chargeMesh = intersects[0].object;
+                    const chargeIndex = charges.findIndex(c => c.mesh === chargeMesh);
+                    
+                    if (chargeIndex !== -1) {
+                        scene.remove(charges[chargeIndex].mesh);
+                        scene.remove(charges[chargeIndex].label);
+                        scene.remove(charges[chargeIndex].indexLabel);
+                        charges.splice(chargeIndex, 1);
+                        updateChargeCount();
+                        
+                        // 重新生成电场线
+                        generateFieldLines();
+                    }
+                } else {
+                    // 如果没有点击到电荷，添加一个新的电荷
+                    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+                    const targetPoint = new THREE.Vector3();
+                    raycaster.ray.intersectPlane(plane, targetPoint);
+                    
+                    // 添加正电荷
+                    const newIndex = charges.length;
+                    createCharge(targetPoint.x, 0, targetPoint.z, 1.0, newIndex);
+                    
+                    // 重新生成电场线
+                    generateFieldLines();
+                }
+            }
+            
+            // 设置UI事件监听
+            function setupUIListeners() {
+                // 动画播放/暂停按钮
+                document.getElementById('toggleAnimation').addEventListener('click', function() {
+                    isAnimating = !isAnimating;
+                    this.classList.toggle('active', isAnimating);
+                    this.textContent = isAnimating ? '暂停动画' : '播放动画';
+                });
+                
+                // 添加电荷按钮
+                document.getElementById('addCharge').addEventListener('click', addCharge);
+                
+                // 重置场景按钮
+                document.getElementById('reset').addEventListener('click', resetScene);
+                
+                // 参数调节滑动条
+                const sliders = ['chargeValue1', 'chargeValue2', 'chargeDistance', 'lineCount'];
+                sliders.forEach(sliderId => {
+                    const slider = document.getElementById(sliderId);
+                    slider.addEventListener('input', updateChargeParameters);
+                });
+            }
+            
+            // 动画循环
+            function animate() {
+                animationId = requestAnimationFrame(animate);
+                
+                if (isAnimating) {
+                    // 更新电荷位置（简单的动画效果）
+                    for (const charge of charges) {
+                        // 使电荷轻微上下浮动
+                        const floatHeight = 0.1 * Math.abs(charge.charge);
+                        charge.mesh.position.y = charge.position.y + Math.sin(Date.now() * 0.001 + charge.position.x) * floatHeight;
+                        
+                        // 更新标签位置
+                        charge.label.position.copy(charge.mesh.position);
+                        charge.label.position.y += 0.8;
+                        
+                        charge.indexLabel.position.copy(charge.mesh.position);
+                        charge.indexLabel.position.y -= 0.8;
+                    }
+                }
+                
+                controls.update();
+                updateCoordinateDisplay();
+                renderer.render(scene, camera);
+            }
+            
+            // 初始化场景
+            init();
+            
+            // 页面卸载时取消动画
+            window.addEventListener('beforeunload', function() {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

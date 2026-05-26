@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平抛运动模拟</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+            padding-top: 60px;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 30px;
+        }
+        
+        /* 调整布局顺序：数据区 -> 动画区 -> 控制面板 */
+        .data-display {
+            width: 200px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-size: 14px;
+            color: #2c3e50;
+            align-self: flex-start;
+        }
+        
+        .animation-area {
+            flex: 1;
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        #canvas {
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 主标题样式：居中显示，改为absolute定位随页面滚动 */
+        .main-title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            z-index: 100;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* 制作信息：放在主标题右下角，改为absolute定位随页面滚动 */
+        .author-info {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #7f8c8d;
+            z-index: 100;
+            width: 100%;
+            text-align: center;
+            padding-right: 20px;
+            text-align: right;
+        }
+        
+        .control-panel {
+            width: 300px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .value-display {
+            font-size: 14px;
+            color: #34495e;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        #startBtn {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        #startBtn:hover {
+            background-color: #219653;
+        }
+        
+        #pauseBtn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #pauseBtn:hover {
+            background-color: #c0392b;
+        }
+        
+        .data-item {
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .data-value {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- 主标题居中 -->
+    <div class="main-title">平抛运动模拟</div>
+    <!-- 制作信息放在标题右下角 -->
+    <div class="author-info">制作：张兴刚燕赵名师工作室 耿春辉</div>
+    
+    <div class="container">
+        <!-- 数据显示区移到左侧 -->
+        <div class="data-display">
+            <div class="data-item">
+                <span class="data-label">水平分速度 (Vx):</span>
+                <span class="data-value" id="vxData">0</span> m/s
+            </div>
+            <div class="data-item">
+                <span class="data-label">竖直分速度 (Vy):</span>
+                <span class="data-value" id="vyData">0</span> m/s
+            </div>
+            <div class="data-item">
+                <span class="data-label">合速度 (V):</span>
+                <span class="data-value" id="vData">0</span> m/s
+            </div>
+            <div class="data-item">
+                <span class="data-label">合位移大小:</span>
+                <span class="data-value" id="sData">0</span> m
+            </div>
+            <div class="data-item">
+                <span class="data-label">运动时间:</span>
+                <span class="data-value" id="timeData">0</span> s
+            </div>
+        </div>
+
+        <!-- 动画区域居中 -->
+        <div class="animation-area">
+            <canvas id="canvas" width="800" height="600"></canvas>
+        </div>
+        
+        <!-- 控制面板在右侧 -->
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="velocitySlider">初速度 (m/s)</label>
+                <input type="range" id="velocitySlider" min="1" max="30" value="10">
+                <div class="value-display">当前值: <span id="velocityValue">10</span> m/s</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="heightSlider">抛出高度 (m)</label>
+                <input type="range" id="heightSlider" min="5" max="50" value="20">
+                <div class="value-display">当前值: <span id="heightValue">20</span> m</div>
+            </div>
+            
+            <div class="control-group">
+                <label>显示/隐藏矢量</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showVx" checked>
+                    <label for="showVx">水平分速度 (Vx)</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showVy" checked>
+                    <label for="showVy">竖直分速度 (Vy)</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showV" checked>
+                    <label for="showV">合速度 (V)</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showS" checked>
+                    <label for="showS">合位移 (虚线)</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showTrajectory" checked>
+                    <label for="showTrajectory">运动轨迹 (抛物线)</label>
+                </div>
+            </div>
+            
+            <button id="startBtn">开始模拟</button>
+            <button id="pauseBtn">暂停模拟</button>
+            <button id="resetBtn">重置模拟</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取画布和上下文
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 画布尺寸
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        // 物理参数
+        const g = 10; // 重力加速度 m/s²
+        let v0 = 10;  // 初速度 m/s
+        let h0 = 20;  // 抛出高度 m
+        
+        // 缩放比例 (像素/米)
+        let scale = 20;
+        
+        // 动画状态
+        let animationId = null;
+        let isPaused = false;
+        let isLanded = false; // 标记小球是否落地
+        let time = 0;
+        let dt = 0.05; // 时间步长
+        
+        // 显示控制
+        let showVx = true;
+        let showVy = true;
+        let showV = true;
+        let showS = true;
+        let showTrajectory = true; // 是否显示抛物线轨迹
+        
+        // 小球位置和速度
+        let x = 0;
+        let y = 0;
+        let vx = v0;
+        let vy = 0;
+        let v = 0;
+        
+        // 轨迹点数组（存储平抛运动的抛物线轨迹）
+        let trajectoryPoints = [];
+        
+        // 坐标系原点（画布上的位置）
+        const originX = 100;  // x轴原点横坐标
+        const originY = 150;  // y轴原点纵坐标（画布上方，y轴向下延伸）
+        
+        // DOM 元素
+        const velocitySlider = document.getElementById('velocitySlider');
+        const velocityValue = document.getElementById('velocityValue');
+        const heightSlider = document.getElementById('heightSlider');
+        const heightValue = document.getElementById('heightValue');
+        const showVxCheckbox = document.getElementById('showVx');
+        const showVyCheckbox = document.getElementById('showVy');
+        const showVCheckbox = document.getElementById('showV');
+        const showSCheckbox = document.getElementById('showS');
+        const showTrajectoryCheckbox = document.getElementById('showTrajectory');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // 数据显示元素
+        const vxData = document.getElementById('vxData');
+        const vyData = document.getElementById('vyData');
+        const vData = document.getElementById('vData');
+        const sData = document.getElementById('sData');
+        const timeData = document.getElementById('timeData'); // 运动时间显示
+        
+        // 初始化
+        function init() {
+            // 重置参数
+            time = 0;
+            x = 0;
+            y = 0;
+            vx = v0;
+            vy = 0;
+            v = 0;
+            isLanded = false; // 重置落地标记
+            
+            // 清空轨迹点数组
+            trajectoryPoints = [];
+            
+            // 重新计算缩放比例
+            updateScale();
+            
+            // 绘制初始界面
+            draw();
+        }
+        
+        // 更新缩放比例
+        function updateScale() {
+            // 根据抛出高度和初速度调整缩放比例
+            const maxX = v0 * Math.sqrt(2 * h0 / g); // 平抛运动最大水平位移
+            const maxY = h0;                         // 最大竖直位移
+            
+            // 确保整个运动轨迹都能显示在画布内
+            const scaleX = (canvasWidth - originX - 50) / maxX;
+            const scaleY = (canvasHeight - originY - 50) / maxY;
+            
+            scale = Math.min(scaleX, scaleY, 30); // 最大缩放比例30
+            if (scale < 5) scale = 5; // 最小缩放比例5
+        }
+        
+        // 绘制函数
+        function draw() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // 绘制坐标轴
+            drawAxis();
+            
+            // 计算当前位置和速度（仅在未落地且未暂停时计算）
+            if (!isLanded && !isPaused) {
+                calculatePhysics();
+            }
+            
+            // 绘制抛物线轨迹（平抛运动核心）
+            if (showTrajectory) {
+                drawTrajectory();
+            }
+            
+            // 绘制小球
+            drawBall();
+            
+            // 绘制矢量
+            if (showVx) drawVx();
+            if (showVy) drawVy();
+            if (showV) drawV();
+            if (showS) drawS();
+            
+            // 更新数据显示
+            updateDataDisplay();
+        }
+        
+        // 绘制坐标轴 (x轴水平向右，y轴竖直向下，原点在画布上方)
+        function drawAxis() {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            // x轴 (水平向右，从原点向右延伸)
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(canvasWidth - 50, originY);
+            ctx.stroke();
+            
+            // x轴箭头 (向右)
+            ctx.beginPath();
+            ctx.moveTo(canvasWidth - 50, originY);
+            ctx.lineTo(canvasWidth - 60, originY - 5);
+            ctx.lineTo(canvasWidth - 60, originY + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // y轴 (竖直向下，从原点向下延伸，符合y轴正方向定义)
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(originX, canvasHeight - 50);
+            ctx.stroke();
+            
+            // y轴箭头 (向下，明确标识y轴正方向)
+            ctx.beginPath();
+            ctx.moveTo(originX, canvasHeight - 50);
+            ctx.lineTo(originX - 5, canvasHeight - 60);
+            ctx.lineTo(originX + 5, canvasHeight - 60);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 坐标轴标签
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#333';
+            ctx.fillText('x (m)', canvasWidth - 70, originY - 10);
+            ctx.fillText('y (m)', originX - 30, canvasHeight - 60);
+            
+            // 原点标记
+            ctx.fillText('O', originX - 15, originY + 20);
+            
+            // y轴刻度标注 (向下为正，数值递增)
+            ctx.font = '12px Arial';
+            for (let i = 0; i <= h0; i += 5) {
+                const yPos = originY + i * scale; // y轴向下，数值越大位置越靠下
+                if (yPos > canvasHeight - 50) break; // 不超出画布范围
+                ctx.fillText(i.toString(), originX - 25, yPos + 4);
+                ctx.beginPath();
+                ctx.moveTo(originX - 5, yPos);
+                ctx.lineTo(originX, yPos);
+                ctx.stroke();
+            }
+            
+            // x轴刻度标注
+            const maxX = v0 * Math.sqrt(2 * h0 / g);
+            for (let i = 0; i <= maxX; i += 5) {
+                const xPos = originX + i * scale;
+                if (xPos > canvasWidth - 50) break;
+                ctx.fillText(i.toString(), xPos - 4, originY + 15);
+                ctx.beginPath();
+                ctx.moveTo(xPos, originY);
+                ctx.lineTo(xPos, originY + 5);
+                ctx.stroke();
+            }
+        }
+        
+        // 计算物理量 (严格遵循平抛运动规律：水平匀速，竖直自由落体)
+        function calculatePhysics() {
+            // 仅在未落地时更新物理量
+            if (!isLanded) {
+                // 更新时间
+                time += dt;
+                
+                // 平抛运动核心公式：
+                // 水平方向：匀速直线运动 x = v0 * t
+                // 竖直方向：自由落体运动 y = ½ * g * t²
+                x = v0 * time;                      // 水平位移（匀速）
+                y = 0.5 * g * time * time;          // 竖直位移（匀加速，形成抛物线）
+                
+                // 速度计算：
+                vx = v0;                            // 水平速度保持不变（平抛运动关键）
+                vy = g * time;                      // 竖直速度随时间匀加速
+                v = Math.sqrt(vx * vx + vy * vy);   // 合速度
+                
+                // 记录轨迹点（用于绘制抛物线）
+                if (y <= h0) { // 未落地时记录
+                    trajectoryPoints.push({
+                        x: originX + x * scale,
+                        y: originY + y * scale
+                    });
+                }
+                
+                // 如果小球落地（y达到抛出高度h0），标记落地并停止所有计算
+                if (y >= h0) {
+                    isLanded = true; // 标记为已落地
+                    y = h0;                         // 落地时y值等于抛出高度
+                    vy = g * Math.sqrt(2 * h0 / g); // 落地时的竖直速度
+                    v = Math.sqrt(vx * vx + vy * vy);
+                    
+                    // 停止动画循环
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
+            }
+        }
+        
+        // 绘制小球
+        function drawBall() {
+            const ballX = originX + x * scale;
+            const ballY = originY + y * scale;
+            
+            // 绘制小球
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#e74c3c';
+            ctx.fill();
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        
+        // 绘制平抛运动抛物线轨迹（核心新增功能）
+        function drawTrajectory() {
+            if (trajectoryPoints.length < 2) return;
+            
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([]); // 实线绘制轨迹
+            ctx.beginPath();
+            
+            // 从第一个轨迹点开始绘制
+            ctx.moveTo(trajectoryPoints[0].x, trajectoryPoints[0].y);
+            
+            // 连接所有轨迹点，形成平滑的抛物线
+            for (let i = 1; i < trajectoryPoints.length; i++) {
+                ctx.lineTo(trajectoryPoints[i].x, trajectoryPoints[i].y);
+            }
+            
+            ctx.stroke();
+            
+            // 绘制轨迹起点标记
+            ctx.fillStyle = '#3498db';
+            ctx.beginPath();
+            ctx.arc(originX, originY, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 绘制水平分速度 Vx
+        function drawVx() {
+            const ballX = originX + x * scale;
+            const ballY = originY + y * scale;
+            
+            // 速度矢量缩放系数
+            const vecScale = 5;
+            
+            // 绘制Vx箭头 (向右，x轴正方向)
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(ballX, ballY);
+            ctx.lineTo(ballX + vx * vecScale, ballY);
+            ctx.stroke();
+            
+            // Vx箭头头部
+            ctx.beginPath();
+            ctx.moveTo(ballX + vx * vecScale, ballY);
+            ctx.lineTo(ballX + vx * vecScale - 8, ballY - 4);
+            ctx.lineTo(ballX + vx * vecScale - 8, ballY + 4);
+            ctx.closePath();
+            ctx.fillStyle = '#3498db';
+            ctx.fill();
+            
+            // 标注Vx数值
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#3498db';
+            ctx.fillText(`Vx=${vx.toFixed(1)}`, ballX + vx * vecScale / 2, ballY - 10);
+        }
+        
+        // 绘制竖直分速度 Vy (向下，y轴正方向) - 调整标注位置到左侧
+        function drawVy() {
+            const ballX = originX + x * scale;
+            const ballY = originY + y * scale;
+            
+            // 速度矢量缩放系数
+            const vecScale = 5;
+            
+            // 绘制Vy箭头 (向下，严格匹配y轴正方向)
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(ballX, ballY);
+            ctx.lineTo(ballX, ballY + vy * vecScale); // 向下绘制
+            ctx.stroke();
+            
+            // Vy箭头头部 (向下)
+            ctx.beginPath();
+            ctx.moveTo(ballX, ballY + vy * vecScale);
+            ctx.lineTo(ballX - 4, ballY + vy * vecScale - 8);
+            ctx.lineTo(ballX + 4, ballY + vy * vecScale - 8);
+            ctx.closePath();
+            ctx.fillStyle = '#2ecc71';
+            ctx.fill();
+            
+            // 标注Vy数值 - 调整到竖直分速度左侧
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillText(`Vy=${vy.toFixed(1)}`, ballX - 80, ballY + vy * vecScale / 2);
+        }
+        
+        // 绘制合速度 V
+        function drawV() {
+            const ballX = originX + x * scale;
+            const ballY = originY + y * scale;
+            
+            // 速度矢量缩放系数
+            const vecScale = 5;
+            
+            // 合速度分量
+            const vxDraw = vx * vecScale;
+            const vyDraw = vy * vecScale;
+            
+            // 绘制平行四边形虚线 (体现矢量合成)
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(ballX + vxDraw, ballY);
+            ctx.lineTo(ballX + vxDraw, ballY + vyDraw);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(ballX, ballY + vyDraw);
+            ctx.lineTo(ballX + vxDraw, ballY + vyDraw);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制合速度箭头
+            ctx.strokeStyle = '#e67e22';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(ballX, ballY);
+            ctx.lineTo(ballX + vxDraw, ballY + vyDraw);
+            ctx.stroke();
+            
+            // 合速度箭头头部
+            const angle = Math.atan2(vyDraw, vxDraw);
+            const arrowX = ballX + vxDraw - 8 * Math.cos(angle);
+            const arrowY = ballY + vyDraw - 8 * Math.sin(angle);
+            
+            ctx.beginPath();
+            ctx.moveTo(ballX + vxDraw, ballY + vyDraw);
+            ctx.lineTo(arrowX - 4 * Math.sin(angle), arrowY + 4 * Math.cos(angle));
+            ctx.lineTo(arrowX + 4 * Math.sin(angle), arrowY - 4 * Math.cos(angle));
+            ctx.closePath();
+            ctx.fillStyle = '#e67e22';
+            ctx.fill();
+            
+            // 标注V数值
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#e67e22';
+            const textX = ballX + vxDraw / 2 + 10 * Math.cos(angle);
+            const textY = ballY + vyDraw / 2 + 10 * Math.sin(angle);
+            ctx.fillText(`V=${v.toFixed(1)}`, textX, textY);
+        }
+        
+        // 绘制合位移 (虚线)
+        function drawS() {
+            const ballX = originX + x * scale;
+            const ballY = originY + y * scale;
+            
+            // 绘制合位移虚线
+            ctx.strokeStyle = '#8e44ad';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(originX, originY); // 原点
+            ctx.lineTo(ballX, ballY);     // 小球位置
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // 更新数据显示
+        function updateDataDisplay() {
+            const s = Math.sqrt(x * x + y * y); // 合位移大小
+            vxData.textContent = vx.toFixed(1);
+            vyData.textContent = vy.toFixed(1);
+            vData.textContent = v.toFixed(1);
+            sData.textContent = s.toFixed(1);
+            timeData.textContent = time.toFixed(2); // 显示运动时间
+        }
+        
+        // 动画循环
+        function animate() {
+            draw();
+            // 仅在未落地时继续动画循环
+            if (!isLanded) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        // 事件监听
+        velocitySlider.addEventListener('input', function() {
+            v0 = parseFloat(this.value);
+            velocityValue.textContent = v0;
+            updateScale();
+            init();
+        });
+        
+        heightSlider.addEventListener('input', function() {
+            h0 = parseFloat(this.value);
+            heightValue.textContent = h0;
+            updateScale();
+            init();
+        });
+        
+        showVxCheckbox.addEventListener('change', function() {
+            showVx = this.checked;
+            draw();
+        });
+        
+        showVyCheckbox.addEventListener('change', function() {
+            showVy = this.checked;
+            draw();
+        });
+        
+        showVCheckbox.addEventListener('change', function() {
+            showV = this.checked;
+            draw();
+        });
+        
+        showSCheckbox.addEventListener('change', function() {
+            showS = this.checked;
+            draw();
+        });
+        
+        showTrajectoryCheckbox.addEventListener('change', function() {
+            showTrajectory = this.checked;
+            draw();
+        });
+        
+        startBtn.addEventListener('click', function() {
+            // 只有未落地且无动画时才启动
+            if (!animationId && !isLanded) {
+                isPaused = false;
+                animate();
+            } else if (isPaused && !isLanded) {
+                // 暂停状态且未落地时恢复
+                isPaused = false;
+                animate();
+            }
+        });
+        
+        pauseBtn.addEventListener('click', function() {
+            isPaused = true;
+        });
+        
+        // 重置按钮事件
+        resetBtn.addEventListener('click', function() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            init();
+        });
+        
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

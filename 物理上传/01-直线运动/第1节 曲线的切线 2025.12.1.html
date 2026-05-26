@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曲线的切线</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .author {
+            color: #7f8c8d;
+            font-size: 14px;
+            text-align: right;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        
+        canvas {
+            display: block;
+            background-color: #fafafa;
+        }
+        
+        .explanation {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            margin-top: 20px;
+        }
+        
+        .explanation h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .point-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .point-a {
+            color: #e74c3c;
+        }
+        
+        .point-b {
+            color: #2ecc71;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>曲线的切线</h1>
+            <div class="author">张兴刚燕赵名师工作室<br>耿春辉</div>
+        </div>
+        
+        <div class="instructions">
+            使用鼠标拖动B点或切线来探索曲线切线的概念
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="curveCanvas" width="760" height="400"></canvas>
+        </div>
+        
+        <div class="point-info">
+            <div class="point-a">A点 (固定点)</div>
+            <div class="point-b">B点 (可拖动点)</div>
+        </div>
+        
+        <div class="explanation">
+            <h3>切线概念说明</h3>
+            <p>在几何学中，曲线的切线是在某一点上与曲线"刚好接触"的直线。更准确地说，当曲线上两点A和B无限接近时，连接它们的割线AB的极限位置就是曲线在A点的切线。</p>
+            <p>在本演示中，A点是固定点，B点可以沿着曲线移动。当B点接近A点时，割线AB逐渐接近A点的切线位置。您可以通过拖动B点来观察这一过程。</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('curveCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 控制变量
+        let isDragging = false;
+        let dragPoint = null; // 'B' 或 'tangent'
+        let t = 0.5; // 参数t，用于控制B点位置
+        
+        // 曲线函数
+        function curveFunction(x) {
+            // 使用正弦函数创建一条曲线
+            return 200 + 80 * Math.sin((x - 380) / 100);
+        }
+        
+        // 计算曲线上某点的切线斜率
+        function calculateTangentSlope(x) {
+            // 使用数值微分计算导数（切线斜率）
+            const h = 0.001;
+            const y1 = curveFunction(x - h);
+            const y2 = curveFunction(x + h);
+            return (y2 - y1) / (2 * h);
+        }
+        
+        // 绘制函数
+        function draw() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制坐标系
+            drawCoordinateSystem();
+            
+            // 绘制曲线
+            drawCurve();
+            
+            // 计算A点和B点坐标
+            const aX = 380;
+            const aY = curveFunction(aX);
+            
+            const bX = 200 + 360 * t;
+            const bY = curveFunction(bX);
+            
+            // 绘制A点和B点
+            drawPoint(aX, aY, 'A', '#e74c3c');
+            drawPoint(bX, bY, 'B', '#2ecc71');
+            
+            // 绘制割线AB
+            drawSecantLine(aX, aY, bX, bY);
+            
+            // 绘制B点处的切线
+            drawTangentLine(bX, bY);
+        }
+        
+        // 绘制坐标系
+        function drawCoordinateSystem() {
+            ctx.strokeStyle = '#bdc3c7';
+            ctx.lineWidth = 1;
+            
+            // 绘制网格线
+            ctx.beginPath();
+            for (let x = 0; x <= canvas.width; x += 50) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+            }
+            for (let y = 0; y <= canvas.height; y += 50) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            
+            // X轴
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+            
+            // Y轴
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+        }
+        
+        // 绘制曲线
+        function drawCurve() {
+            ctx.beginPath();
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 3;
+            
+            // 绘制曲线
+            for (let x = 0; x <= canvas.width; x++) {
+                const y = curveFunction(x);
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        // 绘制点
+        function drawPoint(x, y, label, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制标签
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '14px Arial';
+            ctx.fillText(label, x + 10, y - 10);
+        }
+        
+        // 绘制割线
+        function drawSecantLine(aX, aY, bX, bY) {
+            ctx.beginPath();
+            ctx.strokeStyle = '#e67e22';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(aX, aY);
+            ctx.lineTo(bX, bY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 添加割线标签
+            ctx.fillStyle = '#e67e22';
+            ctx.font = '14px Arial';
+            ctx.fillText('割线', (aX + bX) / 2 - 15, (aY + bY) / 2 - 10);
+        }
+        
+        // 绘制切线
+        function drawTangentLine(x, y) {
+            const slope = calculateTangentSlope(x);
+            
+            // 计算切线上的两个点
+            const length = 150;
+            const dx = length / Math.sqrt(1 + slope * slope);
+            const dy = slope * dx;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#9b59b6';
+            ctx.lineWidth = 2;
+            ctx.moveTo(x - dx, y - dy);
+            ctx.lineTo(x + dx, y + dy);
+            ctx.stroke();
+            
+            // 添加切线标签
+            ctx.fillStyle = '#9b59b6';
+            ctx.font = '14px Arial';
+            ctx.fillText('切线', x + dx - 30, y + dy - 10);
+            
+            // 绘制切线控制点（用于拖动）
+            ctx.beginPath();
+            ctx.arc(x + dx, y + dy, 8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(155, 89, 182, 0.3)';
+            ctx.fill();
+            ctx.strokeStyle = '#9b59b6';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        // 检查是否点击了点
+        function getClickedPoint(x, y) {
+            // 计算B点坐标
+            const bX = 200 + 360 * t;
+            const bY = curveFunction(bX);
+            
+            // 计算切线端点坐标
+            const slope = calculateTangentSlope(bX);
+            const length = 150;
+            const dx = length / Math.sqrt(1 + slope * slope);
+            const dy = slope * dx;
+            const tangentX = bX + dx;
+            const tangentY = bY + dy;
+            
+            // 检查是否点击了B点
+            const distToB = Math.sqrt((x - bX) ** 2 + (y - bY) ** 2);
+            if (distToB < 10) {
+                return 'B';
+            }
+            
+            // 检查是否点击了切线端点
+            const distToTangent = Math.sqrt((x - tangentX) ** 2 + (y - tangentY) ** 2);
+            if (distToTangent < 12) {
+                return 'tangent';
+            }
+            
+            return null;
+        }
+        
+        // 事件监听
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            dragPoint = getClickedPoint(x, y);
+            if (dragPoint) {
+                isDragging = true;
+            }
+        });
+        
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            
+            if (dragPoint === 'B') {
+                // 限制B点在曲线上移动
+                const newT = Math.max(0, Math.min(1, (x - 200) / 360));
+                t = newT;
+                draw();
+            } else if (dragPoint === 'tangent') {
+                // 通过拖动切线来移动B点
+                const newT = Math.max(0, Math.min(1, (x - 200) / 360));
+                t = newT;
+                draw();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', function() {
+            isDragging = false;
+            dragPoint = null;
+        });
+        
+        canvas.addEventListener('mouseleave', function() {
+            isDragging = false;
+            dragPoint = null;
+        });
+        
+        // 初始绘制
+        draw();
+    </script>
+</body>
+</html>

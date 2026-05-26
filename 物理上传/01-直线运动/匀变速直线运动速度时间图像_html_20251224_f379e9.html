@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匀变速直线运动速度-时间图像模拟器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a3c7f);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #ddd;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .controls-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .graph-container {
+            flex: 2;
+            min-width: 500px;
+            background-color: rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #FFD700;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .control-label span:last-child {
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #FFD700;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .start-btn {
+            background: linear-gradient(90deg, #00b09b, #96c93d);
+            color: white;
+        }
+        
+        .start-btn:hover {
+            background: linear-gradient(90deg, #009688, #8bc34a);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 176, 155, 0.4);
+        }
+        
+        .reset-btn {
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: linear-gradient(90deg, #e03e5a, #e6392a);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+        
+        .graph-wrapper {
+            flex: 1;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        canvas {
+            display: block;
+            background-color: #0c1021;
+            border-radius: 8px;
+        }
+        
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin: 5px 0;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .motion-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border-left: 4px solid #FFD700;
+        }
+        
+        .formula {
+            text-align: center;
+            font-size: 1.4rem;
+            margin: 15px 0;
+            color: #FFD700;
+            font-family: 'Courier New', monospace;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .graph-container, .controls-panel {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> 匀变速直线运动速度-时间图像模拟器</h1>
+            <p class="subtitle">调整初速度和加速度，观察匀变速直线运动中速度随时间的变化规律。可以演示加速和减速运动，图像将实时显示速度变化。</p>
+        </header>
+        
+        <div class="content">
+            <div class="controls-panel">
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> 运动参数控制</h2>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>初速度 v₀ (m/s)</span>
+                        <span id="v0-value">10</span>
+                    </div>
+                    <input type="range" id="v0-slider" min="-20" max="30" value="10" step="1">
+                    <div class="control-label">
+                        <span>负方向 ←</span>
+                        <span>正方向 →</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>加速度 a (m/s²)</span>
+                        <span id="a-value">-2</span>
+                    </div>
+                    <input type="range" id="a-slider" min="-5" max="5" value="-2" step="0.1">
+                    <div class="control-label">
+                        <span>减速运动</span>
+                        <span>加速运动</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>运动时间 t (s)</span>
+                        <span id="t-value">10</span>
+                    </div>
+                    <input type="range" id="t-slider" min="5" max="20" value="10" step="1">
+                </div>
+                
+                <div class="formula">
+                    v = v₀ + a · t
+                </div>
+                
+                <div class="btn-group">
+                    <button class="start-btn" id="start-btn">
+                        <i class="fas fa-play"></i> 开始演示
+                    </button>
+                    <button class="reset-btn" id="reset-btn">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                </div>
+                
+                <div class="motion-info">
+                    <h3><i class="fas fa-info-circle"></i> 运动状态</h3>
+                    <p id="motion-description">当前为减速运动，初速度方向与加速度方向相反，速度逐渐减小。</p>
+                </div>
+            </div>
+            
+            <div class="graph-container">
+                <h2 class="section-title"><i class="fas fa-chart-area"></i> 速度-时间图像 (v-t图)</h2>
+                <div class="graph-wrapper">
+                    <canvas id="motion-canvas" width="800" height="500"></canvas>
+                </div>
+                
+                <div class="info-panel">
+                    <div class="info-box">
+                        <div class="info-label">当前速度</div>
+                        <div class="info-value" id="current-velocity">10.0 m/s</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">当前时间</div>
+                        <div class="info-value" id="current-time">0.0 s</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">运动状态</div>
+                        <div class="info-value" id="motion-state">未开始</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>匀变速直线运动模拟器 | 速度公式: v = v₀ + a·t | 加速度恒定，速度随时间均匀变化</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const canvas = document.getElementById('motion-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 参数显示元素
+        const v0Value = document.getElementById('v0-value');
+        const aValue = document.getElementById('a-value');
+        const tValue = document.getElementById('t-value');
+        const currentVelocity = document.getElementById('current-velocity');
+        const currentTime = document.getElementById('current-time');
+        const motionState = document.getElementById('motion-state');
+        const motionDescription = document.getElementById('motion-description');
+        
+        // 控制滑块
+        const v0Slider = document.getElementById('v0-slider');
+        const aSlider = document.getElementById('a-slider');
+        const tSlider = document.getElementById('t-slider');
+        
+        // 按钮
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        // 运动参数
+        let v0 = parseFloat(v0Slider.value); // 初速度
+        let a = parseFloat(aSlider.value);   // 加速度
+        let tMax = parseFloat(tSlider.value); // 总时间
+        
+        // 动画相关变量
+        let animationId = null;
+        let currentT = 0;
+        let isAnimating = false;
+        
+        // 更新参数显示
+        function updateParameterDisplays() {
+            v0Value.textContent = v0;
+            aValue.textContent = a;
+            tValue.textContent = tMax;
+            
+            // 更新运动描述
+            let description = "";
+            if (a === 0) {
+                description = "当前为匀速直线运动，速度保持不变。";
+            } else if (a > 0) {
+                if (v0 >= 0) {
+                    description = "当前为加速运动，初速度方向与加速度方向相同，速度逐渐增加。";
+                } else {
+                    description = "当前初速度为负方向，加速度为正方向，速度先减小后反向增加。";
+                }
+            } else {
+                if (v0 > 0) {
+                    description = "当前为减速运动，初速度方向与加速度方向相反，速度逐渐减小。";
+                } else if (v0 < 0) {
+                    description = "当前初速度为负方向，加速度为负方向，速度在负方向上逐渐增加。";
+                } else {
+                    description = "当前初速度为0，加速度为负，速度向负方向增加。";
+                }
+            }
+            motionDescription.textContent = description;
+        }
+        
+        // 绘制坐标轴
+        function drawAxes() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const margin = 60;
+            const graphWidth = width - 2 * margin;
+            const graphHeight = height - 2 * margin;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            
+            // 时间轴 (x轴)
+            ctx.beginPath();
+            ctx.moveTo(margin, height - margin);
+            ctx.lineTo(width - margin, height - margin);
+            ctx.stroke();
+            
+            // 速度轴 (y轴)
+            ctx.beginPath();
+            ctx.moveTo(margin, margin);
+            ctx.lineTo(margin, height - margin);
+            ctx.stroke();
+            
+            // 绘制箭头
+            // 时间轴箭头
+            ctx.beginPath();
+            ctx.moveTo(width - margin, height - margin);
+            ctx.lineTo(width - margin - 10, height - margin - 5);
+            ctx.lineTo(width - margin - 10, height - margin + 5);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            
+            // 速度轴箭头
+            ctx.beginPath();
+            ctx.moveTo(margin, margin);
+            ctx.lineTo(margin - 5, margin + 10);
+            ctx.lineTo(margin + 5, margin + 10);
+            ctx.fill();
+            
+            // 坐标轴标签
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('时间 t (s)', width / 2, height - margin + 30);
+            
+            ctx.save();
+            ctx.translate(margin - 30, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText('速度 v (m/s)', 0, 0);
+            ctx.restore();
+            
+            // 绘制刻度
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // 时间轴刻度 (x轴)
+            const timeStep = tMax / 10;
+            for (let i = 0; i <= 10; i++) {
+                const t = i * timeStep;
+                const x = margin + (i / 10) * graphWidth;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, height - margin - 5);
+                ctx.lineTo(x, height - margin + 5);
+                ctx.stroke();
+                
+                ctx.fillText(t.toFixed(1), x, height - margin + 15);
+            }
+            
+            // 速度轴刻度 (y轴)
+            // 计算速度范围
+            const velocities = [];
+            for (let t = 0; t <= tMax; t += tMax/10) {
+                velocities.push(v0 + a * t);
+            }
+            const maxV = Math.max(...velocities, 0);
+            const minV = Math.min(...velocities, 0);
+            const vRange = maxV - minV;
+            const vStep = vRange / 10;
+            
+            // 确保y轴刻度包含0
+            let startV = minV;
+            if (minV > 0) startV = 0;
+            if (maxV < 0) startV = maxV - vStep * 10;
+            
+            for (let i = 0; i <= 10; i++) {
+                const v = startV + i * vStep;
+                const y = height - margin - (v - startV) / vRange * graphHeight;
+                
+                // 如果v在[minV, maxV]范围内，绘制刻度
+                if (v >= minV && v <= maxV) {
+                    ctx.beginPath();
+                    ctx.moveTo(margin - 5, y);
+                    ctx.lineTo(margin + 5, y);
+                    ctx.stroke();
+                    
+                    ctx.fillText(v.toFixed(1), margin - 20, y);
+                }
+            }
+            
+            // 绘制网格线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 垂直网格线
+            for (let i = 0; i <= 10; i++) {
+                const x = margin + (i / 10) * graphWidth;
+                ctx.beginPath();
+                ctx.moveTo(x, margin);
+                ctx.lineTo(x, height - margin);
+                ctx.stroke();
+            }
+            
+            // 水平网格线
+            for (let i = 0; i <= 10; i++) {
+                const v = startV + i * vStep;
+                const y = height - margin - (v - startV) / vRange * graphHeight;
+                
+                if (v >= minV && v <= maxV) {
+                    ctx.beginPath();
+                    ctx.moveTo(margin, y);
+                    ctx.lineTo(width - margin, y);
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // 绘制速度-时间曲线
+        function drawCurve(animate = false) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const margin = 60;
+            const graphWidth = width - 2 * margin;
+            const graphHeight = height - 2 * margin;
+            
+            // 计算速度范围
+            const velocities = [];
+            for (let t = 0; t <= tMax; t += tMax/100) {
+                velocities.push(v0 + a * t);
+            }
+            const maxV = Math.max(...velocities, 0);
+            const minV = Math.min(...velocities, 0);
+            const vRange = maxV - minV;
+            
+            // 确保y轴刻度包含0
+            let startV = minV;
+            if (minV > 0) startV = 0;
+            if (maxV < 0) startV = maxV - vRange * 0.1;
+            const adjustedVRange = maxV - startV + 0.1 * vRange;
+            
+            // 绘制曲线
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            const endT = animate ? Math.min(currentT, tMax) : tMax;
+            
+            for (let t = 0; t <= endT; t += 0.05) {
+                const v = v0 + a * t;
+                const x = margin + (t / tMax) * graphWidth;
+                const y = height - margin - ((v - startV) / adjustedVRange) * graphHeight;
+                
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制当前点
+            if (animate && currentT <= tMax) {
+                const v = v0 + a * currentT;
+                const x = margin + (currentT / tMax) * graphWidth;
+                const y = height - margin - ((v - startV) / adjustedVRange) * graphHeight;
+                
+                // 绘制点
+                ctx.fillStyle = '#FF416C';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制点到坐标轴的虚线
+                ctx.strokeStyle = 'rgba(255, 65, 108, 0.7)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                
+                // 到时间轴的虚线
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, height - margin);
+                ctx.stroke();
+                
+                // 到速度轴的虚线
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(margin, y);
+                ctx.stroke();
+                
+                ctx.setLineDash([]);
+                
+                // 更新当前速度和时间的显示
+                currentVelocity.textContent = `${v.toFixed(1)} m/s`;
+                currentTime.textContent = `${currentT.toFixed(1)} s`;
+            }
+        }
+        
+        // 动画函数
+        function animate() {
+            if (!isAnimating) return;
+            
+            drawAxes();
+            drawCurve(true);
+            
+            // 更新当前时间
+            currentT += 0.05;
+            
+            // 更新运动状态显示
+            if (currentT < tMax) {
+                motionState.textContent = a > 0 ? "加速中" : a < 0 ? "减速中" : "匀速运动中";
+                motionState.style.color = a > 0 ? "#96c93d" : a < 0 ? "#ff416c" : "#FFD700";
+            } else {
+                motionState.textContent = "运动结束";
+                motionState.style.color = "#aaa";
+                isAnimating = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> 重新开始';
+                return;
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 开始动画
+        function startAnimation() {
+            if (isAnimating) {
+                // 如果已经在动画中，停止动画
+                cancelAnimationFrame(animationId);
+                isAnimating = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> 开始演示';
+                motionState.textContent = "已暂停";
+                motionState.style.color = "#aaa";
+            } else {
+                // 如果动画已经结束，重置当前时间
+                if (currentT >= tMax) {
+                    currentT = 0;
+                }
+                
+                isAnimating = true;
+                startBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+                animate();
+            }
+        }
+        
+        // 重置动画
+        function resetAnimation() {
+            cancelAnimationFrame(animationId);
+            isAnimating = false;
+            currentT = 0;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始演示';
+            
+            // 更新参数
+            v0 = parseFloat(v0Slider.value);
+            a = parseFloat(aSlider.value);
+            tMax = parseFloat(tSlider.value);
+            
+            updateParameterDisplays();
+            drawAxes();
+            drawCurve(false);
+            
+            // 重置显示
+            currentVelocity.textContent = `${v0.toFixed(1)} m/s`;
+            currentTime.textContent = "0.0 s";
+            motionState.textContent = "未开始";
+            motionState.style.color = "#aaa";
+        }
+        
+        // 初始化
+        function init() {
+            // 设置初始值
+            updateParameterDisplays();
+            
+            // 绘制初始图形
+            drawAxes();
+            drawCurve(false);
+            
+            // 设置初始显示
+            currentVelocity.textContent = `${v0.toFixed(1)} m/s`;
+            currentTime.textContent = "0.0 s";
+            
+            // 事件监听
+            v0Slider.addEventListener('input', function() {
+                v0 = parseFloat(this.value);
+                updateParameterDisplays();
+                if (!isAnimating) {
+                    resetAnimation();
+                }
+            });
+            
+            aSlider.addEventListener('input', function() {
+                a = parseFloat(this.value);
+                updateParameterDisplays();
+                if (!isAnimating) {
+                    resetAnimation();
+                }
+            });
+            
+            tSlider.addEventListener('input', function() {
+                tMax = parseFloat(this.value);
+                updateParameterDisplays();
+                if (!isAnimating) {
+                    resetAnimation();
+                }
+            });
+            
+            startBtn.addEventListener('click', startAnimation);
+            resetBtn.addEventListener('click', resetAnimation);
+            
+            // 窗口大小变化时调整Canvas大小
+            window.addEventListener('resize', function() {
+                // 保持Canvas宽高比，但这里我们使用固定大小，所以简单重绘
+                if (!isAnimating) {
+                    drawAxes();
+                    drawCurve(false);
+                }
+            });
+        }
+        
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
