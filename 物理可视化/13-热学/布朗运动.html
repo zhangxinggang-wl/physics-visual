@@ -2,748 +2,779 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>布朗运动教学互动动画 - 燕赵名师张兴刚工作室</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>布朗运动模拟 - 温度影响 | 水分子运动 | 高中物理教学</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            user-select: none;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-            color: #fff;
+            background: linear-gradient(145deg, #eef2f9 0%, #e2e8f2 100%);
             min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .studio-name {
-            color: #ffeb3b;
-            font-size: 1.8rem;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-        
-        .title {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #e8eaf6;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #c5cae9;
-            max-width: 800px;
-            margin: 0 auto 15px;
-            line-height: 1.5;
-        }
-        
-        .content {
             display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Roboto', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+            padding: 20px;
         }
-        
-        .simulation-panel {
-            flex: 1;
-            min-width: 300px;
-            background-color: rgba(13, 27, 42, 0.8);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+        .sim-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.35), 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 1.2rem 1.5rem 1.8rem 1.5rem;
+            transition: all 0.2s ease;
         }
-        
-        .control-panel {
-            flex: 1;
-            min-width: 300px;
-            background-color: rgba(13, 27, 42, 0.8);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .panel-title {
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-            color: #bb86fc;
-            border-bottom: 2px solid #3700b3;
-            padding-bottom: 10px;
-        }
-        
+
         .canvas-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            background-color: #0d1b2a;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #1e3a5f;
-        }
-        
-        #brownCanvas {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .stat-box {
-            background-color: rgba(30, 58, 95, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #4fc3f7;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #b3e5fc;
-            margin-top: 5px;
-        }
-        
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .control-group {
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            border-radius: 1.2rem;
+            background: #ffffff;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.03), 0 8px 20px rgba(0, 0, 0, 0.12);
+            padding: 8px;
         }
-        
-        label {
-            margin-bottom: 8px;
-            color: #b3e5fc;
-            font-weight: 500;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 8px;
-            background: #1e3a5f;
-            border-radius: 5px;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #bb86fc;
-            border-radius: 50%;
+
+        canvas {
+            display: block;
+            background-color: #eef5ff;
+            border-radius: 1rem;
             cursor: pointer;
+            width: 100%;
+            height: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        
-        .value-display {
-            margin-top: 5px;
-            color: #4fc3f7;
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .title-section h1 {
+            font-size: 1.7rem;
             font-weight: 600;
+            color: #1a3f5c;
+            letter-spacing: -0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .title-section h1:before {
+            content: "🌡️";
+            font-size: 1.8rem;
+        }
+
+        .sub {
+            color: #3a6b8c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            border-top: 1px solid #caddf0;
+            display: inline-block;
+            padding-top: 5px;
+        }
+
+        .controls {
+            margin-top: 1.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem 1rem;
+            align-items: center;
+        }
+
+        .ctrl-group {
+            background: #f0f5fc;
+            padding: 0.4rem 1rem;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .ctrl-group label {
+            font-weight: 600;
+            color: #1a5d7a;
+            font-size: 0.85rem;
+        }
+
+        button {
+            background: #ffffff;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1a5d7a;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #e3f0ff;
+            transform: scale(0.96);
+        }
+
+        button:active {
+            background: #c8d9f0;
+            transform: scale(0.94);
+        }
+
+        input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+            background: #c2d4e8;
+            height: 4px;
+            border-radius: 4px;
+        }
+
+        .value-display {
+            background: #e2edf9;
+            padding: 4px 10px;
+            border-radius: 28px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1e6a8f;
+            min-width: 58px;
             text-align: center;
         }
-        
-        .buttons {
+
+        .temp-display {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #c23b1c;
+            font-weight: bold;
+            min-width: 70px;
+        }
+
+        .legend {
+            margin-top: 1rem;
             display: flex;
-            gap: 15px;
+            justify-content: center;
+            gap: 1.6rem;
+            font-size: 0.75rem;
+            color: #2c6282;
+            background: #eaf1f9;
+            padding: 6px 16px;
+            border-radius: 40px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
             flex-wrap: wrap;
         }
-        
-        .btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .btn-primary {
-            background-color: #3700b3;
-            color: white;
+
+        .badge-brown {
+            width: 14px;
+            height: 14px;
+            background: #c97e4a;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #fff0e0;
+            display: inline-block;
         }
-        
-        .btn-primary:hover {
-            background-color: #6200ee;
-            transform: translateY(-3px);
+
+        .badge-water {
+            width: 12px;
+            height: 12px;
+            background: #4aa3cf;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 1px #ffffff;
         }
-        
-        .btn-secondary {
-            background-color: #03dac6;
-            color: #000;
+
+        .badge-trail {
+            width: 16px;
+            height: 2px;
+            background: #f0a56e;
+            display: inline-block;
+            border-radius: 2px;
         }
-        
-        .btn-secondary:hover {
-            background-color: #018786;
-            transform: translateY(-3px);
+
+        .badge-hot {
+            width: 12px;
+            height: 12px;
+            background: #ff6b4a;
+            border-radius: 50%;
+            display: inline-block;
         }
-        
-        .btn-reset {
-            background-color: #cf6679;
-            color: white;
-        }
-        
-        .btn-reset:hover {
-            background-color: #b00020;
-            transform: translateY(-3px);
-        }
-        
-        .explanation {
-            background-color: rgba(13, 27, 42, 0.8);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .explanation h3 {
-            color: #bb86fc;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-        
-        .explanation p {
-            line-height: 1.6;
-            margin-bottom: 15px;
-            color: #e8eaf6;
-        }
-        
-        .highlight {
-            color: #4fc3f7;
-            font-weight: 600;
-        }
-        
-        .footer {
+
+        footer {
+            font-size: 0.7rem;
             text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            color: #c5cae9;
-            font-size: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 1rem;
+            color: #5f86a3;
         }
-        
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
+
+        @media (max-width: 640px) {
+            .sim-card {
+                padding: 1rem;
             }
-            
-            .controls {
-                grid-template-columns: 1fr;
+            .ctrl-group {
+                padding: 0.2rem 0.8rem;
             }
-            
-            .title {
-                font-size: 2rem;
+            button {
+                padding: 4px 12px;
+            }
+            .title-section h1 {
+                font-size: 1.3rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 class="title">布朗运动教学互动动画</h1>
-            <div class="studio-name">燕赵名师张兴刚工作室</div>
-            <p class="subtitle">本动画模拟了悬浮在流体中的微小粒子受到周围分子碰撞而产生的无规则运动——布朗运动。通过调整参数观察粒子行为的变化，理解温度、粒子大小和密度对布朗运动的影响。</p>
+<div>
+    <div class="sim-card">
+        <div class="title-section">
+            <h1>布朗运动 · 温度对分子运动的影响</h1>
+            <div class="sub">🌡️ 温度越高 → 水分子运动越剧烈 → 布朗粒子无规则运动越明显</div>
         </div>
-        
-        <div class="content">
-            <div class="simulation-panel">
-                <h2 class="panel-title">布朗运动模拟</h2>
-                <div class="canvas-container">
-                    <canvas id="brownCanvas"></canvas>
-                </div>
-                <div class="stats">
-                    <div class="stat-box">
-                        <div class="stat-value" id="particleCount">50</div>
-                        <div class="stat-label">粒子数量</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="avgSpeed">0</div>
-                        <div class="stat-label">平均速度 (px/s)</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="collisionCount">0</div>
-                        <div class="stat-label">碰撞次数</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="simulationTime">0</div>
-                        <div class="stat-label">模拟时间 (s)</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="control-panel">
-                <h2 class="panel-title">实验控制</h2>
-                <div class="controls">
-                    <div class="control-group">
-                        <label for="temperature">温度 (K)</label>
-                        <input type="range" id="temperature" min="100" max="500" value="300">
-                        <div class="value-display" id="tempValue">300 K</div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="particleSize">粒子大小</label>
-                        <input type="range" id="particleSize" min="2" max="15" value="5">
-                        <div class="value-display" id="sizeValue">5 px</div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="particleDensity">粒子密度</label>
-                        <input type="range" id="particleDensity" min="10" max="100" value="50">
-                        <div class="value-display" id="densityValue">50</div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="motionSpeed">运动速度</label>
-                        <input type="range" id="motionSpeed" min="1" max="10" value="5">
-                        <div class="value-display" id="speedValue">5</div>
-                    </div>
-                </div>
-                
-                <div class="buttons">
-                    <button class="btn btn-primary" id="startBtn">开始模拟</button>
-                    <button class="btn btn-secondary" id="pauseBtn">暂停模拟</button>
-                    <button class="btn btn-reset" id="resetBtn">重置模拟</button>
-                </div>
-                
-                <div class="controls" style="margin-top: 25px;">
-                    <div class="control-group">
-                        <label for="traceToggle">显示运动轨迹</label>
-                        <input type="checkbox" id="traceToggle" checked>
-                    </div>
-                    
-                    <div class="control-group">
-                        <label for="collisionToggle">显示碰撞效果</label>
-                        <input type="checkbox" id="collisionToggle" checked>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="explanation">
-            <h3>布朗运动原理说明</h3>
-            <p><span class="highlight">布朗运动</span>是悬浮在流体中的微小粒子受到周围分子碰撞而产生的无规则运动，由英国植物学家罗伯特·布朗在1827年发现。这个现象是分子运动论的有力证据，表明物质是由不断运动的分子组成的。</p>
-            <p>在本模拟中：</p>
-            <p>1. <span class="highlight">温度</span>控制粒子运动的剧烈程度。温度越高，分子运动越快，布朗运动越明显。</p>
-            <p>2. <span class="highlight">粒子大小</span>影响粒子运动的幅度。较小的粒子更容易受到分子碰撞的影响，表现出更明显的布朗运动。</p>
-            <p>3. <span class="highlight">粒子密度</span>决定了模拟区域内的粒子数量，影响碰撞频率。</p>
-            <p>4. <span class="highlight">运动轨迹</span>选项可以显示粒子的运动路径，直观展示无规则运动的特性。</p>
-            <p>通过调整参数，可以观察到布朗运动的不同特征，加深对分子运动论的理解。</p>
-        </div>
-        
-        <div class="footer">
-            <p>© 2023 燕赵名师张兴刚工作室 | 布朗运动教学互动动画 | 本模拟用于教学演示目的</p>
-        </div>
-    </div>
 
-    <script>
-        // 获取Canvas元素和上下文
-        const canvas = document.getElementById('brownCanvas');
+        <div class="canvas-container">
+            <canvas id="brownianCanvas" width="950" height="550" style="width:100%; height:auto; max-width:950px; aspect-ratio:950/550"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="ctrl-group">
+                <label>🎯 粒子数量</label>
+                <input type="range" id="particleCountSlider" min="1" max="40" step="1" value="16">
+                <span id="countValue" class="value-display">16</span>
+            </div>
+            <div class="ctrl-group">
+                <label>🔘 微粒大小</label>
+                <input type="range" id="particleSizeSlider" min="50" max="200" step="5" value="100">
+                <span id="sizeValue" class="value-display">100%</span>
+            </div>
+            <div class="ctrl-group" style="background: linear-gradient(135deg, #fff5e8, #ffe0cc);">
+                <label>🌡️ 温度调节</label>
+                <input type="range" id="temperatureSlider" min="0" max="100" step="1" value="45">
+                <span id="tempValue" class="value-display temp-display">45°C</span>
+            </div>
+            <div class="ctrl-group">
+                <button id="resetBtn">⟳ 重置位置</button>
+                <button id="clearTrailBtn">🧹 清除轨迹</button>
+            </div>
+        </div>
+
+        <div class="legend">
+            <span><i class="badge-water"></i> 水分子 (温度越高运动越快)</span>
+            <span><i class="badge-brown"></i> 布朗微粒</span>
+            <span><i class="badge-trail"></i> 运动轨迹</span>
+            <span><i class="badge-hot"></i> 高温区域颜色越红</span>
+            <span>💧 温度直接影响分子动能</span>
+        </div>
+        <footer>※ 温度升高 → 水分子速度加快 → 撞击频率和强度增加 → 微粒运动更剧烈 | 点击画布可额外产生撞击扰动</footer>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // 获取canvas元素
+        const canvas = document.getElementById('brownianCanvas');
         const ctx = canvas.getContext('2d');
         
-        // 设置Canvas尺寸
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-        }
+        // 固定画布实际分辨率
+        const width = 950;
+        const height = 550;
+        canvas.width = width;
+        canvas.height = height;
         
-        // 初始化Canvas尺寸
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        // ----- 模拟参数 -----
+        let particleCount = 16;          // 布朗粒子数量
+        let particleSizePercent = 100;    // 粒子大小百分比 50~200
+        let baseParticleRadius = 5.2;     // 基础半径 (100%时半径约5.2px)
         
-        // 布朗运动粒子类
-        class BrownianParticle {
-            constructor(x, y, radius, color) {
-                this.x = x;
-                this.y = y;
-                this.radius = radius;
-                this.color = color;
-                this.vx = 0;
-                this.vy = 0;
-                this.trail = [];
-                this.maxTrailLength = 20;
-                this.collisionCount = 0;
-            }
-            
-            // 更新粒子位置
-            update(temperature, motionSpeed, showTrail) {
-                // 温度影响粒子速度
-                const tempFactor = temperature / 300;
-                
-                // 添加随机运动（布朗运动）
-                this.vx += (Math.random() - 0.5) * tempFactor * motionSpeed;
-                this.vy += (Math.random() - 0.5) * tempFactor * motionSpeed;
-                
-                // 限制最大速度
-                const maxSpeed = 5 * tempFactor * motionSpeed;
-                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                if (speed > maxSpeed) {
-                    this.vx = (this.vx / speed) * maxSpeed;
-                    this.vy = (this.vy / speed) * maxSpeed;
-                }
-                
-                // 更新位置
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // 记录轨迹
-                if (showTrail) {
-                    this.trail.push({x: this.x, y: this.y});
-                    if (this.trail.length > this.maxTrailLength) {
-                        this.trail.shift();
-                    }
-                } else {
-                    this.trail = [];
-                }
-                
-                // 边界碰撞检测
-                this.handleBoundaryCollision();
-            }
-            
-            // 处理边界碰撞
-            handleBoundaryCollision() {
-                if (this.x - this.radius < 0) {
-                    this.x = this.radius;
-                    this.vx = Math.abs(this.vx) * 0.8;
-                    this.collisionCount++;
-                } else if (this.x + this.radius > canvas.width) {
-                    this.x = canvas.width - this.radius;
-                    this.vx = -Math.abs(this.vx) * 0.8;
-                    this.collisionCount++;
-                }
-                
-                if (this.y - this.radius < 0) {
-                    this.y = this.radius;
-                    this.vy = Math.abs(this.vy) * 0.8;
-                    this.collisionCount++;
-                } else if (this.y + this.radius > canvas.height) {
-                    this.y = canvas.height - this.radius;
-                    this.vy = -Math.abs(this.vy) * 0.8;
-                    this.collisionCount++;
-                }
-            }
-            
-            // 检测与其他粒子的碰撞
-            checkParticleCollision(otherParticle) {
-                const dx = this.x - otherParticle.x;
-                const dy = this.y - otherParticle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < this.radius + otherParticle.radius) {
-                    // 处理碰撞
-                    this.resolveCollision(otherParticle, dx, dy, distance);
-                    return true;
-                }
-                
-                return false;
-            }
-            
-            // 解决碰撞
-            resolveCollision(otherParticle, dx, dy, distance) {
-                // 防止重叠
-                const overlap = this.radius + otherParticle.radius - distance;
-                const adjustX = (overlap * dx) / (distance * 2);
-                const adjustY = (overlap * dy) / (distance * 2);
-                
-                this.x += adjustX;
-                this.y += adjustY;
-                otherParticle.x -= adjustX;
-                otherParticle.y -= adjustY;
-                
-                // 计算法向量
-                const nx = dx / distance;
-                const ny = dy / distance;
-                
-                // 计算相对速度
-                const dvx = this.vx - otherParticle.vx;
-                const dvy = this.vy - otherParticle.vy;
-                
-                // 计算相对速度在法向量上的投影
-                const speed = dvx * nx + dvy * ny;
-                
-                // 如果粒子正在分开，不处理碰撞
-                if (speed > 0) return;
-                
-                // 计算冲量
-                const impulse = 2 * speed / 2; // 质量相同假设为1
-                
-                // 应用冲量
-                this.vx -= impulse * nx;
-                this.vy -= impulse * ny;
-                otherParticle.vx += impulse * nx;
-                otherParticle.vy += impulse * ny;
-                
-                this.collisionCount++;
-                otherParticle.collisionCount++;
-            }
-            
-            // 绘制粒子和轨迹
-            draw() {
-                // 绘制轨迹
-                for (let i = 0; i < this.trail.length; i++) {
-                    const point = this.trail[i];
-                    const alpha = i / this.trail.length * 0.5;
-                    
-                    ctx.beginPath();
-                    ctx.arc(point.x, point.y, this.radius * 0.3, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(187, 134, 252, ${alpha})`;
-                    ctx.fill();
-                }
-                
-                // 绘制粒子
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                
-                // 粒子轮廓
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-        }
+        // 温度参数 (0-100°C)
+        let temperature = 45;             // 当前温度 0-100
+        let minTemp = 0;
+        let maxTemp = 100;
         
-        // 模拟参数
+        // 水分子系统参数
+        let waterMolecules = [];
+        const WATER_COUNT = 200;           // 水分子数量
+        
+        // 布朗粒子数据
         let particles = [];
+        const TRAIL_LENGTH = 100;           // 每个粒子轨迹长度
+        
+        // 动画控制
         let animationId = null;
-        let isRunning = false;
-        let simulationTime = 0;
-        let totalCollisions = 0;
         
-        // 控制元素
-        const temperatureSlider = document.getElementById('temperature');
-        const particleSizeSlider = document.getElementById('particleSize');
-        const particleDensitySlider = document.getElementById('particleDensity');
-        const motionSpeedSlider = document.getElementById('motionSpeed');
-        const traceToggle = document.getElementById('traceToggle');
-        const collisionToggle = document.getElementById('collisionToggle');
-        
-        const startBtn = document.getElementById('startBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        
-        // 数值显示元素
-        const tempValue = document.getElementById('tempValue');
-        const sizeValue = document.getElementById('sizeValue');
-        const densityValue = document.getElementById('densityValue');
-        const speedValue = document.getElementById('speedValue');
-        const particleCountElement = document.getElementById('particleCount');
-        const avgSpeedElement = document.getElementById('avgSpeed');
-        const collisionCountElement = document.getElementById('collisionCount');
-        const simulationTimeElement = document.getElementById('simulationTime');
-        
-        // 更新数值显示
-        function updateValueDisplays() {
-            tempValue.textContent = temperatureSlider.value + ' K';
-            sizeValue.textContent = particleSizeSlider.value + ' px';
-            densityValue.textContent = particleDensitySlider.value;
-            speedValue.textContent = motionSpeedSlider.value;
+        // ---- 根据温度计算分子运动速度因子 ----
+        // 温度越高，分子平均动能越大，速度越快 (与绝对温度平方根成正比，简化用线性)
+        // 模拟范围: 0°C -> 速度因子0.4, 100°C -> 速度因子2.4
+        function getWaterSpeedFactor() {
+            // 温度影响因子: 0°C时约0.45，100°C时约2.2
+            const t = temperature / 100;
+            return 0.45 + t * 1.85;
         }
         
-        // 初始化数值显示
-        updateValueDisplays();
-        
-        // 生成随机颜色
-        function getRandomColor() {
-            const colors = [
-                '#4fc3f7', '#29b6f6', '#03a9f4', 
-                '#bb86fc', '#ab47bc', '#7e57c2',
-                '#26c6da', '#00bcd4', '#0097a7',
-                '#ffb74d', '#ffa726', '#ff9800'
-            ];
-            return colors[Math.floor(Math.random() * colors.length)];
+        // 根据温度计算布朗粒子撞击强度因子 (温度越高，分子撞击越强，布朗粒子步长越大)
+        function getBrownianIntensityFactor() {
+            // 温度越高，布朗运动越剧烈
+            const t = temperature / 100;
+            return 0.5 + t * 1.8;   // 0°C时0.5倍，100°C时2.3倍
         }
         
-        // 初始化粒子
-        function initializeParticles() {
-            particles = [];
-            const density = parseInt(particleDensitySlider.value);
-            const size = parseInt(particleSizeSlider.value);
-            
-            // 根据密度计算粒子数量
-            const area = canvas.width * canvas.height;
-            const particleCount = Math.floor(density * area / 100000);
-            
-            particleCountElement.textContent = particleCount;
-            
-            // 创建粒子
-            for (let i = 0; i < particleCount; i++) {
-                const radius = size;
-                const x = Math.random() * (canvas.width - radius * 2) + radius;
-                const y = Math.random() * (canvas.height - radius * 2) + radius;
-                const color = getRandomColor();
+        // 根据温度获取背景颜色 (冷色到暖色)
+        function getTemperatureColor() {
+            const t = temperature / 100;
+            const r = Math.floor(180 + t * 75);
+            const g = Math.floor(200 - t * 80);
+            const b = Math.floor(240 - t * 100);
+            return `rgb(${Math.min(255, r)}, ${Math.max(120, g)}, ${Math.max(100, b)})`;
+        }
+        
+        // ---- 辅助函数: 高斯随机 ----
+        function gaussRandom() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+        }
+        
+        // 获取布朗粒子位移 (受温度和粒子大小影响)
+        function getBrownianDisplacement(particleRadius) {
+            // 基础步长标准差
+            const baseSigma = 1.6;
+            // 粒子大小影响因子: 半径越大，步长越小
+            const refRadius = 5.2;
+            let sizeFactor = refRadius / particleRadius;
+            sizeFactor = Math.min(1.5, Math.max(0.45, sizeFactor));
+            // 温度影响因子
+            const tempFactor = getBrownianIntensityFactor();
+            const sigma = baseSigma * tempFactor * sizeFactor;
+            let dx = gaussRandom() * sigma;
+            let dy = gaussRandom() * sigma;
+            const maxStep = 14;
+            dx = Math.min(maxStep, Math.max(-maxStep, dx));
+            dy = Math.min(maxStep, Math.max(-maxStep, dy));
+            return { dx, dy };
+        }
+        
+        // 边界处理
+        function applyBoundary(particle, radius) {
+            const margin = radius + 2;
+            if (particle.x < margin) particle.x = margin;
+            if (particle.x > width - margin) particle.x = width - margin;
+            if (particle.y < margin) particle.y = margin;
+            if (particle.y > height - margin) particle.y = height - margin;
+        }
+        
+        // 更新布朗粒子位置
+        function updateBrownianParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const currentRadius = getParticleRadius();
+                // 保存轨迹
+                p.trail.push({ x: p.x, y: p.y });
+                if (p.trail.length > TRAIL_LENGTH) p.trail.shift();
                 
-                particles.push(new BrownianParticle(x, y, radius, color));
+                const { dx, dy } = getBrownianDisplacement(currentRadius);
+                p.x += dx;
+                p.y += dy;
+                applyBoundary(p, currentRadius);
             }
-            
-            simulationTime = 0;
-            totalCollisions = 0;
-            updateStats();
         }
         
-        // 更新统计数据
-        function updateStats() {
-            // 计算平均速度
-            let totalSpeed = 0;
-            particles.forEach(p => {
-                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                totalSpeed += speed;
-            });
-            const avgSpeed = particles.length > 0 ? (totalSpeed / particles.length).toFixed(2) : 0;
-            
-            // 计算总碰撞次数
-            let totalCollisions = 0;
-            particles.forEach(p => {
-                totalCollisions += p.collisionCount;
-            });
-            
-            avgSpeedElement.textContent = avgSpeed;
-            collisionCountElement.textContent = totalCollisions;
-            simulationTimeElement.textContent = simulationTime.toFixed(1);
+        // 获取当前粒子半径
+        function getParticleRadius() {
+            let radius = baseParticleRadius * (particleSizePercent / 100);
+            return Math.min(12, Math.max(2.5, radius));
         }
         
-        // 动画循环
-        function animate() {
-            if (!isRunning) return;
-            
-            // 清空画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 获取当前参数
-            const temperature = parseInt(temperatureSlider.value);
-            const motionSpeed = parseInt(motionSpeedSlider.value) / 2;
-            const showTrail = traceToggle.checked;
-            const showCollisions = collisionToggle.checked;
-            
-            // 更新粒子
-            particles.forEach(particle => {
-                particle.update(temperature, motionSpeed, showTrail);
-            });
-            
-            // 检测和处理粒子间碰撞
-            if (showCollisions) {
-                for (let i = 0; i < particles.length; i++) {
-                    for (let j = i + 1; j < particles.length; j++) {
-                        particles[i].checkParticleCollision(particles[j]);
-                    }
-                }
-            }
-            
-            // 绘制粒子
-            particles.forEach(particle => {
-                particle.draw();
-            });
-            
-            // 更新统计数据和模拟时间
-            simulationTime += 0.1;
-            updateStats();
-            
-            // 继续动画循环
-            animationId = requestAnimationFrame(animate);
-        }
-        
-        // 开始模拟
-        function startSimulation() {
-            if (isRunning) return;
-            isRunning = true;
-            animate();
-            startBtn.disabled = true;
-            pauseBtn.disabled = false;
-        }
-        
-        // 暂停模拟
-        function pauseSimulation() {
-            isRunning = false;
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-            }
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
-        }
-        
-        // 重置模拟
-        function resetSimulation() {
-            pauseSimulation();
-            initializeParticles();
-            
-            // 清除画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制初始粒子
-            particles.forEach(particle => {
-                particle.draw();
-            });
-            
-            updateStats();
-        }
-        
-        // 事件监听
-        temperatureSlider.addEventListener('input', updateValueDisplays);
-        particleSizeSlider.addEventListener('input', updateValueDisplays);
-        particleDensitySlider.addEventListener('input', function() {
-            updateValueDisplays();
-            if (!isRunning) {
-                initializeParticles();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach(particle => {
-                    particle.draw();
+        // ========== 水分子模拟 (受温度影响) ==========
+        // 初始化水分子
+        function initWaterMolecules() {
+            const molecules = [];
+            for (let i = 0; i < WATER_COUNT; i++) {
+                molecules.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 1.2,
+                    vy: (Math.random() - 0.5) * 1.2,
                 });
             }
+            return molecules;
+        }
+        
+        // 根据温度更新水分子的运动 (温度越高，速度变化越快，最大速度越大)
+        function updateWaterMolecules() {
+            const tempFactor = getWaterSpeedFactor();
+            // 温度影响随机扰动的强度
+            const randomStrength = 0.2 + temperature / 100 * 0.45;
+            const maxSpeedBase = 1.2 + temperature / 100 * 2.3;  // 0°C最大1.2，100°C最大3.5
+            
+            for (let i = 0; i < waterMolecules.length; i++) {
+                const w = waterMolecules[i];
+                // 随机改变速度方向，模拟分子碰撞，温度越高扰动越大
+                w.vx += (Math.random() - 0.5) * randomStrength;
+                w.vy += (Math.random() - 0.5) * randomStrength;
+                // 温度越高，最大速度限制越大
+                let maxSpeed = maxSpeedBase;
+                let spd = Math.hypot(w.vx, w.vy);
+                if (spd > maxSpeed) {
+                    w.vx = (w.vx / spd) * maxSpeed;
+                    w.vy = (w.vy / spd) * maxSpeed;
+                }
+                // 低温时偶尔补充动能防止完全静止
+                if (spd < 0.3 && Math.random() < 0.05) {
+                    w.vx += (Math.random() - 0.5) * 0.6;
+                    w.vy += (Math.random() - 0.5) * 0.6;
+                }
+                // 移动速度受温度影响 (基础移动速度)
+                const moveSpeed = 0.85 * tempFactor;
+                w.x += w.vx * moveSpeed;
+                w.y += w.vy * moveSpeed;
+                // 边界反弹
+                const margin = 4;
+                if (w.x < margin) { w.x = margin; w.vx = -w.vx * 0.9; }
+                if (w.x > width - margin) { w.x = width - margin; w.vx = -w.vx * 0.9; }
+                if (w.y < margin) { w.y = margin; w.vy = -w.vy * 0.9; }
+                if (w.y > height - margin) { w.y = height - margin; w.vy = -w.vy * 0.9; }
+            }
+        }
+        
+        // 绘制水分子 (根据温度改变颜色和大小)
+        function drawWaterMolecules() {
+            const tempFactor = temperature / 100;
+            // 水分子颜色: 低温蓝色，高温偏红/橙色
+            const baseR = 70 + Math.floor(tempFactor * 100);
+            const baseG = 140 - Math.floor(tempFactor * 40);
+            const baseB = 220 - Math.floor(tempFactor * 100);
+            
+            for (let i = 0; i < waterMolecules.length; i++) {
+                const w = waterMolecules[i];
+                const speedVal = Math.min(1, Math.hypot(w.vx, w.vy) / 2.5);
+                // 温度影响透明度
+                const alpha = 0.55 + speedVal * 0.3 + tempFactor * 0.15;
+                // 动态颜色: 随温度变化
+                const r = Math.min(230, baseR + Math.floor(speedVal * 40));
+                const g = Math.max(80, baseG - Math.floor(speedVal * 20));
+                const b = Math.max(60, baseB - Math.floor(speedVal * 40));
+                
+                ctx.beginPath();
+                // 高温时分子略微变大
+                const moleculeSize = 2.2 + tempFactor * 0.8;
+                ctx.arc(w.x, w.y, moleculeSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.fill();
+                // 高光
+                ctx.beginPath();
+                ctx.arc(w.x - 0.6, w.y - 0.6, moleculeSize * 0.35, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 245, 200, 0.6)`;
+                ctx.fill();
+            }
+        }
+        
+        // 绘制水分子运动轨迹残影 (增强温度影响视觉效果)
+        function drawWaterTrails() {
+            if (temperature < 20) return;
+            ctx.save();
+            ctx.globalAlpha = 0.12 + temperature / 100 * 0.15;
+            for (let i = 0; i < waterMolecules.length; i++) {
+                const w = waterMolecules[i];
+                const spd = Math.hypot(w.vx, w.vy);
+                if (spd > 0.4) {
+                    ctx.beginPath();
+                    ctx.moveTo(w.x, w.y);
+                    ctx.lineTo(w.x - w.vx * 1.8, w.y - w.vy * 1.8);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = `rgba(255, 120, 80, 0.4)`;
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+        
+        // 绘制撞击光晕 (水分子撞击微粒的效果)
+        function drawCollisionGlow() {
+            const particleRadius = getParticleRadius();
+            const tempFactor = temperature / 100;
+            const collisionChance = 0.12 + tempFactor * 0.2; // 温度越高撞击越频繁
+            
+            for (let p of particles) {
+                for (let w of waterMolecules) {
+                    const dx = p.x - w.x;
+                    const dy = p.y - w.y;
+                    const dist = Math.hypot(dx, dy);
+                    const collisionDist = particleRadius + 4.5;
+                    if (dist < collisionDist && Math.random() < collisionChance) {
+                        ctx.save();
+                        ctx.globalAlpha = 0.45 + tempFactor * 0.25;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, particleRadius + 3 + tempFactor * 4, 0, Math.PI * 2);
+                        ctx.fillStyle = tempFactor > 0.6 ? "#ffa05e" : "#ffc48a";
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.moveTo(w.x, w.y);
+                        ctx.lineTo(p.x, p.y);
+                        ctx.lineWidth = 1.5;
+                        ctx.strokeStyle = tempFactor > 0.6 ? "#ff7a3a" : "#ffb26e";
+                        ctx.stroke();
+                        ctx.restore();
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // 绘制布朗粒子
+        function drawBrownianParticles() {
+            const radius = getParticleRadius();
+            const tempFactor = temperature / 100;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                // 温度影响粒子颜色微调 (高温略红)
+                const grad = ctx.createRadialGradient(p.x - radius*0.3, p.y - radius*0.3, radius*0.2, p.x, p.y, radius);
+                const mainColor = tempFactor > 0.6 ? "#e08a4a" : "#c97e4a";
+                const darkColor = tempFactor > 0.6 ? "#a5461a" : "#9c5832";
+                grad.addColorStop(0, mainColor);
+                grad.addColorStop(1, darkColor);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = "#f3bc8c";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                // 高光
+                ctx.beginPath();
+                ctx.arc(p.x - radius*0.25, p.y - radius*0.25, radius*0.28, 0, Math.PI * 2);
+                ctx.fillStyle = "#ffecb3";
+                ctx.fill();
+            }
+        }
+        
+        // 绘制轨迹
+        function drawTrails() {
+            const tempFactor = temperature / 100;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const trail = p.trail;
+                if (trail.length < 2) continue;
+                for (let j = 0; j < trail.length - 1; j++) {
+                    const a = trail[j];
+                    const b = trail[j+1];
+                    if (!a || !b) continue;
+                    const alpha = 0.12 + (j / trail.length) * 0.45 + tempFactor * 0.1;
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.lineWidth = 1.6;
+                    ctx.strokeStyle = `rgba(210, 125, 70, ${alpha * 0.8})`;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        // 绘制背景 (温度影响背景色)
+        function drawBackground() {
+            ctx.clearRect(0, 0, width, height);
+            const tempColor = getTemperatureColor();
+            const gradBg = ctx.createLinearGradient(0, 0, width, height);
+            gradBg.addColorStop(0, tempColor);
+            gradBg.addColorStop(1, `rgba(${parseInt(tempColor.match(/\d+/g)[0]) - 20}, ${parseInt(tempColor.match(/\d+/g)[1]) - 15}, ${parseInt(tempColor.match(/\d+/g)[2]) + 10}, 1)`);
+            ctx.fillStyle = gradBg;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制温度指示热浪效果 (高温时添加)
+            if (temperature > 60) {
+                ctx.save();
+                ctx.globalAlpha = 0.08;
+                for (let i = 0; i < 40; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30 + 15, height);
+                    ctx.lineTo(i * 30 - 15, height);
+                    ctx.fillStyle = "#ff8844";
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+        
+        // 绘制温度计指示器
+        function drawTemperatureIndicator() {
+            ctx.save();
+            ctx.font = "bold 14px 'Segoe UI'";
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = temperature > 60 ? "#c23b1c" : "#2c6282";
+            ctx.fillText(`🌡️ ${temperature}°C`, width - 85, 28);
+            ctx.restore();
+        }
+        
+        // 主渲染
+        function render() {
+            drawBackground();           // 温度影响背景
+            drawWaterMolecules();       // 动态水分子
+            if (temperature > 40) drawWaterTrails(); // 高温显示水分子轨迹
+            drawTrails();              // 布朗粒子轨迹
+            drawBrownianParticles();    // 布朗颗粒
+            drawCollisionGlow();        // 碰撞闪光效果
+            drawTemperatureIndicator(); // 温度显示
+        }
+        
+        // 动画循环更新逻辑
+        function updateSimulation() {
+            updateWaterMolecules();      // 水分子运动 (受温度影响)
+            updateBrownianParticles();   // 布朗粒子运动 (受温度影响)
+        }
+        
+        // 动画帧驱动
+        let lastFrameTime = 0;
+        function animate(currentTime) {
+            animationId = requestAnimationFrame(animate);
+            updateSimulation();
+            render();
+            lastFrameTime = currentTime;
+        }
+        
+        // ----- 粒子系统管理 -----
+        function initBrownianParticles(count) {
+            const radius = getParticleRadius();
+            const newParticles = [];
+            for (let i = 0; i < count; i++) {
+                const margin = radius + 25;
+                const x = Math.random() * (width - margin * 2) + margin;
+                const y = Math.random() * (height - margin * 2) + margin;
+                newParticles.push({
+                    x: x,
+                    y: y,
+                    trail: []
+                });
+            }
+            for (let p of newParticles) {
+                p.trail = [{ x: p.x, y: p.y }];
+            }
+            return newParticles;
+        }
+        
+        function changeParticleCount(newCount) {
+            particleCount = newCount;
+            particles = initBrownianParticles(particleCount);
+        }
+        
+        function resetPositions() {
+            const radius = getParticleRadius();
+            for (let i = 0; i < particles.length; i++) {
+                const margin = radius + 25;
+                particles[i].x = Math.random() * (width - margin * 2) + margin;
+                particles[i].y = Math.random() * (height - margin * 2) + margin;
+                particles[i].trail = [{ x: particles[i].x, y: particles[i].y }];
+            }
+        }
+        
+        function clearAllTrails() {
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].trail = [{ x: particles[i].x, y: particles[i].y }];
+            }
+        }
+        
+        function onParticleSizeChanged() {
+            const newRadius = getParticleRadius();
+            for (let p of particles) {
+                applyBoundary(p, newRadius);
+                if (p.trail.length > 0) {
+                    p.trail[p.trail.length - 1] = { x: p.x, y: p.y };
+                }
+            }
+        }
+        
+        function updateTemperatureUI() {
+            const val = parseInt(temperatureSlider.value, 10);
+            tempValue.innerText = val + "°C";
+            temperature = val;
+        }
+        
+        // ----- UI绑定 -----
+        const countSlider = document.getElementById('particleCountSlider');
+        const countVal = document.getElementById('countValue');
+        const sizeSlider = document.getElementById('particleSizeSlider');
+        const sizeVal = document.getElementById('sizeValue');
+        const temperatureSlider = document.getElementById('temperatureSlider');
+        const tempValue = document.getElementById('tempValue');
+        const resetBtn = document.getElementById('resetBtn');
+        const clearTrailBtn = document.getElementById('clearTrailBtn');
+        
+        function updateCountUI() {
+            const val = parseInt(countSlider.value, 10);
+            countVal.innerText = val;
+            if (particleCount !== val) changeParticleCount(val);
+        }
+        
+        function updateSizeUI() {
+            const val = parseInt(sizeSlider.value, 10);
+            sizeVal.innerText = val + "%";
+            particleSizePercent = val;
+            onParticleSizeChanged();
+        }
+        
+        countSlider.addEventListener('input', updateCountUI);
+        sizeSlider.addEventListener('input', updateSizeUI);
+        temperatureSlider.addEventListener('input', updateTemperatureUI);
+        resetBtn.addEventListener('click', resetPositions);
+        clearTrailBtn.addEventListener('click', clearAllTrails);
+        
+        // 点击画布产生撞击扰动
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let mouseX = (e.clientX - rect.left) * scaleX;
+            let mouseY = (e.clientY - rect.top) * scaleY;
+            mouseX = Math.min(width-10, Math.max(10, mouseX));
+            mouseY = Math.min(height-10, Math.max(10, mouseY));
+            
+            for (let p of particles) {
+                const dx = p.x - mouseX;
+                const dy = p.y - mouseY;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 55) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = 8.5 * (1 - dist/70);
+                    p.x += Math.cos(angle) * force;
+                    p.y += Math.sin(angle) * force;
+                    const rad = getParticleRadius();
+                    applyBoundary(p, rad);
+                    p.trail.push({ x: p.x, y: p.y });
+                    if (p.trail.length > TRAIL_LENGTH) p.trail.shift();
+                }
+            }
+            ctx.save();
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, 25, 0, Math.PI*2);
+            ctx.fillStyle = "#ffbf77";
+            ctx.fill();
+            ctx.restore();
         });
-        motionSpeedSlider.addEventListener('input', updateValueDisplays);
         
-        startBtn.addEventListener('click', startSimulation);
-        pauseBtn.addEventListener('click', pauseSimulation);
-        resetBtn.addEventListener('click', resetSimulation);
+        // 启动系统
+        function setup() {
+            updateCountUI();
+            updateSizeUI();
+            updateTemperatureUI();
+            waterMolecules = initWaterMolecules();
+            particles = initBrownianParticles(particleCount);
+            animate();
+        }
         
-        // 初始化
-        initializeParticles();
-        particles.forEach(particle => {
-            particle.draw();
-        });
-        
-        // 禁用暂停按钮初始状态
-        pauseBtn.disabled = true;
-        
-        // 添加一些初始运动
-        particles.forEach(p => {
-            p.vx = (Math.random() - 0.5) * 3;
-            p.vy = (Math.random() - 0.5) * 3;
-        });
-    </script>
+        setup();
+    })();
+</script>
 </body>
 </html>
