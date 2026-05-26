@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平行四边形定则验证动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a3c7f);
+            color: #f0f0f0;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        h1 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 0 auto 15px;
+            line-height: 1.6;
+            color: #bbdefb;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            min-width: 500px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        canvas {
+            display: block;
+            background-color: rgba(0, 10, 30, 0.7);
+            border-radius: 10px;
+            width: 100%;
+            height: 400px;
+            touch-action: none;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #29b6f6;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid rgba(41, 182, 246, 0.3);
+            padding-bottom: 5px;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-label span {
+            font-weight: 500;
+        }
+        
+        .slider-value {
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #29b6f6;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(41, 182, 246, 0.7);
+        }
+        
+        .data-display {
+            background-color: rgba(0, 20, 40, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #29b6f6;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-label {
+            color: #bbdefb;
+        }
+        
+        .data-value {
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        
+        .formula {
+            background-color: rgba(0, 20, 40, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .formula-title {
+            color: #ff9800;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .animation-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #1565c0;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background-color: #0d47a1;
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        #resetBtn {
+            background-color: #d32f2f;
+        }
+        
+        #resetBtn:hover {
+            background-color: #b71c1c;
+        }
+        
+        .explanation {
+            margin-top: 25px;
+            max-width: 1000px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .explanation h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+        }
+        
+        .explanation p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #bbdefb;
+        }
+        
+        @media (max-width: 850px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .canvas-container, .controls {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>平行四边形定则验证动画</h1>
+        <p class="description">平行四边形定则是矢量合成的基本法则：两个矢量以平行四边形的方式相加，其对角线即为合力。本演示允许您调整两个力的大小和方向，观察合力的动态变化。</p>
+    </div>
+    
+    <div class="container">
+        <div class="canvas-container">
+            <h2>平行四边形定则演示</h2>
+            <canvas id="vectorCanvas" width="600" height="400"></canvas>
+            
+            <div class="data-display">
+                <div class="data-item">
+                    <span class="data-label">合力大小：</span>
+                    <span id="resultantMagnitude" class="data-value">0 N</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">合力方向：</span>
+                    <span id="resultantAngle" class="data-value">0°</span>
+                </div>
+                <div class="data-item">
+                    <span class="data-label">平行四边形面积：</span>
+                    <span id="parallelogramArea" class="data-value">0 N²</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h2>控制面板</h2>
+            
+            <div class="control-group">
+                <h3>力 F₁ (红色)</h3>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>大小</span>
+                        <span id="force1Value" class="slider-value">50 N</span>
+                    </div>
+                    <input type="range" id="force1Slider" min="10" max="100" value="50" step="1">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>方向</span>
+                        <span id="angle1Value" class="slider-value">30°</span>
+                    </div>
+                    <input type="range" id="angle1Slider" min="0" max="360" value="30" step="1">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>力 F₂ (蓝色)</h3>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>大小</span>
+                        <span id="force2Value" class="slider-value">70 N</span>
+                    </div>
+                    <input type="range" id="force2Slider" min="10" max="100" value="70" step="1">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>方向</span>
+                        <span id="angle2Value" class="slider-value">150°</span>
+                    </div>
+                    <input type="range" id="angle2Slider" min="0" max="360" value="150" step="1">
+                </div>
+            </div>
+            
+            <div class="formula">
+                <div class="formula-title">平行四边形定则公式</div>
+                <div>F<sub>合</sub> = √(F₁² + F₂² + 2F₁F₂cosθ)</div>
+                <div>θ = |θ₁ - θ₂| (两力之间的夹角)</div>
+                <div>合力方向：tanφ = (F₁sinθ₁ + F₂sinθ₂) / (F₁cosθ₁ + F₂cosθ₂)</div>
+            </div>
+            
+            <div class="animation-controls">
+                <button id="animateBtn">演示合成过程</button>
+                <button id="resetBtn">重置参数</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="explanation">
+        <h3>平行四边形定则说明</h3>
+        <p>平行四边形定则是矢量合成的基本法则，用于计算两个矢量（如力、速度、位移等）的合成效果。</p>
+        <p>1. 将两个矢量的起点放在一起，以它们为邻边作平行四边形。</p>
+        <p>2. 从共同起点出发的对角线即为这两个矢量的合成矢量（合力）。</p>
+        <p>3. 合力的大小不仅取决于两个分力的大小，还取决于它们之间的夹角。</p>
+        <p>4. 当两力方向相同时，合力最大（两力之和）；当两力方向相反时，合力最小（两力之差）。</p>
+        <p>5. 本演示中，红色箭头表示力F₁，蓝色箭头表示力F₂，绿色箭头表示合力。灰色虚线表示平行四边形。</p>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('vectorCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取滑块元素
+        const force1Slider = document.getElementById('force1Slider');
+        const force2Slider = document.getElementById('force2Slider');
+        const angle1Slider = document.getElementById('angle1Slider');
+        const angle2Slider = document.getElementById('angle2Slider');
+        
+        // 获取显示值的元素
+        const force1Value = document.getElementById('force1Value');
+        const force2Value = document.getElementById('force2Value');
+        const angle1Value = document.getElementById('angle1Value');
+        const angle2Value = document.getElementById('angle2Value');
+        
+        // 获取数据显示元素
+        const resultantMagnitude = document.getElementById('resultantMagnitude');
+        const resultantAngle = document.getElementById('resultantAngle');
+        const parallelogramArea = document.getElementById('parallelogramArea');
+        
+        // 获取按钮元素
+        const animateBtn = document.getElementById('animateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        // 初始矢量参数
+        let force1 = 50; // 力1大小
+        let force2 = 70; // 力2大小
+        let angle1 = 30; // 力1角度（度）
+        let angle2 = 150; // 力2角度（度）
+        
+        // 动画状态
+        let isAnimating = false;
+        let animationProgress = 0;
+        const animationDuration = 2000; // 动画持续时间（毫秒）
+        let animationStartTime = 0;
+        
+        // 初始化滑块值
+        force1Slider.value = force1;
+        force2Slider.value = force2;
+        angle1Slider.value = angle1;
+        angle2Slider.value = angle2;
+        
+        // 更新显示值
+        function updateDisplayValues() {
+            force1Value.textContent = `${force1} N`;
+            force2Value.textContent = `${force2} N`;
+            angle1Value.textContent = `${angle1}°`;
+            angle2Value.textContent = `${angle2}°`;
+        }
+        
+        // 将角度转换为弧度
+        function toRadians(degrees) {
+            return degrees * Math.PI / 180;
+        }
+        
+        // 计算合力
+        function calculateResultant() {
+            // 转换为弧度
+            const angle1Rad = toRadians(angle1);
+            const angle2Rad = toRadians(angle2);
+            
+            // 计算两个力的x和y分量
+            const f1x = force1 * Math.cos(angle1Rad);
+            const f1y = force1 * Math.sin(angle1Rad);
+            const f2x = force2 * Math.cos(angle2Rad);
+            const f2y = force2 * Math.sin(angle2Rad);
+            
+            // 计算合力的x和y分量
+            const resultantX = f1x + f2x;
+            const resultantY = f1y + f2y;
+            
+            // 计算合力大小和方向
+            const magnitude = Math.sqrt(resultantX * resultantX + resultantY * resultantY);
+            let angle = Math.atan2(resultantY, resultantX) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
+            
+            // 计算平行四边形面积（以两个力为邻边）
+            const angleBetween = Math.abs(angle1 - angle2);
+            const angleBetweenRad = toRadians(angleBetween > 180 ? 360 - angleBetween : angleBetween);
+            const area = force1 * force2 * Math.sin(angleBetweenRad);
+            
+            return {
+                magnitude: magnitude,
+                angle: angle,
+                x: resultantX,
+                y: resultantY,
+                area: area
+            };
+        }
+        
+        // 绘制矢量
+        function drawVector(x, y, magnitude, angle, color, label, scale = 1, isAnimated = false, progress = 1) {
+            const angleRad = toRadians(angle);
+            
+            // 计算矢量的终点
+            const endX = x + magnitude * Math.cos(angleRad) * scale * progress;
+            const endY = y - magnitude * Math.sin(angleRad) * scale * progress;
+            
+            // 绘制矢量线
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制箭头
+            const arrowLength = 15;
+            const arrowAngle = Math.PI / 6; // 30度
+            
+            // 计算箭头两侧点的坐标
+            const angle1 = angleRad + arrowAngle;
+            const angle2 = angleRad - arrowAngle;
+            
+            const arrowX1 = endX - arrowLength * Math.cos(angle1);
+            const arrowY1 = endY + arrowLength * Math.sin(angle1);
+            
+            const arrowX2 = endX - arrowLength * Math.cos(angle2);
+            const arrowY2 = endY + arrowLength * Math.sin(angle2);
+            
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(arrowX1, arrowY1);
+            ctx.lineTo(arrowX2, arrowY2);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            
+            // 绘制标签
+            ctx.fillStyle = color;
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            
+            const labelX = x + (endX - x) * 0.5;
+            const labelY = y + (endY - y) * 0.5;
+            
+            // 为标签添加背景
+            const textWidth = ctx.measureText(label).width;
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(labelX - textWidth/2 - 5, labelY - 12, textWidth + 10, 24);
+            
+            ctx.fillStyle = color;
+            ctx.fillText(label, labelX, labelY);
+            
+            return {endX, endY};
+        }
+        
+        // 绘制平行四边形
+        function drawParallelogram(x, y, force1, angle1, force2, angle2, color, scale = 1, progress = 1) {
+            const angle1Rad = toRadians(angle1);
+            const angle2Rad = toRadians(angle2);
+            
+            // 计算四个顶点
+            const p1 = {x: x, y: y};
+            const p2 = {
+                x: x + force1 * Math.cos(angle1Rad) * scale * progress,
+                y: y - force1 * Math.sin(angle1Rad) * scale * progress
+            };
+            const p3 = {
+                x: x + force1 * Math.cos(angle1Rad) * scale * progress + force2 * Math.cos(angle2Rad) * scale * progress,
+                y: y - force1 * Math.sin(angle1Rad) * scale * progress - force2 * Math.sin(angle2Rad) * scale * progress
+            };
+            const p4 = {
+                x: x + force2 * Math.cos(angle2Rad) * scale * progress,
+                y: y - force2 * Math.sin(angle2Rad) * scale * progress
+            };
+            
+            // 绘制平行四边形
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.closePath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 填充平行四边形（半透明）
+            ctx.fillStyle = color.replace(')', ', 0.1)').replace('rgb', 'rgba');
+            ctx.fill();
+            
+            return {p1, p2, p3, p4};
+        }
+        
+        // 绘制坐标系
+        function drawCoordinateSystem() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const axisLength = 150;
+            
+            // 绘制x轴
+            ctx.beginPath();
+            ctx.moveTo(centerX - axisLength, centerY);
+            ctx.lineTo(centerX + axisLength, centerY);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制y轴
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - axisLength);
+            ctx.lineTo(centerX, centerY + axisLength);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制原点
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.fill();
+            
+            // 绘制坐标标签
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.font = "14px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText("x", centerX + axisLength - 10, centerY - 10);
+            ctx.textAlign = "right";
+            ctx.fillText("y", centerX + 10, centerY - axisLength + 20);
+            ctx.textAlign = "center";
+            ctx.fillText("O", centerX - 15, centerY + 20);
+        }
+        
+        // 绘制所有矢量
+        function drawVectors() {
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制坐标系
+            drawCoordinateSystem();
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = 2; // 缩放因子，使矢量在画布上显示合适
+            
+            // 计算动画进度
+            let progress = 1;
+            if (isAnimating) {
+                const elapsed = Date.now() - animationStartTime;
+                progress = Math.min(elapsed / animationDuration, 1);
+                animationProgress = progress;
+                
+                // 动画结束后重置状态
+                if (progress >= 1) {
+                    isAnimating = false;
+                }
+            }
+            
+            // 绘制平行四边形（如果动画中，根据进度绘制）
+            if (isAnimating && progress > 0.3) {
+                const parallelogramProgress = Math.min((progress - 0.3) / 0.7, 1);
+                drawParallelogram(centerX, centerY, force1, angle1, force2, angle2, "rgba(200, 200, 200, 0.8)", scale, parallelogramProgress);
+            } else if (!isAnimating) {
+                drawParallelogram(centerX, centerY, force1, angle1, force2, angle2, "rgba(200, 200, 200, 0.8)", scale);
+            }
+            
+            // 绘制力F1
+            const f1End = drawVector(
+                centerX, centerY, 
+                force1, angle1, 
+                "#FF5252", "F₁", 
+                scale, 
+                isAnimating, 
+                Math.min(progress / 0.3, 1)
+            );
+            
+            // 绘制力F2
+            const f2End = drawVector(
+                centerX, centerY, 
+                force2, angle2, 
+                "#448AFF", "F₂", 
+                scale, 
+                isAnimating, 
+                Math.min(progress / 0.3, 1)
+            );
+            
+            // 计算并绘制合力（如果动画中，根据进度绘制）
+            if (isAnimating && progress > 0.3) {
+                const resultantProgress = Math.min((progress - 0.3) / 0.7, 1);
+                const resultant = calculateResultant();
+                
+                drawVector(
+                    centerX, centerY, 
+                    resultant.magnitude, resultant.angle, 
+                    "#4CAF50", "F合", 
+                    scale, 
+                    true, 
+                    resultantProgress
+                );
+                
+                // 更新数据显示（动画中逐渐变化）
+                resultantMagnitude.textContent = `${(resultant.magnitude * resultantProgress).toFixed(1)} N`;
+                resultantAngle.textContent = `${resultant.angle.toFixed(1)}°`;
+                parallelogramArea.textContent = `${(resultant.area * resultantProgress).toFixed(1)} N²`;
+            } else if (!isAnimating) {
+                // 绘制合力（非动画状态）
+                const resultant = calculateResultant();
+                
+                drawVector(
+                    centerX, centerY, 
+                    resultant.magnitude, resultant.angle, 
+                    "#4CAF50", "F合", 
+                    scale
+                );
+                
+                // 更新数据显示
+                resultantMagnitude.textContent = `${resultant.magnitude.toFixed(1)} N`;
+                resultantAngle.textContent = `${resultant.angle.toFixed(1)}°`;
+                parallelogramArea.textContent = `${resultant.area.toFixed(1)} N²`;
+            }
+            
+            // 如果动画进行中，继续请求下一帧
+            if (isAnimating) {
+                requestAnimationFrame(drawVectors);
+            }
+        }
+        
+        // 开始动画
+        function startAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            animationStartTime = Date.now();
+            animationProgress = 0;
+            
+            // 开始绘制循环
+            drawVectors();
+        }
+        
+        // 重置参数
+        function resetParameters() {
+            force1 = 50;
+            force2 = 70;
+            angle1 = 30;
+            angle2 = 150;
+            
+            // 更新滑块
+            force1Slider.value = force1;
+            force2Slider.value = force2;
+            angle1Slider.value = angle1;
+            angle2Slider.value = angle2;
+            
+            // 更新显示值
+            updateDisplayValues();
+            
+            // 停止动画
+            isAnimating = false;
+            
+            // 重新绘制
+            drawVectors();
+        }
+        
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 力F1大小变化
+            force1Slider.addEventListener('input', function() {
+                force1 = parseInt(this.value);
+                force1Value.textContent = `${force1} N`;
+                if (!isAnimating) drawVectors();
+            });
+            
+            // 力F2大小变化
+            force2Slider.addEventListener('input', function() {
+                force2 = parseInt(this.value);
+                force2Value.textContent = `${force2} N`;
+                if (!isAnimating) drawVectors();
+            });
+            
+            // 力F1方向变化
+            angle1Slider.addEventListener('input', function() {
+                angle1 = parseInt(this.value);
+                angle1Value.textContent = `${angle1}°`;
+                if (!isAnimating) drawVectors();
+            });
+            
+            // 力F2方向变化
+            angle2Slider.addEventListener('input', function() {
+                angle2 = parseInt(this.value);
+                angle2Value.textContent = `${angle2}°`;
+                if (!isAnimating) drawVectors();
+            });
+            
+            // 动画按钮
+            animateBtn.addEventListener('click', startAnimation);
+            
+            // 重置按钮
+            resetBtn.addEventListener('click', resetParameters);
+            
+            // 窗口大小变化时调整Canvas
+            window.addEventListener('resize', function() {
+                // 保持Canvas比例
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                drawVectors();
+            });
+        }
+        
+        // 初始化函数
+        function init() {
+            // 设置Canvas初始尺寸
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // 初始化事件监听器
+            initEventListeners();
+            
+            // 更新显示值
+            updateDisplayValues();
+            
+            // 绘制初始矢量
+            drawVectors();
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
