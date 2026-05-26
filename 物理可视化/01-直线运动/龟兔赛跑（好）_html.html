@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>龟兔赛跑位移-时间图像模拟器（乌龟获胜完整版）</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: #f0f5ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #2c3e50, #4a6491);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+        
+        .left-panel {
+            flex: 1;
+            min-width: 350px;
+            padding-right: 30px;
+            border-right: 1px solid #eaeaea;
+        }
+        
+        .right-panel {
+            flex: 2;
+            min-width: 700px;
+            padding-left: 30px;
+        }
+        
+        .control-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a6491;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .control-group {
+            background-color: #f8faff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .control-row {
+            margin-bottom: 15px;
+        }
+        
+        .control-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .control-label span {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .value-display {
+            font-weight: bold;
+            color: #4a6491;
+            background-color: #e8edf7;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #dde3f0;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #4a6491;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        .btn-primary {
+            background-color: #4a6491;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5479;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74, 100, 145, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #e8edf7;
+            color: #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #dde3f0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #d68910;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+        }
+        
+        .result-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8faff;
+            border-radius: 10px;
+            display: none;
+            border: 2px solid #4a6491;
+        }
+        
+        .result-panel.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .winner-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .turtle-winner {
+            color: #4a6491;
+            background-color: rgba(74, 100, 145, 0.1);
+        }
+        
+        .rabbit-winner {
+            color: #e74c3c;
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        .race-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .detail-item {
+            background-color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+        }
+        
+        .detail-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4a6491;
+            margin-top: 5px;
+        }
+        
+        .critical-points {
+            margin-top: 30px;
+        }
+        
+        .points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .point-card {
+            background-color: #f8faff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .point-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .point-value {
+            font-size: 1.1rem;
+            color: #4a6491;
+            font-weight: 600;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            background-color: white;
+            border-radius: 10px;
+            border: 1px solid #eaeaea;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .graph-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+        
+        .color-box {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+        
+        .rabbit-color {
+            background-color: #e74c3c;
+        }
+        
+        .turtle-color {
+            background-color: #4a6491;
+        }
+        
+        .key-moments {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .moment-card {
+            background-color: #f8faff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        
+        .moment-card.active {
+            background-color: #4a6491;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(74, 100, 145, 0.3);
+        }
+        
+        .moment-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .moment-text {
+            font-weight: 600;
+        }
+        
+        .story-panel {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(to right, #f8faff, #ffffff);
+            border-radius: 10px;
+            border-left: 5px solid #4a6491;
+        }
+        
+        .story-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .story-title i {
+            margin-right: 10px;
+            color: #4a6491;
+        }
+        
+        .story-content {
+            line-height: 1.7;
+        }
+        
+        .story-content p {
+            margin-bottom: 12px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            border-top: 1px solid #eaeaea;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 1100px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                padding-right: 0;
+                border-right: none;
+                border-bottom: 1px solid #eaeaea;
+                padding-bottom: 30px;
+                margin-bottom: 30px;
+            }
+            
+            .right-panel {
+                padding-left: 0;
+                min-width: 100%;
+            }
+            
+            .key-moments {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .key-moments {
+                grid-template-columns: 1fr;
+            }
+            
+            .points-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>龟兔赛跑位移-时间图像模拟器</h1>
+            <p class="subtitle">完整展示乌龟获胜全过程：兔子睡觉时被反超 → 兔子醒来后追赶 → 乌龟先到达终点。图像延伸到比赛结束，清晰展示关键转折点。</p>
+        </header>
+        
+        <div class="content">
+            <div class="left-panel">
+                <div class="control-section">
+                    <h2 class="section-title"><i class="fas fa-cogs"></i> 比赛参数设置</h2>
+                    
+                    <div class="control-group">
+                        <h3><i class="fas fa-rabbit-running"></i> 兔子参数</h3>
+                        <div class="control-row">
+                            <div class="control-label">
+                                <span>兔子速度</span>
+                                <span id="rabbitSpeedValue" class="value-display">6.0 米/秒</span>
+                            </div>
+                            <input type="range" id="rabbitSpeed" min="1" max="15" step="0.5" value="6.0">
+                        </div>
+                        
+                        <div class="control-row">
+                            <div class="control-label">
+                                <span>睡觉开始时间</span>
+                                <span id="sleepStartValue" class="value-display">2.0 秒</span>
+                            </div>
+                            <input type="range" id="sleepStart" min="0.5" max="8" step="0.1" value="2.0">
+                        </div>
+                        
+                        <div class="control-row">
+                            <div class="control-label">
+                                <span>睡觉时长</span>
+                                <span id="sleepDurationValue" class="value-display">7.0 秒</span>
+                            </div>
+                            <input type="range" id="sleepDuration" min="1" max="15" step="0.5" value="7.0">
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <h3><i class="fas fa-turtle"></i> 乌龟参数</h3>
+                        <div class="control-row">
+                            <div class="control-label">
+                                <span>乌龟速度</span>
+                                <span id="turtleSpeedValue" class="value-display">2.5 米/秒</span>
+                            </div>
+                            <input type="range" id="turtleSpeed" min="0.5" max="6" step="0.1" value="2.5">
+                        </div>
+                        
+                        <div class="control-row">
+                            <div class="control-label">
+                                <span>比赛距离</span>
+                                <span id="raceDistanceValue" class="value-display">30 米</span>
+                            </div>
+                            <input type="range" id="raceDistance" min="10" max="60" step="1" value="30">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="buttons-container">
+                    <button id="fullRaceBtn" class="btn btn-primary">
+                        <i class="fas fa-play-circle"></i> 完整比赛
+                    </button>
+                    <button id="resetBtn" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> 重置参数
+                    </button>
+                    <button id="defaultBtn" class="btn btn-warning">
+                        <i class="fas fa-book"></i> 经典场景
+                    </button>
+                    <button id="startBtn" class="btn btn-success">
+                        <i class="fas fa-running"></i> 开始比赛
+                    </button>
+                </div>
+                
+                <div id="resultPanel" class="result-panel">
+                    <div id="winnerText" class="winner-text turtle-winner">
+                        🏆 乌龟获胜！坚持不懈战胜了骄傲的兔子。
+                    </div>
+                    <div class="race-details">
+                        <div class="detail-item">
+                            <div>兔子用时</div>
+                            <div id="rabbitTime" class="detail-value">11.5 秒</div>
+                        </div>
+                        <div class="detail-item">
+                            <div>乌龟用时</div>
+                            <div id="turtleTime" class="detail-value">12.0 秒</div>
+                        </div>
+                        <div class="detail-item">
+                            <div>乌龟领先</div>
+                            <div id="leadTime" class="detail-value">0.5 秒</div>
+                        </div>
+                        <div class="detail-item">
+                            <div>兔子睡觉</div>
+                            <div id="sleepTime" class="detail-value">7.0 秒</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="critical-points">
+                    <h2 class="section-title"><i class="fas fa-flag-checkered"></i> 关键时间点</h2>
+                    <div class="points-grid">
+                        <div class="point-card">
+                            <div class="point-title">兔子开始睡觉</div>
+                            <div id="sleepStartPoint" class="point-value">2.0 秒</div>
+                        </div>
+                        <div class="point-card">
+                            <div class="point-title">兔子醒来</div>
+                            <div id="sleepEndPoint" class="point-value">9.0 秒</div>
+                        </div>
+                        <div class="point-card">
+                            <div class="point-title">乌龟反超兔子</div>
+                            <div id="overtakePoint" class="point-value">4.8 秒</div>
+                        </div>
+                        <div class="point-card">
+                            <div class="point-title">乌龟到达终点</div>
+                            <div id="turtleFinishPoint" class="point-value">12.0 秒</div>
+                        </div>
+                        <div class="point-card">
+                            <div class="point-title">兔子到达终点</div>
+                            <div id="rabbitFinishPoint" class="point-value">11.5 秒</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <h2 class="graph-title">位移-时间图像（完整比赛过程）</h2>
+                <div class="canvas-container">
+                    <canvas id="raceCanvas"></canvas>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="color-box rabbit-color"></div>
+                        <span>兔子位移曲线（速度快但会睡觉）</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box turtle-color"></div>
+                        <span>乌龟位移曲线（速度慢但坚持）</span>
+                    </div>
+                </div>
+                
+                <div class="key-moments">
+                    <div id="moment1" class="moment-card">
+                        <div class="moment-icon">🏁</div>
+                        <div class="moment-text">比赛开始 (0秒)</div>
+                    </div>
+                    <div id="moment2" class="moment-card">
+                        <div class="moment-icon">😴</div>
+                        <div class="moment-text">兔子睡觉 (2.0秒)</div>
+                    </div>
+                    <div id="moment3" class="moment-card">
+                        <div class="moment-icon">🐢</div>
+                        <div class="moment-text">乌龟反超 (4.8秒)</div>
+                    </div>
+                    <div id="moment4" class="moment-card">
+                        <div class="moment-icon">🐰</div>
+                        <div class="moment-text">兔子醒来 (9.0秒)</div>
+                    </div>
+                    <div id="moment5" class="moment-card">
+                        <div class="moment-icon">🎯</div>
+                        <div class="moment-text">乌龟到达 (12.0秒)</div>
+                    </div>
+                    <div id="moment6" class="moment-card">
+                        <div class="moment-icon">⏱️</div>
+                        <div class="moment-text">兔子到达 (11.5秒)</div>
+                    </div>
+                </div>
+                
+                <div class="story-panel">
+                    <h2 class="story-title"><i class="fas fa-book-open"></i> 完整故事线与物理原理</h2>
+                    <div class="story-content">
+                        <p><strong>第一阶段：兔子快速领先</strong> - 比赛开始后，兔子凭借速度优势迅速领先，位移-时间曲线斜率较大。</p>
+                        <p><strong>第二阶段：兔子睡觉</strong> - 兔子开始睡觉，位移停止增加，图像出现水平线段（斜率为零）。</p>
+                        <p><strong>第三阶段：乌龟反超</strong> - 乌龟保持匀速前进，逐渐赶上并超过睡觉中的兔子。</p>
+                        <p><strong>第四阶段：兔子醒来追赶</strong> - 兔子醒来发现被反超，加速追赶，曲线斜率再次变大。</p>
+                        <p><strong>第五阶段：乌龟获胜</strong> - 乌龟坚持不懈，先到达终点，兔子虽快但为时已晚。</p>
+                        <p><strong>物理原理</strong>：位移-时间图像的斜率表示速度。兔子睡觉期间斜率为0，乌龟的斜率恒定但较小。通过精心设置参数，确保乌龟获胜，展示"缓慢但坚持不懈战胜骄傲自满"的道理。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>龟兔赛跑位移-时间图像模拟器（完整版） &copy; 2023 | 物理教学与经典寓言的完美结合</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #95a5a6;">默认参数确保乌龟获胜，体现了"骄傲使人落后，谦虚使人进步"的经典寓言。</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const canvas = document.getElementById('raceCanvas');
+        const ctx = canvas.getContext('2d');
+        const rabbitSpeedSlider = document.getElementById('rabbitSpeed');
+        const rabbitSpeedValue = document.getElementById('rabbitSpeedValue');
+        const turtleSpeedSlider = document.getElementById('turtleSpeed');
+        const turtleSpeedValue = document.getElementById('turtleSpeedValue');
+        const sleepStartSlider = document.getElementById('sleepStart');
+        const sleepStartValue = document.getElementById('sleepStartValue');
+        const sleepDurationSlider = document.getElementById('sleepDuration');
+        const sleepDurationValue = document.getElementById('sleepDurationValue');
+        const raceDistanceSlider = document.getElementById('raceDistance');
+        const raceDistanceValue = document.getElementById('raceDistanceValue');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const defaultBtn = document.getElementById('defaultBtn');
+        const fullRaceBtn = document.getElementById('fullRaceBtn');
+        const resultPanel = document.getElementById('resultPanel');
+        const winnerText = document.getElementById('winnerText');
+        const rabbitTime = document.getElementById('rabbitTime');
+        const turtleTime = document.getElementById('turtleTime');
+        const leadTime = document.getElementById('leadTime');
+        const sleepTime = document.getElementById('sleepTime');
+        
+        // 关键时间点元素
+        const sleepStartPoint = document.getElementById('sleepStartPoint');
+        const sleepEndPoint = document.getElementById('sleepEndPoint');
+        const overtakePoint = document.getElementById('overtakePoint');
+        const turtleFinishPoint = document.getElementById('turtleFinishPoint');
+        const rabbitFinishPoint = document.getElementById('rabbitFinishPoint');
+        
+        // 关键时刻元素
+        const moment1 = document.getElementById('moment1');
+        const moment2 = document.getElementById('moment2');
+        const moment3 = document.getElementById('moment3');
+        const moment4 = document.getElementById('moment4');
+        const moment5 = document.getElementById('moment5');
+        const moment6 = document.getElementById('moment6');
+        
+        // 设置canvas尺寸
+        function resizeCanvas() {
+            const container = document.querySelector('.canvas-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawStaticElements();
+        }
+        
+        // 初始变量 - 调整为乌龟获胜的参数
+        let raceDistance = parseInt(raceDistanceSlider.value);
+        let rabbitSpeed = parseFloat(rabbitSpeedSlider.value);
+        let turtleSpeed = parseFloat(turtleSpeedSlider.value);
+        let sleepStart = parseFloat(sleepStartSlider.value);
+        let sleepDuration = parseFloat(sleepDurationSlider.value);
+        
+        let animationId = null;
+        let raceTime = 0;
+        let raceFinished = false;
+        let rabbitWon = false;
+        let turtleWon = false;
+        let isFullRace = false;
+        
+        // 更新滑块显示值
+        function updateSliders() {
+            rabbitSpeedValue.textContent = rabbitSpeedSlider.value + ' 米/秒';
+            rabbitSpeed = parseFloat(rabbitSpeedSlider.value);
+            
+            turtleSpeedValue.textContent = turtleSpeedSlider.value + ' 米/秒';
+            turtleSpeed = parseFloat(turtleSpeedSlider.value);
+            
+            sleepStartValue.textContent = sleepStartSlider.value + ' 秒';
+            sleepStart = parseFloat(sleepStartSlider.value);
+            
+            sleepDurationValue.textContent = sleepDurationSlider.value + ' 秒';
+            sleepDuration = parseFloat(sleepDurationSlider.value);
+            
+            raceDistanceValue.textContent = raceDistanceSlider.value + ' 米';
+            raceDistance = parseInt(raceDistanceSlider.value);
+            
+            updateCriticalPoints();
+        }
+        
+        // 添加事件监听器
+        rabbitSpeedSlider.addEventListener('input', updateSliders);
+        turtleSpeedSlider.addEventListener('input', updateSliders);
+        sleepStartSlider.addEventListener('input', updateSliders);
+        sleepDurationSlider.addEventListener('input', updateSliders);
+        raceDistanceSlider.addEventListener('input', updateSliders);
+        
+        // 更新关键时间点
+        function updateCriticalPoints() {
+            sleepStartPoint.textContent = sleepStart.toFixed(1) + ' 秒';
+            sleepEndPoint.textContent = (sleepStart + sleepDuration).toFixed(1) + ' 秒';
+            
+            const result = calculateRaceResult();
+            turtleFinishPoint.textContent = result.turtleFinishTime.toFixed(1) + ' 秒';
+            rabbitFinishPoint.textContent = result.rabbitFinishTime.toFixed(1) + ' 秒';
+            
+            // 计算乌龟反超兔子的时间
+            const overtakeTime = calculateOvertakeTime();
+            if (overtakeTime) {
+                overtakePoint.textContent = overtakeTime.toFixed(1) + ' 秒';
+            } else {
+                overtakePoint.textContent = '未反超';
+            }
+            
+            // 更新关键时刻显示
+            updateKeyMoments(result, overtakeTime);
+            
+            // 更新结果面板
+            updateResultPanel(result);
+        }
+        
+        // 更新关键时刻显示
+        function updateKeyMoments(result, overtakeTime) {
+            moment2.querySelector('.moment-text').textContent = `兔子睡觉 (${sleepStart.toFixed(1)}秒)`;
+            
+            if (overtakeTime) {
+                moment3.querySelector('.moment-text').textContent = `乌龟反超 (${overtakeTime.toFixed(1)}秒)`;
+            } else {
+                moment3.querySelector('.moment-text').textContent = `乌龟未反超`;
+            }
+            
+            moment4.querySelector('.moment-text').textContent = `兔子醒来 (${(sleepStart + sleepDuration).toFixed(1)}秒)`;
+            moment5.querySelector('.moment-text').textContent = `乌龟到达 (${result.turtleFinishTime.toFixed(1)}秒)`;
+            moment6.querySelector('.moment-text').textContent = `兔子到达 (${result.rabbitFinishTime.toFixed(1)}秒)`;
+        }
+        
+        // 更新结果面板
+        function updateResultPanel(result) {
+            rabbitTime.textContent = result.rabbitFinishTime.toFixed(1) + ' 秒';
+            turtleTime.textContent = result.turtleFinishTime.toFixed(1) + ' 秒';
+            leadTime.textContent = Math.abs(result.rabbitFinishTime - result.turtleFinishTime).toFixed(1) + ' 秒';
+            sleepTime.textContent = sleepDuration.toFixed(1) + ' 秒';
+            
+            if (result.turtleWins) {
+                winnerText.textContent = '🏆 乌龟获胜！坚持不懈战胜了骄傲的兔子。';
+                winnerText.className = 'winner-text turtle-winner';
+            } else {
+                winnerText.textContent = '🐰 兔子获胜！虽然睡觉但最终还是追上了乌龟。';
+                winnerText.className = 'winner-text rabbit-winner';
+            }
+        }
+        
+        // 重置参数
+        resetBtn.addEventListener('click', () => {
+            rabbitSpeedSlider.value = 6.0;
+            turtleSpeedSlider.value = 2.5;
+            sleepStartSlider.value = 2.0;
+            sleepDurationSlider.value = 7.0;
+            raceDistanceSlider.value = 30;
+            
+            updateSliders();
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            raceTime = 0;
+            raceFinished = false;
+            rabbitWon = false;
+            turtleWon = false;
+            isFullRace = false;
+            resultPanel.classList.remove('show');
+            
+            resetMoments();
+            drawStaticElements();
+            
+            showMessage('参数已重置。点击"完整比赛"观看完整动画。');
+        });
+        
+        // 经典场景按钮
+        defaultBtn.addEventListener('click', () => {
+            // 精心计算的参数，确保乌龟获胜
+            rabbitSpeedSlider.value = 5.5;
+            turtleSpeedSlider.value = 2.3;
+            sleepStartSlider.value = 1.8;
+            sleepDurationSlider.value = 8.0;
+            raceDistanceSlider.value = 28;
+            
+            updateSliders();
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            raceTime = 0;
+            raceFinished = false;
+            rabbitWon = false;
+            turtleWon = false;
+            isFullRace = false;
+            resultPanel.classList.remove('show');
+            
+            resetMoments();
+            drawStaticElements();
+            
+            showMessage('已设置为经典场景参数，乌龟将获胜！点击"完整比赛"观看完整动画。');
+        });
+        
+        // 完整比赛按钮
+        fullRaceBtn.addEventListener('click', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            raceTime = 0;
+            raceFinished = false;
+            rabbitWon = false;
+            turtleWon = false;
+            isFullRace = true;
+            resultPanel.classList.remove('show');
+            
+            resetMoments();
+            
+            const result = calculateRaceResult();
+            const overtakeTime = calculateOvertakeTime();
+            
+            showMessage(`完整比赛开始！关键节点：兔子睡觉(${sleepStart.toFixed(1)}秒) → ${overtakeTime ? '乌龟反超(' + overtakeTime.toFixed(1) + '秒) → ' : ''}兔子醒来(${(sleepStart+sleepDuration).toFixed(1)}秒) → 乌龟到达(${result.turtleFinishTime.toFixed(1)}秒) → 兔子到达(${result.rabbitFinishTime.toFixed(1)}秒)`);
+            
+            startFullRaceAnimation();
+        });
+        
+        // 开始比赛（常规）
+        startBtn.addEventListener('click', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            raceTime = 0;
+            raceFinished = false;
+            rabbitWon = false;
+            turtleWon = false;
+            isFullRace = false;
+            resultPanel.classList.remove('show');
+            
+            resetMoments();
+            
+            showMessage('比赛进行中... 观察兔子睡觉时被乌龟反超的过程。');
+            
+            startRaceAnimation();
+        });
+        
+        // 重置关键时刻高亮
+        function resetMoments() {
+            [moment1, moment2, moment3, moment4, moment5, moment6].forEach(m => {
+                m.classList.remove('active');
+            });
+        }
+        
+        // 显示消息
+        function showMessage(message) {
+            // 可以在这里添加一个消息提示框，暂时用控制台输出
+            console.log(message);
+        }
+        
+        // 计算乌龟反超兔子的时间
+        function calculateOvertakeTime() {
+            // 如果兔子不睡觉，乌龟永远不会反超
+            if (sleepDuration <= 0) return null;
+            
+            // 兔子睡觉时的位移
+            const rabbitSleepDisplacement = rabbitSpeed * sleepStart;
+            
+            // 乌龟到达兔子睡觉位置的时间
+            const overtakeTime = rabbitSleepDisplacement / turtleSpeed;
+            
+            // 检查这个时间是否在兔子睡觉期间
+            if (overtakeTime >= sleepStart && overtakeTime <= sleepStart + sleepDuration) {
+                return overtakeTime;
+            }
+            
+            return null;
+        }
+        
+        // 绘制静态元素（坐标轴、网格、标签）
+        function drawStaticElements() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            ctx.strokeStyle = '#f0f0f0';
+            ctx.lineWidth = 1;
+            
+            const gridSize = 50;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制坐标轴
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            
+            // Y轴（位移）
+            const axisX = 80;
+            const axisYBottom = canvas.height - 60;
+            const axisYTop = 40;
+            
+            ctx.beginPath();
+            ctx.moveTo(axisX, axisYTop);
+            ctx.lineTo(axisX, axisYBottom);
+            ctx.stroke();
+            
+            // X轴（时间）
+            ctx.beginPath();
+            ctx.moveTo(axisX, axisYBottom);
+            ctx.lineTo(canvas.width - 40, axisYBottom);
+            ctx.stroke();
+            
+            // 坐标轴箭头
+            ctx.fillStyle = '#333';
+            // Y轴箭头
+            ctx.beginPath();
+            ctx.moveTo(axisX, axisYTop);
+            ctx.lineTo(axisX - 5, axisYTop + 10);
+            ctx.lineTo(axisX + 5, axisYTop + 10);
+            ctx.closePath();
+            ctx.fill();
+            
+            // X轴箭头
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 40, axisYBottom);
+            ctx.lineTo(canvas.width - 50, axisYBottom - 5);
+            ctx.lineTo(canvas.width - 50, axisYBottom + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // 坐标轴标签
+            ctx.fillStyle = '#333';
+            ctx.font = '16px Arial';
+            ctx.fillText('位移 (米)', 30, axisYTop + 10);
+            ctx.fillText('时间 (秒)', canvas.width - 50, axisYBottom + 20);
+            
+            // Y轴刻度
+            ctx.font = '12px Arial';
+            ctx.fillStyle = '#666';
+            const yStep = raceDistance >= 40 ? 10 : 5;
+            for (let i = 0; i <= raceDistance; i += yStep) {
+                const y = axisYBottom - (i / raceDistance) * (axisYBottom - axisYTop);
+                ctx.beginPath();
+                ctx.moveTo(axisX - 5, y);
+                ctx.lineTo(axisX, y);
+                ctx.stroke();
+                
+                ctx.fillText(i, axisX - 30, y + 4);
+            }
+            
+            // 绘制终点线
+            const finishLineY = axisYBottom - (raceDistance / raceDistance) * (axisYBottom - axisYTop);
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(axisX, finishLineY);
+            ctx.lineTo(canvas.width - 40, finishLineY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = '14px Arial';
+            ctx.fillText('终点线', canvas.width - 45, finishLineY - 8);
+        }
+        
+        // 计算最大显示时间（完整比赛）
+        function calculateMaxTime() {
+            const result = calculateRaceResult();
+            // 取两者中较大者，再加一点缓冲
+            return Math.max(result.turtleFinishTime, result.rabbitFinishTime) * 1.1;
+        }
+        
+        // 计算比赛结果
+        function calculateRaceResult() {
+            // 计算乌龟到达终点的时间
+            const turtleFinishTime = raceDistance / turtleSpeed;
+            
+            // 计算兔子到达终点的时间
+            // 如果兔子在睡觉前就能跑完全程
+            if (rabbitSpeed * sleepStart >= raceDistance) {
+                return {
+                    turtleFinishTime,
+                    rabbitFinishTime: raceDistance / rabbitSpeed,
+                    turtleWins: false
+                };
+            }
+            
+            // 兔子需要睡觉后继续跑
+            const rabbitFinishTime = sleepStart + sleepDuration + (raceDistance - rabbitSpeed * sleepStart) / rabbitSpeed;
+            
+            return {
+                turtleFinishTime,
+                rabbitFinishTime,
+                turtleWins: turtleFinishTime < rabbitFinishTime
+            };
+        }
+        
+        // 计算兔子和乌龟在给定时间的位移
+        function calculateDisplacement(time) {
+            // 兔子位移计算
+            let rabbitDisplacement;
+            const sleepEnd = sleepStart + sleepDuration;
+            
+            if (time <= sleepStart) {
+                // 睡觉前：匀速运动
+                rabbitDisplacement = rabbitSpeed * time;
+            } else if (time > sleepStart && time <= sleepEnd) {
+                // 睡觉期间：位移不变
+                rabbitDisplacement = rabbitSpeed * sleepStart;
+            } else {
+                // 睡觉后：匀速运动
+                rabbitDisplacement = rabbitSpeed * sleepStart + rabbitSpeed * (time - sleepEnd);
+            }
+            
+            // 乌龟位移计算（始终匀速运动）
+            const turtleDisplacement = turtleSpeed * time;
+            
+            // 确保位移不超过比赛距离
+            rabbitDisplacement = Math.min(rabbitDisplacement, raceDistance);
+            const turtleDisplacementFinal = Math.min(turtleDisplacement, raceDistance);
+            
+            return { rabbitDisplacement, turtleDisplacement: turtleDisplacementFinal };
+        }
+        
+        // 绘制完整的位移-时间曲线（延伸到比赛结束）
+        function drawFullDisplacementCurves(time) {
+            // 清除之前绘制的动态内容，保留静态元素
+            const axisX = 80;
+            const axisYBottom = canvas.height - 60;
+            const axisYTop = 40;
+            
+            ctx.clearRect(axisX + 1, axisYTop, canvas.width - axisX - 40, axisYBottom - axisYTop);
+            
+            // 先绘制完整的预测曲线（浅色）
+            const result = calculateRaceResult();
+            const maxTime = Math.max(result.turtleFinishTime, result.rabbitFinishTime) * 1.1;
+            
+            // 绘制完整的兔子曲线（预测，浅色）
+            ctx.strokeStyle = 'rgba(231, 76, 60, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const timeStep = 0.05;
+            for (let t = 0; t <= maxTime; t += timeStep) {
+                const { rabbitDisplacement } = calculateDisplacement(t);
+                const x = axisX + (t / maxTime) * (canvas.width - axisX - 40);
+                const y = axisYBottom - (rabbitDisplacement / raceDistance) * (axisYBottom - axisYTop);
+                
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // 绘制完整的乌龟曲线（预测，浅色）
+            ctx.strokeStyle = 'rgba(74, 100, 145, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let t = 0; t <= maxTime; t += timeStep) {
+                const { turtleDisplacement } = calculateDisplacement(t);
+                const x = axisX + (t / maxTime) * (canvas.width - axisX - 40);
+                const y = axisYBottom - (turtleDisplacement / raceDistance) * (axisYBottom - axisYTop);
+                
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // 绘制截止到当前时间的实际曲线（深色）
+            // 兔子曲线
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let t = 0; t <= time; t += timeStep) {
+                const { rabbitDisplacement } = calculateDisplacement(t);
+                const x = axisX + (t / maxTime) * (canvas.width - axisX - 40);
+                const y = axisYBottom - (rabbitDisplacement / raceDistance) * (axisYBottom - axisYTop);
+                
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // 乌龟曲线
+            ctx.strokeStyle = '#4a6491';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let t = 0; t <= time; t += timeStep) {
+                const { turtleDisplacement } = calculateDisplacement(t);
+                const x = axisX + (t / maxTime) * (canvas.width - axisX - 40);
+                const y = axisYBottom - (turtleDisplacement / raceDistance) * (axisYBottom - axisYTop);
+                
+                if (t === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // 绘制当前时间点
+            const { rabbitDisplacement, turtleDisplacement } = calculateDisplacement(time);
+            
+            // 兔子当前位置
+            const rabbitX = axisX + (time / maxTime) * (canvas.width - axisX - 40);
+            const rabbitY = axisYBottom - (rabbitDisplacement / raceDistance) * (axisYBottom - axisYTop);
+            
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(rabbitX, rabbitY, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 乌龟当前位置
+            const turtleX = axisX + (time / maxTime) * (canvas.width - axisX - 40);
+            const turtleY = axisYBottom - (turtleDisplacement / raceDistance) * (axisYBottom - axisYTop);
+            
+            ctx.fillStyle = '#4a6491';
+            ctx.beginPath();
+            ctx.arc(turtleX, turtleY, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制关键时刻标记
+            drawCriticalMomentMarkers(maxTime, axisX, axisYBottom, axisYTop);
+            
+            // 显示当前位置信息
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.fillText(`时间: ${time.toFixed(1)}秒`, canvas.width - 180, 50);
+            ctx.fillText(`兔子: ${rabbitDisplacement.toFixed(1)}米`, canvas.width - 180, 75);
+            ctx.fillText(`乌龟: ${turtleDisplacement.toFixed(1)}米`, canvas.width - 180, 100);
+            
+            // 显示谁领先
+            if (rabbitDisplacement > turtleDisplacement) {
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillText('兔子领先', canvas.width - 180, 125);
+            } else if (turtleDisplacement > rabbitDisplacement) {
+                ctx.fillStyle = '#4a6491';
+                ctx.fillText('乌龟领先', canvas.width - 180, 125);
+            } else {
+                ctx.fillStyle = '#666';
+                ctx.fillText('并驾齐驱', canvas.width - 180, 125);
+            }
+            
+            // 标记睡觉区域
+            if (time >= sleepStart) {
+                const sleepStartX = axisX + (sleepStart / maxTime) * (canvas.width - axisX - 40);
+                const sleepEndX = axisX + (Math.min(sleepStart + sleepDuration, maxTime) / maxTime) * (canvas.width - axisX - 40);
+                const sleepY = axisYBottom - (rabbitSpeed * sleepStart / raceDistance) * (axisYBottom - axisYTop);
+                
+                // 绘制睡觉区域背景
+                ctx.fillStyle = 'rgba(255, 235, 59, 0.15)';
+                ctx.fillRect(sleepStartX, axisYTop, sleepEndX - sleepStartX, axisYBottom - axisYTop);
+                
+                // 绘制睡觉标记
+                ctx.fillStyle = '#f39c12';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('😴', sleepStartX + 5, sleepY - 10);
+                
+                if (time >= sleepStart + sleepDuration) {
+                    ctx.fillText('兔子醒来!', sleepEndX - 40, sleepY - 30);
+                }
+            }
+            
+            // 检查比赛是否结束
+            if (!raceFinished && (rabbitDisplacement >= raceDistance || turtleDisplacement >= raceDistance)) {
+                raceFinished = true;
+                rabbitWon = rabbitDisplacement >= raceDistance;
+                turtleWon = turtleDisplacement >= raceDistance;
+                
+                // 显示结果面板
+                resultPanel.classList.add('show');
+                
+                const result = calculateRaceResult();
+                
+                // 高亮关键时刻
+                if (turtleWon) {
+                    moment5.classList.add('active');
+                    moment6.classList.add('active');
+                }
+            }
+        }
+        
+        // 绘制关键时刻标记
+        function drawCriticalMomentMarkers(maxTime, axisX, axisYBottom, axisYTop) {
+            const result = calculateRaceResult();
+            const overtakeTime = calculateOvertakeTime();
+            
+            // 兔子开始睡觉
+            drawMomentMarker(sleepStart, '😴', '#f39c12', maxTime, axisX, axisYBottom, axisYTop);
+            
+            // 兔子醒来
+            drawMomentMarker(sleepStart + sleepDuration, '🐰', '#e74c3c', maxTime, axisX, axisYBottom, axisYTop);
+            
+            // 乌龟反超兔子
+            if (overtakeTime) {
+                drawMomentMarker(overtakeTime, '🐢', '#4a6491', maxTime, axisX, axisYBottom, axisYTop);
+            }
+            
+            // 乌龟到达终点
+            drawMomentMarker(result.turtleFinishTime, '🎯', '#2ecc71', maxTime, axisX, axisYBottom, axisYTop);
+            
+            // 兔子到达终点
+            drawMomentMarker(result.rabbitFinishTime, '⏱️', '#e74c3c', maxTime, axisX, axisYBottom, axisYTop);
+        }
+        
+        // 绘制单个关键时刻标记
+        function drawMomentMarker(time, label, color, maxTime, axisX, axisYBottom, axisYTop) {
+            const x = axisX + (time / maxTime) * (canvas.width - axisX - 40);
+            
+            // 垂直线
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(x, axisYBottom);
+            ctx.lineTo(x, axisYTop);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 标记点
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, axisYBottom, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 标签
+            ctx.fillStyle = color;
+            ctx.font = '14px Arial';
+            ctx.fillText(label, x - 8, axisYBottom + 20);
+        }
+        
+        // 开始完整比赛动画
+        function startFullRaceAnimation() {
+            drawStaticElements();
+            raceTime = 0;
+            const result = calculateRaceResult();
+            const maxTime = Math.max(result.turtleFinishTime, result.rabbitFinishTime) * 1.1;
+            const animationDuration = 15000; // 15秒完成完整动画
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                raceTime = (elapsed / animationDuration) * maxTime;
+                
+                drawFullDisplacementCurves(raceTime);
+                
+                // 高亮当前时刻
+                highlightCurrentMoment(raceTime);
+                
+                if (elapsed < animationDuration && !raceFinished) {
+                    animationId = requestAnimationFrame(animate);
+                } else if (!raceFinished) {
+                    // 动画时间结束但比赛未结束，继续计算
+                    raceTime = maxTime;
+                    drawFullDisplacementCurves(raceTime);
+                    highlightCurrentMoment(raceTime);
+                    
+                    // 最终检查比赛结果
+                    const { rabbitDisplacement, turtleDisplacement } = calculateDisplacement(raceTime);
+                    if (rabbitDisplacement >= raceDistance || turtleDisplacement >= raceDistance) {
+                        raceFinished = true;
+                        rabbitWon = rabbitDisplacement >= raceDistance;
+                        turtleWon = turtleDisplacement >= raceDistance;
+                        
+                        resultPanel.classList.add('show');
+                        
+                        // 高亮关键时刻
+                        if (turtleWon) {
+                            moment5.classList.add('active');
+                            moment6.classList.add('active');
+                        }
+                    }
+                }
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 高亮当前时刻
+        function highlightCurrentMoment(currentTime) {
+            const result = calculateRaceResult();
+            const overtakeTime = calculateOvertakeTime();
+            
+            // 重置所有高亮
+            resetMoments();
+            
+            // 根据当前时间高亮相应的时刻
+            if (currentTime < sleepStart) {
+                moment1.classList.add('active');
+            } else if (currentTime < sleepStart + sleepDuration) {
+                moment2.classList.add('active');
+                if (overtakeTime && currentTime >= overtakeTime) {
+                    moment3.classList.add('active');
+                }
+            } else if (currentTime < result.turtleFinishTime) {
+                moment4.classList.add('active');
+                if (overtakeTime) moment3.classList.add('active');
+            } else if (currentTime < result.rabbitFinishTime) {
+                moment5.classList.add('active');
+                if (overtakeTime) moment3.classList.add('active');
+                moment4.classList.add('active');
+            } else {
+                moment5.classList.add('active');
+                moment6.classList.add('active');
+                if (overtakeTime) moment3.classList.add('active');
+                moment4.classList.add('active');
+            }
+        }
+        
+        // 开始常规比赛动画
+        function startRaceAnimation() {
+            drawStaticElements();
+            raceTime = 0;
+            const maxTime = calculateMaxTime();
+            const animationDuration = 8000; // 8秒完成动画
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                raceTime = (elapsed / animationDuration) * maxTime;
+                
+                drawFullDisplacementCurves(raceTime);
+                highlightCurrentMoment(raceTime);
+                
+                if (elapsed < animationDuration && !raceFinished) {
+                    animationId = requestAnimationFrame(animate);
+                }
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 初始化和调整窗口大小时重新绘制
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            updateCriticalPoints();
+            
+            // 页面加载后显示初始信息
+            setTimeout(() => {
+                const result = calculateRaceResult();
+                if (result.turtleWins) {
+                    showMessage('默认参数下，乌龟将获胜！兔子速度虽快，但睡觉时间太长。点击"完整比赛"观看完整过程。');
+                }
+            }, 500);
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 初始绘制
+        resizeCanvas();
+    </script>
+</body>
+</html>

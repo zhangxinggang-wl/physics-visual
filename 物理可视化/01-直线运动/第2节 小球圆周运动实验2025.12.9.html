@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小球圆周运动实验</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1200px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 32px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .credit {
+            position: absolute;
+            right: 20px;
+            bottom: 15px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .content {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .animation-panel {
+            flex: 3;
+            min-width: 500px;
+        }
+        
+        .control-panel {
+            flex: 2;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .experiment-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .animation-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            overflow: hidden;
+        }
+        
+        #tack {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle at 6px 6px, #e74c3c, #c0392b);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid white;
+        }
+        
+        #ball {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 12px 12px, #3498db, #1a5276);
+            border-radius: 50%;
+            z-index: 20;
+            transform: translate(-50%, -50%);
+            transition: left 0.05s linear, top 0.05s linear;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        #string {
+            position: absolute;
+            height: 3px;
+            background: linear-gradient(to right, #2c3e50, #34495e);
+            transform-origin: 0 0;
+            z-index: 15;
+            border-radius: 2px;
+        }
+        
+        .trajectory {
+            position: absolute;
+            border: 2px dashed rgba(52, 152, 219, 0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            z-index: 5;
+        }
+        
+        .tangent-line {
+            position: absolute;
+            height: 3px;
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 10px,
+                #e74c3c 10px,
+                #e74c3c 20px
+            );
+            z-index: 10;
+            opacity: 0;
+            transform-origin: 0 0;
+            transition: opacity 0.5s;
+        }
+        
+        .cut-scissors {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e74c3c"><path d="M20.5,11C19.1,11 18,9.9 18,8.5V5H14V8.5C14,9.9 12.9,11 11.5,11H10V13H11.5C12.9,13 14,14.1 14,15.5V19H18V15.5C18,14.1 19.1,13 20.5,13C21.9,13 23,14.1 23,15.5V19H24V15.5C24,13.6 22.4,12 20.5,12M12,9.5C12,10.3 11.3,11 10.5,11C9.7,11 9,10.3 9,9.5C9,8.7 9.7,8 10.5,8C11.3,8 12,8.7 12,9.5M7,6C5.9,6 5,6.9 5,8C5,9.1 5.9,10 7,10C8.1,10 9,9.1 9,8C9,6.9 8.1,6 7,6M3.5,11C1.6,11 0,12.6 0,14.5C0,16.4 1.6,18 3.5,18C5.4,18 7,16.4 7,14.5C7,12.6 5.4,11 3.5,11Z"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 25;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .control-group h3 i {
+            margin-right: 8px;
+            color: #3498db;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            flex: 1;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        button#cutBtn {
+            background-color: #e74c3c;
+        }
+        
+        button#cutBtn:hover {
+            background-color: #c0392b;
+        }
+        
+        button#pauseBtn {
+            background-color: #f39c12;
+        }
+        
+        button#pauseBtn:hover {
+            background-color: #d68910;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .slider-container {
+            margin-top: 10px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .slider-value {
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            outline: none;
+            border-radius: 4px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .status {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .status-detail {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .parameters {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .parameter {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .parameter-name {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .parameter-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .animation-panel, .control-panel {
+                min-width: 100%;
+            }
+            
+            .animation-container {
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .animation-container {
+                height: 300px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .parameters {
+                grid-template-columns: 1fr;
+            }
+            
+            .credit {
+                position: static;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>小球圆周运动实验</h1>
+        <div class="credit">制作：张兴刚燕赵名师工作室 耿春辉</div>
+    </div>
+    
+    <div class="content">
+        <div class="animation-panel">
+            <div class="experiment-container">
+                <div class="animation-container">
+                    <div id="tack"></div>
+                    <div id="ball"></div>
+                    <div id="string"></div>
+                    <div id="trajectory" class="trajectory"></div>
+                    <div id="tangentLine" class="tangent-line"></div>
+                    <div id="scissors" class="cut-scissors"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-panel">
+            <div class="controls">
+                <div class="control-group">
+                    <h3>实验控制</h3>
+                    <div class="button-group">
+                        <button id="startBtn">开始圆周运动</button>
+                        <button id="pauseBtn" disabled>暂停运动</button>
+                        <button id="cutBtn" disabled>剪断细线</button>
+                        <button id="resetBtn">重置实验</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>运动参数调节</h3>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>圆周半径 R</span>
+                            <span class="slider-value" id="radiusValue">120 px</span>
+                        </div>
+                        <input type="range" min="60" max="200" value="120" class="slider" id="radiusSlider">
+                    </div>
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>运动速度 V</span>
+                            <span class="slider-value" id="speedValue">4.8 px/帧</span>
+                        </div>
+                        <input type="range" min="1" max="10" step="0.1" value="4.8" class="slider" id="speedSlider">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>运动参数显示</h3>
+                    <div class="parameters">
+                        <div class="parameter">
+                            <div class="parameter-name">圆周半径 R</div>
+                            <div class="parameter-value" id="radiusDisplay">120 px</div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-name">线速度 V</div>
+                            <div class="parameter-value" id="speedDisplay">4.8 px/帧</div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-name">向心力大小 F</div>
+                            <div class="parameter-value" id="forceDisplay">0.19</div>
+                        </div>
+                        <div class="parameter">
+                            <div class="parameter-name">运动状态</div>
+                            <div class="parameter-value" id="motionState">静止</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-container">
+                <div class="status" id="status">实验准备中...</div>
+                <div class="status-detail" id="statusDetail">点击"开始圆周运动"按钮开始实验</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取DOM元素
+        const ball = document.getElementById('ball');
+        const string = document.getElementById('string');
+        const trajectory = document.getElementById('trajectory');
+        const tangentLine = document.getElementById('tangentLine');
+        const scissors = document.getElementById('scissors');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const cutBtn = document.getElementById('cutBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const status = document.getElementById('status');
+        const statusDetail = document.getElementById('statusDetail');
+        
+        // 参数显示元素
+        const radiusDisplay = document.getElementById('radiusDisplay');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const forceDisplay = document.getElementById('forceDisplay');
+        const motionState = document.getElementById('motionState');
+        
+        // 滑块控制元素
+        const radiusSlider = document.getElementById('radiusSlider');
+        const radiusValue = document.getElementById('radiusValue');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        
+        // 实验参数
+        const container = document.querySelector('.animation-container');
+        let centerX = container.offsetWidth / 2;
+        let centerY = container.offsetHeight / 2;
+        let radius = 120; // 圆周运动半径（可调节）
+        let angle = 0; // 当前角度
+        let linearSpeed = 4.8; // 线速度（可调节，px/帧）
+        let angularSpeed = linearSpeed / radius; // 角速度（弧度/帧）
+        let animationId = null;
+        let isAnimating = false;
+        let isPaused = false;
+        let isCut = false;
+        let cutAngle = 0; // 剪断时的角度
+        let cutVelocityX = 0; // 剪断时的速度X分量
+        let cutVelocityY = 0; // 剪断时的速度Y分量
+        let cutStartX = 0; // 剪断时的起始X坐标
+        let cutStartY = 0; // 剪断时的起始Y坐标
+        
+        // 初始化小球位置
+        function initBallPosition() {
+            ball.style.left = `${centerX + radius}px`;
+            ball.style.top = `${centerY}px`;
+            updateTrajectory();
+            updateParameters();
+            updateString();
+            clearTangentLine();
+        }
+        
+        // 清除切线轨迹
+        function clearTangentLine() {
+            tangentLine.style.opacity = '0';
+            tangentLine.style.width = '0';
+        }
+        
+        // 更新参数显示
+        function updateParameters() {
+            // 更新滑块显示
+            radiusValue.textContent = `${radius} px`;
+            speedValue.textContent = `${linearSpeed.toFixed(1)} px/帧`;
+            
+            // 更新参数显示
+            radiusDisplay.textContent = `${radius} px`;
+            speedDisplay.textContent = `${linearSpeed.toFixed(1)} px/帧`;
+            
+            // 计算向心力大小（简化计算，假设质量为1）
+            const force = isAnimating && !isPaused ? (linearSpeed * linearSpeed / radius).toFixed(2) : "0.00";
+            forceDisplay.textContent = force;
+            
+            let stateText = "静止";
+            if (isCut) {
+                stateText = "直线运动";
+            } else if (isAnimating) {
+                stateText = isPaused ? "暂停" : "圆周运动";
+            }
+            motionState.textContent = stateText;
+        }
+        
+        // 更新细线显示 - 一端固定在圆心，另一端连接在小球上
+        function updateString() {
+            if (isCut) return;
+            
+            const ballX = parseFloat(ball.style.left);
+            const ballY = parseFloat(ball.style.top);
+            
+            // 计算细线长度和角度
+            const dx = ballX - centerX;
+            const dy = ballY - centerY;
+            const length = Math.sqrt(dx*dx + dy*dy);
+            const stringAngle = Math.atan2(dy, dx);
+            
+            // 设置细线样式 - 从图钉中心连接到小球中心
+            string.style.width = `${length}px`;
+            string.style.left = `${centerX}px`; // 固定在圆心
+            string.style.top = `${centerY}px`; // 固定在圆心
+            string.style.transform = `rotate(${stringAngle * 180 / Math.PI}deg)`;
+            string.style.transformOrigin = '0 0'; // 从圆心开始旋转
+        }
+        
+        // 更新轨迹圆
+        function updateTrajectory() {
+            trajectory.style.width = `${radius * 2}px`;
+            trajectory.style.height = `${radius * 2}px`;
+        }
+        
+        // 绘制切线轨迹
+        function drawTangentLine() {
+            if (!isCut) return;
+            
+            // 计算切线角度
+            const tangentAngle = cutAngle + Math.PI/2;
+            
+            // 获取小球当前位置
+            const currentX = parseFloat(ball.style.left);
+            const currentY = parseFloat(ball.style.top);
+            
+            // 计算小球已飞行的距离
+            const dx = currentX - cutStartX;
+            const dy = currentY - cutStartY;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            // 设置切线样式
+            tangentLine.style.left = `${cutStartX}px`;
+            tangentLine.style.top = `${cutStartY}px`;
+            tangentLine.style.width = `${distance}px`;
+            tangentLine.style.transform = `rotate(${tangentAngle * 180 / Math.PI}deg)`;
+            tangentLine.style.opacity = '1';
+        }
+        
+        // 显示剪刀动画
+        function showScissorsAnimation() {
+            const ballX = parseFloat(ball.style.left);
+            const ballY = parseFloat(ball.style.top);
+            
+            // 计算细线中点位置
+            const midX = (ballX + centerX) / 2;
+            const midY = (ballY + centerY) / 2;
+            
+            // 设置剪刀位置
+            scissors.style.left = `${midX - 20}px`;
+            scissors.style.top = `${midY - 20}px`;
+            scissors.style.opacity = '1';
+            
+            // 剪刀动画
+            let rotation = 0;
+            function animateScissors() {
+                rotation += 20;
+                scissors.style.transform = `rotate(${rotation}deg)`;
+                
+                if (rotation < 120) {
+                    requestAnimationFrame(animateScissors);
+                } else {
+                    scissors.style.opacity = '0';
+                }
+            }
+            
+            animateScissors();
+        }
+        
+        // 开始圆周运动
+        function startCircularMotion() {
+            if (isAnimating && !isPaused) return;
+            
+            isAnimating = true;
+            isPaused = false;
+            isCut = false;
+            status.textContent = "小球正在做匀速圆周运动";
+            statusDetail.textContent = "细线提供向心力，方向始终指向圆心（图钉）";
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            pauseBtn.textContent = "暂停运动";
+            cutBtn.disabled = false;
+            string.style.display = 'block';
+            clearTangentLine();
+            
+            // 计算角速度
+            angularSpeed = linearSpeed / radius;
+            
+            updateParameters();
+            
+            // 动画循环
+            function animate() {
+                if (!isAnimating || isPaused || isCut) return;
+                
+                // 更新角度
+                angle += angularSpeed;
+                
+                // 计算小球新位置
+                const ballX = centerX + radius * Math.cos(angle);
+                const ballY = centerY + radius * Math.sin(angle);
+                
+                // 更新小球位置
+                ball.style.left = `${ballX}px`;
+                ball.style.top = `${ballY}px`;
+                
+                // 更新细线 - 确保一端固定在圆心，另一端连接在小球上
+                updateString();
+                
+                // 继续动画
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            // 如果之前有动画，先取消
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            animate();
+        }
+        
+        // 暂停/继续圆周运动
+        function togglePause() {
+            if (!isAnimating || isCut) return;
+            
+            if (isPaused) {
+                // 继续运动
+                isPaused = false;
+                pauseBtn.textContent = "暂停运动";
+                status.textContent = "小球正在做匀速圆周运动";
+                statusDetail.textContent = "细线提供向心力，方向始终指向圆心（图钉）";
+                
+                // 重新开始动画
+                function animate() {
+                    if (!isAnimating || isPaused || isCut) return;
+                    
+                    // 更新角度
+                    angle += angularSpeed;
+                    
+                    // 计算小球新位置
+                    const ballX = centerX + radius * Math.cos(angle);
+                    const ballY = centerY + radius * Math.sin(angle);
+                    
+                    // 更新小球位置
+                    ball.style.left = `${ballX}px`;
+                    ball.style.top = `${ballY}px`;
+                    
+                    // 更新细线
+                    updateString();
+                    
+                    // 继续动画
+                    animationId = requestAnimationFrame(animate);
+                }
+                
+                animate();
+            } else {
+                // 暂停运动
+                isPaused = true;
+                pauseBtn.textContent = "继续运动";
+                status.textContent = "圆周运动已暂停";
+                statusDetail.textContent = "点击'继续运动'按钮恢复圆周运动";
+                
+                // 取消动画帧
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            }
+            
+            updateParameters();
+        }
+        
+        // 剪断细线
+        function cutString() {
+            if (!isAnimating || isCut) return;
+            
+            isCut = true;
+            isPaused = false;
+            cutBtn.disabled = true;
+            pauseBtn.disabled = true;
+            status.textContent = "细线已被剪断！";
+            statusDetail.textContent = "向心力消失，小球沿切线方向飞出";
+            
+            // 显示剪刀动画
+            showScissorsAnimation();
+            
+            // 记录剪断时的角度和速度
+            cutAngle = angle;
+            cutVelocityX = -radius * angularSpeed * Math.sin(cutAngle);
+            cutVelocityY = radius * angularSpeed * Math.cos(cutAngle);
+            
+            // 记录剪断时的起始位置
+            cutStartX = parseFloat(ball.style.left);
+            cutStartY = parseFloat(ball.style.top);
+            
+            // 隐藏细线
+            string.style.display = 'none';
+            
+            // 取消之前的动画
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            updateParameters();
+            
+            // 改为直线运动
+            function moveLinear() {
+                // 获取当前位置
+                let ballX = parseFloat(ball.style.left);
+                let ballY = parseFloat(ball.style.top);
+                
+                // 更新位置（沿切线方向）
+                ballX += cutVelocityX;
+                ballY += cutVelocityY;
+                
+                // 更新小球位置
+                ball.style.left = `${ballX}px`;
+                ball.style.top = `${ballY}px`;
+                
+                // 绘制切线轨迹
+                drawTangentLine();
+                
+                // 检查是否超出容器边界
+                if (ballX < -50 || ballX > container.offsetWidth + 50 || 
+                    ballY < -50 || ballY > container.offsetHeight + 50) {
+                    cancelAnimationFrame(animationId);
+                    status.textContent = "实验完成";
+                    statusDetail.textContent = "小球已飞出桌面范围（沿切线方向运动）";
+                    updateParameters();
+                    return;
+                }
+                
+                // 继续动画
+                animationId = requestAnimationFrame(moveLinear);
+            }
+            
+            // 开始直线运动
+            moveLinear();
+        }
+        
+        // 重置实验
+        function resetExperiment() {
+            // 停止所有动画
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            // 重置状态
+            isAnimating = false;
+            isPaused = false;
+            isCut = false;
+            angle = 0;
+            
+            // 重置UI
+            initBallPosition();
+            string.style.display = 'block';
+            clearTangentLine();
+            scissors.style.opacity = '0';
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            pauseBtn.textContent = "暂停运动";
+            cutBtn.disabled = true;
+            status.textContent = "实验已重置";
+            statusDetail.textContent = "点击'开始圆周运动'按钮开始实验";
+            
+            updateParameters();
+        }
+        
+        // 事件监听
+        startBtn.addEventListener('click', startCircularMotion);
+        pauseBtn.addEventListener('click', togglePause);
+        cutBtn.addEventListener('click', cutString);
+        resetBtn.addEventListener('click', resetExperiment);
+        
+        // 半径调节事件
+        radiusSlider.addEventListener('input', function() {
+            radius = parseInt(this.value);
+            radiusValue.textContent = `${radius} px`;
+            radiusDisplay.textContent = `${radius} px`;
+            
+            // 如果正在运动，重新计算角速度
+            if (isAnimating && !isCut && !isPaused) {
+                angularSpeed = linearSpeed / radius;
+            }
+            
+            // 更新小球位置和轨迹
+            if (!isAnimating) {
+                initBallPosition();
+            } else if (!isCut) {
+                // 更新小球位置以保持圆周运动
+                const ballX = centerX + radius * Math.cos(angle);
+                const ballY = centerY + radius * Math.sin(angle);
+                ball.style.left = `${ballX}px`;
+                ball.style.top = `${ballY}px`;
+                updateTrajectory();
+                updateString();
+            }
+            
+            updateParameters();
+        });
+        
+        // 速度调节事件
+        speedSlider.addEventListener('input', function() {
+            linearSpeed = parseFloat(this.value);
+            speedValue.textContent = `${linearSpeed.toFixed(1)} px/帧`;
+            speedDisplay.textContent = `${linearSpeed.toFixed(1)} px/帧`;
+            
+            // 如果正在运动，重新计算角速度
+            if (isAnimating && !isCut && !isPaused) {
+                angularSpeed = linearSpeed / radius;
+            }
+            
+            updateParameters();
+        });
+        
+        // 窗口大小变化时重新初始化
+        window.addEventListener('resize', function() {
+            // 重新计算中心位置
+            centerX = container.offsetWidth / 2;
+            centerY = container.offsetHeight / 2;
+            
+            if (!isAnimating) {
+                initBallPosition();
+            }
+        });
+        
+        // 初始化实验
+        resetExperiment();
+    </script>
+</body>
+</html>
