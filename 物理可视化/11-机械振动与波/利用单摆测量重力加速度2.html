@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单摆测量重力加速度实验</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f7ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 25px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0eeff;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: #3498db;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        
+        .experiment-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8fbff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #d6e9ff;
+        }
+        
+        .data-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8fbff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #d6e9ff;
+        }
+        
+        h2 {
+            color: #2980b9;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #bddbf7;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid #cce4ff;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        #pendulumCanvas {
+            background-color: #ffffff;
+        }
+        
+        #graphCanvas {
+            background-color: #ffffff;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e8f4ff;
+            border-radius: 8px;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background-color: #d6e9ff;
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .value-display {
+            display: inline-block;
+            width: 60px;
+            text-align: right;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0eeff;
+        }
+        
+        .data-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8fbff;
+        }
+        
+        .results {
+            background-color: #e8f7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .results h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .result-item {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .formula {
+            font-family: 'Cambria Math', serif;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f0f9ff;
+            border-radius: 6px;
+            color: #2c3e50;
+        }
+        
+        .instructions {
+            background-color: #fff9e6;
+            padding: 18px;
+            border-radius: 8px;
+            margin-top: 25px;
+            border-left: 5px solid #f1c40f;
+        }
+        
+        .instructions h3 {
+            color: #d35400;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0eeff;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>单摆测量重力加速度实验</h1>
+            <p class="subtitle">通过单摆实验测量重力加速度，采用图像法处理数据：纵轴表示周期的平方(T²)，横轴表示摆长(L)，纵轴与横轴分度值不同，坐标原点为(0,0)</p>
+        </header>
+        
+        <div class="content">
+            <section class="experiment-section">
+                <h2>单摆实验模拟</h2>
+                <div class="canvas-container">
+                    <canvas id="pendulumCanvas" width="500" height="300"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="lengthSlider">摆长 L: <span id="lengthValue" class="value-display">1.00</span> m</label>
+                        <input type="range" id="lengthSlider" min="0.3" max="2.0" step="0.05" value="1.0">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="amplitudeSlider">摆动角度: <span id="amplitudeValue" class="value-display">15</span>°</label>
+                        <input type="range" id="amplitudeSlider" min="5" max="30" step="1" value="15">
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="startBtn">开始摆动</button>
+                    <button id="pauseBtn">暂停</button>
+                    <button id="resetBtn">重置实验</button>
+                    <button id="recordDataBtn">记录当前数据</button>
+                </div>
+                
+                <div class="instructions">
+                    <h3>实验原理</h3>
+                    <p>单摆周期公式：<span class="formula">T = 2π√(L/g)</span></p>
+                    <p>变形后得到：<span class="formula">T² = (4π²/g) · L</span></p>
+                    <p>通过测量不同摆长L对应的周期T，绘制T²-L图像，其斜率k = 4π²/g，由此可计算重力加速度：<span class="formula">g = 4π²/k</span></p>
+                </div>
+            </section>
+            
+            <section class="data-section">
+                <h2>数据处理与图像分析</h2>
+                <div class="canvas-container">
+                    <canvas id="graphCanvas" width="500" height="300"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button id="clearDataBtn">清除所有数据</button>
+                    <button id="drawLineBtn">绘制拟合直线</button>
+                    <button id="calculateBtn">计算重力加速度</button>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>摆长 L (m)</th>
+                            <th>周期 T (s)</th>
+                            <th>周期平方 T² (s²)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- 数据将通过JavaScript动态添加 -->
+                    </tbody>
+                </table>
+                
+                <div class="results">
+                    <h3>实验结果</h3>
+                    <div class="result-item">拟合直线斜率 k = <span id="slopeValue" class="result-value">0.00</span> s²/m</div>
+                    <div class="result-item">计算得到的重力加速度 g = <span id="gValue" class="result-value">0.00</span> m/s²</div>
+                    <div class="result-item">标准重力加速度 g₀ = 9.80 m/s²</div>
+                    <div class="result-item">相对误差 = <span id="errorValue" class="result-value">0.00</span>%</div>
+                </div>
+            </section>
+        </div>
+        
+        <div class="instructions">
+            <h3>实验步骤与说明</h3>
+            <ul>
+                <li>1. 调整摆长，点击"开始摆动"按钮观察单摆运动</li>
+                <li>2. 点击"记录当前数据"按钮，将摆长和周期记录到数据表中</li>
+                <li>3. 重复步骤1-2，收集至少5组不同摆长的数据</li>
+                <li>4. 点击"绘制拟合直线"按钮，得到T²-L关系图</li>
+                <li>5. 点击"计算重力加速度"按钮，根据直线斜率计算g值</li>
+                <li>6. 分析实验结果，与标准值9.80 m/s²进行比较</li>
+            </ul>
+            <p>注意：本实验假设单摆做简谐运动，要求摆角小于5°，但在教学演示中适当放宽角度限制以便观察。</p>
+        </div>
+        
+        <footer>
+            <p>高中物理实验教学动画 | 单摆测量重力加速度 | 图像法数据处理</p>
+            <p>© 2023 物理教学资源 | 本动画适用于高中物理教学演示</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const pendulumCanvas = document.getElementById('pendulumCanvas');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const pendulumCtx = pendulumCanvas.getContext('2d');
+        const graphCtx = graphCanvas.getContext('2d');
+        
+        // 获取控制元素
+        const lengthSlider = document.getElementById('lengthSlider');
+        const amplitudeSlider = document.getElementById('amplitudeSlider');
+        const lengthValue = document.getElementById('lengthValue');
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const recordDataBtn = document.getElementById('recordDataBtn');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        const drawLineBtn = document.getElementById('drawLineBtn');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const dataTableBody = document.getElementById('dataTableBody');
+        
+        // 获取结果显示元素
+        const slopeValue = document.getElementById('slopeValue');
+        const gValue = document.getElementById('gValue');
+        const errorValue = document.getElementById('errorValue');
+        
+        // 实验变量
+        let length = parseFloat(lengthSlider.value); // 摆长 (m)
+        let amplitude = parseFloat(amplitudeSlider.value); // 摆角 (度)
+        let period = 0; // 周期 (s)
+        let isAnimating = false;
+        let animationId = null;
+        let startTime = 0;
+        let elapsedTime = 0;
+        let animationPhase = 0; // 动画相位，用于确保动画连贯性
+        let dataPoints = []; // 存储数据点 [{length, period, periodSquared}]
+        
+        // 坐标轴参数
+        const graphWidth = graphCanvas.width;
+        const graphHeight = graphCanvas.height;
+        const graphPadding = {top: 40, right: 40, bottom: 60, left: 60};
+        const graphArea = {
+            x: graphPadding.left,
+            y: graphPadding.top,
+            width: graphWidth - graphPadding.left - graphPadding.right,
+            height: graphHeight - graphPadding.top - graphPadding.bottom
+        };
+        
+        // 初始化
+        updatePendulum();
+        drawGraphAxes();
+        
+        // 计算周期函数（根据单摆周期公式）
+        function calculatePeriod() {
+            const g = 9.8; // 重力加速度 m/s²
+            period = 2 * Math.PI * Math.sqrt(length / g);
+            return period;
+        }
+        
+        // 更新摆长显示
+        lengthSlider.addEventListener('input', function() {
+            length = parseFloat(this.value);
+            lengthValue.textContent = length.toFixed(2);
+            
+            // 重新计算周期
+            calculatePeriod();
+            
+            // 如果动画正在进行，需要调整动画参数以反映新的周期
+            if (isAnimating) {
+                // 记录当前动画相位，以便保持动画连续性
+                const currentTime = Date.now();
+                const totalElapsedTime = currentTime - startTime;
+                animationPhase = (totalElapsedTime / 1000) % period;
+                startTime = currentTime - (animationPhase * 1000);
+            }
+            
+            if (!isAnimating) {
+                updatePendulum();
+            }
+        });
+        
+        // 更新摆角显示
+        amplitudeSlider.addEventListener('input', function() {
+            amplitude = parseFloat(this.value);
+            amplitudeValue.textContent = amplitude;
+            if (!isAnimating) {
+                updatePendulum();
+            }
+        });
+        
+        // 开始摆动按钮
+        startBtn.addEventListener('click', function() {
+            if (!isAnimating) {
+                isAnimating = true;
+                // 计算周期
+                calculatePeriod();
+                startTime = Date.now() - (animationPhase * 1000);
+                animatePendulum();
+            }
+        });
+        
+        // 暂停按钮
+        pauseBtn.addEventListener('click', function() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        });
+        
+        // 重置按钮
+        resetBtn.addEventListener('click', function() {
+            isAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            elapsedTime = 0;
+            animationPhase = 0;
+            updatePendulum();
+        });
+        
+        // 记录数据按钮
+        recordDataBtn.addEventListener('click', function() {
+            if (period > 0) {
+                const periodSquared = period * period;
+                dataPoints.push({
+                    length: length,
+                    period: period,
+                    periodSquared: periodSquared
+                });
+                
+                updateDataTable();
+                drawDataPoints();
+            } else {
+                alert("请先开始摆动单摆以测量周期");
+            }
+        });
+        
+        // 清除数据按钮
+        clearDataBtn.addEventListener('click', function() {
+            dataPoints = [];
+            updateDataTable();
+            drawGraphAxes();
+            resetResults();
+        });
+        
+        // 绘制拟合直线按钮
+        drawLineBtn.addEventListener('click', function() {
+            if (dataPoints.length >= 2) {
+                drawBestFitLine();
+            } else {
+                alert("请至少记录两组数据以绘制拟合直线");
+            }
+        });
+        
+        // 计算重力加速度按钮
+        calculateBtn.addEventListener('click', function() {
+            if (dataPoints.length >= 2) {
+                calculateGravity();
+            } else {
+                alert("请至少记录两组数据以计算重力加速度");
+            }
+        });
+        
+        // 更新单摆绘图
+        function updatePendulum() {
+            // 清除画布
+            pendulumCtx.clearRect(0, 0, pendulumCanvas.width, pendulumCanvas.height);
+            
+            // 计算周期
+            calculatePeriod();
+            
+            // 绘制固定点
+            const pivotX = pendulumCanvas.width / 2;
+            const pivotY = 80;
+            
+            // 绘制摆线
+            const pendulumLengthInPixels = length * 150; // 比例尺: 1m = 150像素
+            const angleInRadians = amplitude * Math.PI / 180;
+            const bobX = pivotX + pendulumLengthInPixels * Math.sin(angleInRadians);
+            const bobY = pivotY + pendulumLengthInPixels * Math.cos(angleInRadians);
+            
+            // 绘制摆线
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(pivotX, pivotY);
+            pendulumCtx.lineTo(bobX, bobY);
+            pendulumCtx.strokeStyle = "#555";
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.stroke();
+            
+            // 绘制固定点
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(pivotX, pivotY, 8, 0, 2 * Math.PI);
+            pendulumCtx.fillStyle = "#2c3e50";
+            pendulumCtx.fill();
+            
+            // 绘制摆锤
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(bobX, bobY, 20, 0, 2 * Math.PI);
+            pendulumCtx.fillStyle = "#e74c3c";
+            pendulumCtx.fill();
+            pendulumCtx.strokeStyle = "#c0392b";
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.stroke();
+            
+            // 绘制刻度尺
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(pivotX - 80, pivotY);
+            pendulumCtx.lineTo(pivotX + 80, pivotY);
+            pendulumCtx.strokeStyle = "#7f8c8d";
+            pendulumCtx.lineWidth = 1;
+            pendulumCtx.stroke();
+            
+            // 绘制摆长标注
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(pivotX, pivotY);
+            pendulumCtx.lineTo(pivotX, pivotY + pendulumLengthInPixels);
+            pendulumCtx.setLineDash([5, 3]);
+            pendulumCtx.strokeStyle = "#3498db";
+            pendulumCtx.lineWidth = 1;
+            pendulumCtx.stroke();
+            pendulumCtx.setLineDash([]);
+            
+            // 绘制摆长文本
+            pendulumCtx.font = "16px Arial";
+            pendulumCtx.fillStyle = "#2980b9";
+            pendulumCtx.fillText(`L = ${length.toFixed(2)} m`, pivotX + 10, pivotY + pendulumLengthInPixels / 2);
+            
+            // 绘制角度标注
+            const angleRadius = 60;
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(pivotX, pivotY, angleRadius, 0, angleInRadians);
+            pendulumCtx.strokeStyle = "#f39c12";
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.stroke();
+            
+            pendulumCtx.font = "16px Arial";
+            pendulumCtx.fillStyle = "#f39c12";
+            pendulumCtx.fillText(`θ = ${amplitude}°`, pivotX + angleRadius/2, pivotY - 10);
+            
+            // 显示周期
+            pendulumCtx.font = "bold 18px Arial";
+            pendulumCtx.fillStyle = "#2c3e50";
+            pendulumCtx.fillText(`周期 T = ${period.toFixed(2)} s`, pendulumCanvas.width / 2 - 70, pendulumCanvas.height - 20);
+        }
+        
+        // 动画单摆
+        function animatePendulum() {
+            if (!isAnimating) return;
+            
+            elapsedTime = Date.now() - startTime;
+            const timeInSeconds = elapsedTime / 1000;
+            
+            // 计算当前角度 (简谐运动)
+            const angularFrequency = 2 * Math.PI / period;
+            const currentAngle = amplitude * Math.PI / 180 * Math.cos(angularFrequency * timeInSeconds + animationPhase * angularFrequency);
+            
+            // 清除画布
+            pendulumCtx.clearRect(0, 0, pendulumCanvas.width, pendulumCanvas.height);
+            
+            // 绘制固定点
+            const pivotX = pendulumCanvas.width / 2;
+            const pivotY = 80;
+            
+            // 绘制摆线
+            const pendulumLengthInPixels = length * 150;
+            const bobX = pivotX + pendulumLengthInPixels * Math.sin(currentAngle);
+            const bobY = pivotY + pendulumLengthInPixels * Math.cos(currentAngle);
+            
+            // 绘制摆线
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(pivotX, pivotY);
+            pendulumCtx.lineTo(bobX, bobY);
+            pendulumCtx.strokeStyle = "#555";
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.stroke();
+            
+            // 绘制固定点
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(pivotX, pivotY, 8, 0, 2 * Math.PI);
+            pendulumCtx.fillStyle = "#2c3e50";
+            pendulumCtx.fill();
+            
+            // 绘制摆锤
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(bobX, bobY, 20, 0, 2 * Math.PI);
+            pendulumCtx.fillStyle = "#e74c3c";
+            pendulumCtx.fill();
+            pendulumCtx.strokeStyle = "#c0392b";
+            pendulumCtx.lineWidth = 2;
+            pendulumCtx.stroke();
+            
+            // 绘制刻度尺
+            pendulumCtx.beginPath();
+            pendulumCtx.moveTo(pivotX - 80, pivotY);
+            pendulumCtx.lineTo(pivotX + 80, pivotY);
+            pendulumCtx.strokeStyle = "#7f8c8d";
+            pendulumCtx.lineWidth = 1;
+            pendulumCtx.stroke();
+            
+            // 绘制轨迹
+            pendulumCtx.beginPath();
+            pendulumCtx.arc(pivotX, pivotY, pendulumLengthInPixels, Math.PI/2 - amplitude*Math.PI/180, Math.PI/2 + amplitude*Math.PI/180);
+            pendulumCtx.strokeStyle = "rgba(52, 152, 219, 0.3)";
+            pendulumCtx.lineWidth = 1;
+            pendulumCtx.stroke();
+            
+            // 显示周期和时间
+            pendulumCtx.font = "bold 18px Arial";
+            pendulumCtx.fillStyle = "#2c3e50";
+            pendulumCtx.fillText(`周期 T = ${period.toFixed(2)} s`, pendulumCanvas.width / 2 - 70, pendulumCanvas.height - 40);
+            pendulumCtx.fillText(`时间 t = ${timeInSeconds.toFixed(2)} s`, pendulumCanvas.width / 2 - 70, pendulumCanvas.height - 15);
+            
+            animationId = requestAnimationFrame(animatePendulum);
+        }
+        
+        // 绘制坐标轴
+        function drawGraphAxes() {
+            // 清除画布
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            
+            // 绘制坐标轴
+            graphCtx.beginPath();
+            graphCtx.moveTo(graphArea.x, graphArea.y);
+            graphCtx.lineTo(graphArea.x, graphArea.y + graphArea.height);
+            graphCtx.lineTo(graphArea.x + graphArea.width, graphArea.y + graphArea.height);
+            graphCtx.strokeStyle = "#2c3e50";
+            graphCtx.lineWidth = 2;
+            graphCtx.stroke();
+            
+            // 绘制箭头
+            graphCtx.beginPath();
+            graphCtx.moveTo(graphArea.x, graphArea.y);
+            graphCtx.lineTo(graphArea.x - 5, graphArea.y + 10);
+            graphCtx.lineTo(graphArea.x + 5, graphArea.y + 10);
+            graphCtx.closePath();
+            graphCtx.fillStyle = "#2c3e50";
+            graphCtx.fill();
+            
+            graphCtx.beginPath();
+            graphCtx.moveTo(graphArea.x + graphArea.width, graphArea.y + graphArea.height);
+            graphCtx.lineTo(graphArea.x + graphArea.width - 10, graphArea.y + graphArea.height - 5);
+            graphCtx.lineTo(graphArea.x + graphArea.width - 10, graphArea.y + graphArea.height + 5);
+            graphCtx.closePath();
+            graphCtx.fillStyle = "#2c3e50";
+            graphCtx.fill();
+            
+            // 坐标轴标签
+            graphCtx.font = "bold 18px Arial";
+            graphCtx.fillStyle = "#2980b9";
+            graphCtx.fillText("L (m)", graphArea.x + graphArea.width/2 - 15, graphArea.y + graphArea.height + 40);
+            
+            graphCtx.save();
+            graphCtx.translate(graphArea.x - 40, graphArea.y + graphArea.height/2);
+            graphCtx.rotate(-Math.PI/2);
+            graphCtx.fillText("T² (s²)", 0, 0);
+            graphCtx.restore();
+            
+            // 标题
+            graphCtx.font = "bold 20px Arial";
+            graphCtx.fillStyle = "#2c3e50";
+            graphCtx.fillText("单摆实验: T² - L 关系图", graphArea.x + graphArea.width/2 - 120, graphArea.y - 10);
+            
+            // 绘制网格和刻度
+            const xTicks = 10;
+            const yTicks = 8;
+            
+            // 计算坐标轴范围
+            const xMax = 2.0; // 最大摆长
+            const yMax = 8.0; // 最大T²值
+            
+            // 绘制x轴刻度
+            for (let i = 0; i <= xTicks; i++) {
+                const x = graphArea.x + (i / xTicks) * graphArea.width;
+                const value = (i / xTicks) * xMax;
+                
+                // 刻度线
+                graphCtx.beginPath();
+                graphCtx.moveTo(x, graphArea.y + graphArea.height);
+                graphCtx.lineTo(x, graphArea.y + graphArea.height + 5);
+                graphCtx.strokeStyle = "#2c3e50";
+                graphCtx.lineWidth = 1;
+                graphCtx.stroke();
+                
+                // 刻度标签
+                graphCtx.font = "14px Arial";
+                graphCtx.fillStyle = "#2c3e50";
+                graphCtx.fillText(value.toFixed(1), x - 8, graphArea.y + graphArea.height + 20);
+                
+                // 网格线
+                graphCtx.beginPath();
+                graphCtx.moveTo(x, graphArea.y);
+                graphCtx.lineTo(x, graphArea.y + graphArea.height);
+                graphCtx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+                graphCtx.lineWidth = 0.5;
+                graphCtx.stroke();
+            }
+            
+            // 绘制y轴刻度
+            for (let i = 0; i <= yTicks; i++) {
+                const y = graphArea.y + graphArea.height - (i / yTicks) * graphArea.height;
+                const value = (i / yTicks) * yMax;
+                
+                // 刻度线
+                graphCtx.beginPath();
+                graphCtx.moveTo(graphArea.x, y);
+                graphCtx.lineTo(graphArea.x - 5, y);
+                graphCtx.strokeStyle = "#2c3e50";
+                graphCtx.lineWidth = 1;
+                graphCtx.stroke();
+                
+                // 刻度标签
+                graphCtx.font = "14px Arial";
+                graphCtx.fillStyle = "#2c3e50";
+                graphCtx.fillText(value.toFixed(1), graphArea.x - 30, y + 4);
+                
+                // 网格线
+                graphCtx.beginPath();
+                graphCtx.moveTo(graphArea.x, y);
+                graphCtx.lineTo(graphArea.x + graphArea.width, y);
+                graphCtx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+                graphCtx.lineWidth = 0.5;
+                graphCtx.stroke();
+            }
+            
+            // 原点标注
+            graphCtx.font = "14px Arial";
+            graphCtx.fillStyle = "#2c3e50";
+            graphCtx.fillText("O (0,0)", graphArea.x - 25, graphArea.y + graphArea.height + 15);
+        }
+        
+        // 绘制数据点
+        function drawDataPoints() {
+            // 先重新绘制坐标轴
+            drawGraphAxes();
+            
+            // 计算坐标轴范围
+            const xMax = 2.0; // 最大摆长
+            const yMax = 8.0; // 最大T²值
+            
+            // 绘制数据点
+            dataPoints.forEach(point => {
+                const x = graphArea.x + (point.length / xMax) * graphArea.width;
+                const y = graphArea.y + graphArea.height - (point.periodSquared / yMax) * graphArea.height;
+                
+                // 绘制点
+                graphCtx.beginPath();
+                graphCtx.arc(x, y, 6, 0, 2 * Math.PI);
+                graphCtx.fillStyle = "#e74c3c";
+                graphCtx.fill();
+                graphCtx.strokeStyle = "#c0392b";
+                graphCtx.lineWidth = 2;
+                graphCtx.stroke();
+                
+                // 显示坐标
+                graphCtx.font = "12px Arial";
+                graphCtx.fillStyle = "#2c3e50";
+                graphCtx.fillText(`(${point.length.toFixed(2)}, ${point.periodSquared.toFixed(2)})`, x + 8, y - 8);
+            });
+        }
+        
+        // 绘制最佳拟合直线
+        function drawBestFitLine() {
+            if (dataPoints.length < 2) return;
+            
+            // 先绘制数据点
+            drawDataPoints();
+            
+            // 计算线性回归
+            const n = dataPoints.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            
+            dataPoints.forEach(point => {
+                sumX += point.length;
+                sumY += point.periodSquared;
+                sumXY += point.length * point.periodSquared;
+                sumX2 += point.length * point.length;
+            });
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            // 保存斜率到全局变量
+            window.bestFitSlope = slope;
+            
+            // 计算坐标轴范围
+            const xMax = 2.0; // 最大摆长
+            const yMax = 8.0; // 最大T²值
+            
+            // 计算直线起点和终点
+            const x1 = 0;
+            const y1 = intercept;
+            const x2 = xMax;
+            const y2 = slope * x2 + intercept;
+            
+            // 转换为画布坐标
+            const canvasX1 = graphArea.x + (x1 / xMax) * graphArea.width;
+            const canvasY1 = graphArea.y + graphArea.height - (y1 / yMax) * graphArea.height;
+            const canvasX2 = graphArea.x + (x2 / xMax) * graphArea.width;
+            const canvasY2 = graphArea.y + graphArea.height - (y2 / yMax) * graphArea.height;
+            
+            // 绘制拟合直线
+            graphCtx.beginPath();
+            graphCtx.moveTo(canvasX1, canvasY1);
+            graphCtx.lineTo(canvasX2, canvasY2);
+            graphCtx.strokeStyle = "#3498db";
+            graphCtx.lineWidth = 3;
+            graphCtx.stroke();
+            
+            // 显示斜率
+            graphCtx.font = "bold 16px Arial";
+            graphCtx.fillStyle = "#2980b9";
+            graphCtx.fillText(`斜率 k = ${slope.toFixed(3)} s²/m`, graphArea.x + graphArea.width/2 - 80, graphArea.y + 30);
+        }
+        
+        // 计算重力加速度
+        function calculateGravity() {
+            if (!window.bestFitSlope) {
+                alert("请先绘制拟合直线");
+                return;
+            }
+            
+            const slope = window.bestFitSlope;
+            const g = (4 * Math.PI * Math.PI) / slope;
+            const standardG = 9.80;
+            const error = Math.abs((g - standardG) / standardG) * 100;
+            
+            // 显示结果
+            slopeValue.textContent = slope.toFixed(3);
+            gValue.textContent = g.toFixed(2);
+            errorValue.textContent = error.toFixed(1);
+        }
+        
+        // 更新数据表格
+        function updateDataTable() {
+            // 清空表格
+            dataTableBody.innerHTML = "";
+            
+            // 添加数据行
+            dataPoints.forEach((point, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${point.length.toFixed(2)}</td>
+                    <td>${point.period.toFixed(2)}</td>
+                    <td>${point.periodSquared.toFixed(2)}</td>
+                `;
+                dataTableBody.appendChild(row);
+            });
+        }
+        
+        // 重置结果
+        function resetResults() {
+            slopeValue.textContent = "0.00";
+            gValue.textContent = "0.00";
+            errorValue.textContent = "0.00";
+            window.bestFitSlope = null;
+        }
+        
+        // 初始化周期计算
+        calculatePeriod();
+    </script>
+</body>
+</html>

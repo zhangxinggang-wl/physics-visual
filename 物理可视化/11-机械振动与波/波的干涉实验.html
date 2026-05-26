@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波的干涉实验 - 高清优化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9ff;
+            color: #222;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #1a237e, #283593);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header h1 {
+            margin-bottom: 12px;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .animation-container {
+            flex: 2;
+            min-width: 700px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .animation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .animation-header h3 {
+            color: #283593;
+            font-size: 1.5rem;
+        }
+        
+        .interference-legend {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .controls {
+            flex: 1;
+            min-width: 350px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        
+        canvas {
+            display: block;
+            background-color: #0a122a;
+            border-radius: 8px;
+            margin: 0 auto;
+            cursor: crosshair;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-group {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e8eaf6;
+        }
+        
+        .control-group h3 {
+            margin-bottom: 20px;
+            color: #283593;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider-container {
+            margin-bottom: 20px;
+        }
+        
+        .slider-container label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .slider-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+            color: #283593;
+            min-width: 50px;
+            background-color: #e8eaf6;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #e8eaf6;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #283593;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #1a237e;
+            transform: scale(1.1);
+        }
+        
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 130px;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #283593, #3949ab);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(39, 63, 176, 0.2);
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(39, 63, 176, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button.reset {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            box-shadow: 0 4px 8px rgba(244, 67, 54, 0.2);
+        }
+        
+        button.reset:hover {
+            background: linear-gradient(135deg, #b71c1c, #d32f2f);
+            box-shadow: 0 6px 12px rgba(244, 67, 54, 0.3);
+        }
+        
+        .point-info {
+            background-color: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #283593;
+        }
+        
+        .point-info h4 {
+            margin-bottom: 15px;
+            color: #283593;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .point-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .detail-item {
+            background-color: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .detail-item .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .detail-item .value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #283593;
+        }
+        
+        .explanation {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .explanation h2 {
+            color: #283593;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e8eaf6;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .concept {
+            margin-bottom: 30px;
+        }
+        
+        .concept h3 {
+            color: #283593;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+        }
+        
+        .concept p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+        
+        .interference-types {
+            display: flex;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .type {
+            flex: 1;
+            padding: 25px;
+            border-radius: 10px;
+            background-color: #f8f9ff;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .type h4 {
+            color: #283593;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .type.constructive {
+            border-top: 5px solid #4caf50;
+        }
+        
+        .type.destructive {
+            border-top: 5px solid #f44336;
+        }
+        
+        .formula {
+            background-color: #f1f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #283593;
+            font-family: 'Courier New', monospace;
+            font-size: 1.15rem;
+            line-height: 1.8;
+        }
+        
+        .formula kbd {
+            background-color: #283593;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .interference-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9ff;
+            border-radius: 10px;
+        }
+        
+        .wave-combination {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .wave-icon {
+            font-size: 2rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+            font-size: 0.95rem;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .animation-container, .controls {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .interference-types {
+                flex-direction: column;
+            }
+            
+            .point-details {
+                grid-template-columns: 1fr;
+            }
+            
+            canvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+        
+        .instruction {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-wave-square"></i> 波的干涉实验 - 高清优化版</h1>
+        <p>高中物理教学工具 - 清晰展示波的干涉现象，重点突出振动加强点与减弱点</p>
+    </div>
+    
+    <div class="container">
+        <div class="animation-container">
+            <div class="animation-header">
+                <h3><i class="fas fa-water"></i> 波的干涉模拟</h3>
+                <div class="interference-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #4caf50;"></div>
+                        <span>振动加强区</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f44336;"></div>
+                        <span>振动减弱区</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2196f3;"></div>
+                        <span>波峰传播</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #9c27b0;"></div>
+                        <span>波谷传播</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="waveCanvas" width="800" height="500"></canvas>
+            <div class="instruction">
+                <i class="fas fa-mouse-pointer"></i> 点击画布任意位置放置检测点，查看该点的干涉情况。加强区显示为绿色，减弱区显示为红色。
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3><i class="fas fa-sliders-h"></i> 实验参数控制</h3>
+                
+                <div class="slider-container">
+                    <label>波长 (λ): <span id="wavelengthValue" class="slider-value">60</span> 像素</label>
+                    <input type="range" id="wavelengthSlider" min="30" max="120" value="60" step="5">
+                </div>
+                
+                <div class="slider-container">
+                    <label>波源距离 (d): <span id="distanceValue" class="slider-value">180</span> 像素</label>
+                    <input type="range" id="distanceSlider" min="100" max="300" value="180" step="10">
+                </div>
+                
+                <div class="slider-container">
+                    <label>波速 (v): <span id="speedValue" class="slider-value">2.5</span> 像素/帧</label>
+                    <input type="range" id="speedSlider" min="1" max="5" value="2.5" step="0.5">
+                </div>
+                
+                <div class="slider-container">
+                    <label>振幅 (A): <span id="amplitudeValue" class="slider-value">20</span> 像素</label>
+                    <input type="range" id="amplitudeSlider" min="5" max="30" value="20" step="1">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3><i class="fas fa-cogs"></i> 实验控制</h3>
+                <div class="buttons">
+                    <button id="playPauseBtn"><i class="fas fa-play"></i> 播放/暂停</button>
+                    <button id="stepBtn"><i class="fas fa-step-forward"></i> 单步前进</button>
+                    <button id="resetBtn" class="reset"><i class="fas fa-redo"></i> 重置实验</button>
+                    <button id="toggleLinesBtn"><i class="fas fa-drafting-compass"></i> 显示干涉线</button>
+                </div>
+            </div>
+            
+            <div class="point-info">
+                <h4><i class="fas fa-crosshairs"></i> 当前检测点信息</h4>
+                <div class="point-details">
+                    <div class="detail-item">
+                        <div class="label">距离波源 S₁</div>
+                        <div class="value" id="dist1">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">距离波源 S₂</div>
+                        <div class="value" id="dist2">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">波程差 Δr</div>
+                        <div class="value" id="pathDiff">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">相位差 Δφ</div>
+                        <div class="value" id="phaseDiff">-</div>
+                    </div>
+                    <div class="detail-item" style="grid-column: span 2;">
+                        <div class="label">干涉结果</div>
+                        <div class="value" id="interferenceResult" style="font-size: 1.3rem;">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="explanation">
+        <h2><i class="fas fa-lightbulb"></i> 波的干涉原理详解</h2>
+        
+        <div class="concept">
+            <h3><i class="fas fa-wave-square"></i> 什么是波的干涉？</h3>
+            <p>波的干涉是指两列或更多列波在空间相遇时，在重叠区域中振幅发生重新分布的现象。干涉现象是波特有的性质，是波叠加原理的具体表现。</p>
+            <p>要产生稳定的干涉图样，波源必须满足<strong>相干条件</strong>：频率相同、振动方向相同、相位差恒定。</p>
+            
+            <div class="interference-visual">
+                <div class="wave-combination">
+                    <div class="wave-icon" style="color: #2196f3;">↘ ↗</div>
+                    <div>波峰+波峰</div>
+                    <div style="color: #4caf50; font-weight: bold;">→ 加强 ←</div>
+                </div>
+                <div class="wave-combination">
+                    <div class="wave-icon" style="color: #2196f3;">↘</div>
+                    <div>波峰+波谷</div>
+                    <div style="color: #f44336; font-weight: bold;">→ 减弱 ←</div>
+                </div>
+                <div class="wave-combination">
+                    <div class="wave-icon" style="color: #9c27b0;">↙</div>
+                    <div>波谷+波谷</div>
+                    <div style="color: #4caf50; font-weight: bold;">→ 加强 ←</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="interference-types">
+            <div class="type constructive">
+                <h4><i class="fas fa-plus-circle"></i> 振动加强点（相长干涉）</h4>
+                <p>当两列波的相位差为π的偶数倍时，它们相互加强，振幅增大。</p>
+                <p><strong>条件：Δφ = 2kπ 或 Δr = kλ (k = 0, ±1, ±2, ...)</strong></p>
+                <p>其中 Δr = |r₂ - r₁| 是波程差，λ是波长。</p>
+                <p class="instruction">在上面的模拟中，<strong>振动加强区显示为绿色</strong>，表示该区域振幅最大。</p>
+            </div>
+            
+            <div class="type destructive">
+                <h4><i class="fas fa-minus-circle"></i> 振动减弱点（相消干涉）</h4>
+                <p>当两列波的相位差为π的奇数倍时，它们相互削弱，振幅减小。</p>
+                <p><strong>条件：Δφ = (2k+1)π 或 Δr = (k+½)λ (k = 0, ±1, ±2, ...)</strong></p>
+                <p>当两列波振幅相等时，相消干涉会导致振幅为零（完全抵消）。</p>
+                <p class="instruction">在上面的模拟中，<strong>振动减弱区显示为红色</strong>，表示该区域振幅最小。</p>
+            </div>
+        </div>
+        
+        <div class="concept">
+            <h3><i class="fas fa-calculator"></i> 干涉条件与公式</h3>
+            <div class="formula">
+                <p>波程差：<kbd>Δr = |r₂ - r₁|</kbd></p>
+                <p>相位差：<kbd>Δφ = (2π/λ) × Δr</kbd></p>
+                <p><strong>加强条件</strong>：<kbd>Δr = kλ</kbd>, <kbd>k = 0, ±1, ±2, ...</kbd></p>
+                <p><strong>减弱条件</strong>：<kbd>Δr = (k+½)λ</kbd>, <kbd>k = 0, ±1, ±2, ...</kbd></p>
+            </div>
+            <p>在上面的模拟中，蓝色波纹表示波峰，紫色波纹表示波谷。当两个波峰或两个波谷相遇时（同相），发生相长干涉，形成振动加强区。当波峰与波谷相遇时（反相），发生相消干涉，形成振动减弱区。</p>
+            <p>加强区域用绿色显示，减弱区域用红色显示，形成明暗相间的干涉条纹，清晰可见。</p>
+        </div>
+        
+        <div class="concept">
+            <h3><i class="fas fa-chalkboard-teacher"></i> 教学建议与使用说明</h3>
+            <p>1. <strong>观察干涉条纹</strong>：让学生观察屏幕上形成的明暗相间条纹，指出绿色条纹为振动加强区，红色条纹为振动减弱区。</p>
+            <p>2. <strong>验证干涉公式</strong>：在画布上放置检测点，验证波程差与干涉结果的关系。当Δr为波长整数倍时，该点为加强点；当Δr为半波长奇数倍时，该点为减弱点。</p>
+            <p>3. <strong>参数影响探究</strong>：调整波长和波源距离，观察干涉条纹间距的变化。波长越大，条纹越稀疏；波源距离越大，条纹越密集。</p>
+            <p>4. <strong>与实际实验联系</strong>：将本模拟与双缝干涉实验、水波干涉实验进行对比，加深学生对干涉现象的理解。</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>波的干涉实验动画 - 高清优化版 | 专为高中物理教学设计 | 使用HTML5 Canvas实现</p>
+        <p>© 2023 物理教学工具 | 通过调整参数可观察不同条件下干涉图样的变化规律</p>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        // 提高Canvas渲染质量
+        canvas.width = 800;
+        canvas.height = 500;
+        
+        // 获取控制元素
+        const wavelengthSlider = document.getElementById('wavelengthSlider');
+        const distanceSlider = document.getElementById('distanceSlider');
+        const speedSlider = document.getElementById('speedSlider');
+        const amplitudeSlider = document.getElementById('amplitudeSlider');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const stepBtn = document.getElementById('stepBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const toggleLinesBtn = document.getElementById('toggleLinesBtn');
+        
+        // 获取显示值的元素
+        const wavelengthValue = document.getElementById('wavelengthValue');
+        const distanceValue = document.getElementById('distanceValue');
+        const speedValue = document.getElementById('speedValue');
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        
+        // 获取检测点信息元素
+        const dist1Element = document.getElementById('dist1');
+        const dist2Element = document.getElementById('dist2');
+        const pathDiffElement = document.getElementById('pathDiff');
+        const phaseDiffElement = document.getElementById('phaseDiff');
+        const interferenceResultElement = document.getElementById('interferenceResult');
+        
+        // 波源和动画参数
+        let wavelength = parseInt(wavelengthSlider.value);
+        let sourceDistance = parseInt(distanceSlider.value);
+        let waveSpeed = parseFloat(speedSlider.value);
+        let amplitude = parseInt(amplitudeSlider.value);
+        let animationId = null;
+        let isPlaying = true;
+        let time = 0;
+        let showInterferenceLines = false;
+        
+        // 存储检测点
+        let detectionPoints = [];
+        // 存储当前鼠标位置
+        let mouseX = -1, mouseY = -1;
+        let showMouseInfo = false;
+        
+        // 波源位置
+        const source1 = {
+            x: canvas.width / 2 - sourceDistance / 2,
+            y: canvas.height / 2
+        };
+        
+        const source2 = {
+            x: canvas.width / 2 + sourceDistance / 2,
+            y: canvas.height / 2
+        };
+        
+        // 更新波源位置
+        function updateSourcePositions() {
+            source1.x = canvas.width / 2 - sourceDistance / 2;
+            source2.x = canvas.width / 2 + sourceDistance / 2;
+        }
+        
+        // 更新显示值
+        function updateDisplayValues() {
+            wavelengthValue.textContent = wavelength;
+            distanceValue.textContent = sourceDistance;
+            speedValue.textContent = waveSpeed;
+            amplitudeValue.textContent = amplitude;
+        }
+        
+        // 计算两点之间的距离
+        function distance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+        
+        // 绘制波源
+        function drawSources() {
+            // 绘制波源1
+            ctx.beginPath();
+            ctx.arc(source1.x, source1.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#2196f3';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制波源标签
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('S₁', source1.x, source1.y - 18);
+            
+            // 绘制波源2
+            ctx.beginPath();
+            ctx.arc(source2.x, source2.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#9c27b0';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 绘制波源标签
+            ctx.fillText('S₂', source2.x, source2.y - 18);
+            
+            // 绘制波源连线
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(source1.x, source1.y);
+            ctx.lineTo(source2.x, source2.y);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 标注波源距离
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '14px Arial';
+            ctx.fillText(
+                `d = ${sourceDistance}`, 
+                (source1.x + source2.x) / 2, 
+                (source1.y + source2.y) / 2 - 15
+            );
+        }
+        
+        // 绘制干涉图样
+        function drawInterferencePattern() {
+            // 使用更精细的网格绘制干涉图样
+            const gridSize = 4; // 更小的网格尺寸，提高清晰度
+            
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    // 计算该点到两个波源的距离
+                    const dist1 = distance(x, y, source1.x, source1.y);
+                    const dist2 = distance(x, y, source2.x, source2.y);
+                    
+                    // 计算波程差
+                    const pathDiff = Math.abs(dist1 - dist2);
+                    
+                    // 计算相位差
+                    const phaseDiff = (pathDiff / wavelength) * 2 * Math.PI;
+                    
+                    // 计算两列波在该点的振幅（考虑距离衰减）
+                    const amp1 = amplitude * (100 / (dist1 + 1));
+                    const amp2 = amplitude * (100 / (dist2 + 1));
+                    
+                    // 计算合成波的振幅
+                    const combinedAmp = Math.sqrt(
+                        amp1 * amp1 + amp2 * amp2 + 
+                        2 * amp1 * amp2 * Math.cos(phaseDiff)
+                    );
+                    
+                    // 判断干涉类型
+                    // 加强条件：相位差接近2kπ
+                    // 减弱条件：相位差接近(2k+1)π
+                    const modPhase = phaseDiff % (2 * Math.PI);
+                    const normalizedPhase = modPhase < 0 ? modPhase + 2 * Math.PI : modPhase;
+                    
+                    // 定义加强和减弱的相位容差
+                    const tolerance = 0.2; // 弧度
+                    
+                    // 检查是否为加强点
+                    const isConstructive = Math.abs(normalizedPhase) < tolerance || 
+                                           Math.abs(normalizedPhase - 2 * Math.PI) < tolerance ||
+                                           Math.abs(normalizedPhase - Math.PI * 2) < tolerance;
+                    
+                    // 检查是否为减弱点
+                    const isDestructive = Math.abs(normalizedPhase - Math.PI) < tolerance;
+                    
+                    // 设置颜色
+                    let color;
+                    if (isConstructive) {
+                        // 振动加强点 - 亮绿色
+                        color = '#4caf50';
+                    } else if (isDestructive) {
+                        // 振动减弱点 - 亮红色
+                        color = '#f44336';
+                    } else {
+                        // 中间状态 - 根据振幅设置颜色
+                        const intensity = Math.min(255, Math.floor((combinedAmp / (amplitude * 2)) * 255));
+                        // 创建渐变效果：从蓝色（弱）到黄色（强）
+                        const r = Math.min(255, 100 + intensity);
+                        const g = Math.min(255, 100 + intensity);
+                        const b = 255 - intensity;
+                        color = `rgb(${r}, ${g}, ${b})`;
+                    }
+                    
+                    // 绘制网格点
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x, y, gridSize, gridSize);
+                }
+            }
+        }
+        
+        // 绘制波纹
+        function drawWaves() {
+            const waveCount = 6; // 每个波源显示的波纹数量
+            
+            for (let i = 0; i < waveCount; i++) {
+                // 计算当前波纹的半径
+                const radius1 = (time * waveSpeed + i * wavelength) % (wavelength * waveCount);
+                const radius2 = (time * waveSpeed + i * wavelength) % (wavelength * waveCount);
+                
+                // 绘制第一个波源的波纹（蓝色表示波峰）
+                ctx.beginPath();
+                ctx.arc(source1.x, source1.y, radius1, 0, Math.PI * 2);
+                ctx.strokeStyle = i % 2 === 0 ? 'rgba(33, 150, 243, 0.8)' : 'rgba(156, 39, 176, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 绘制第二个波源的波纹
+                ctx.beginPath();
+                ctx.arc(source2.x, source2.y, radius2, 0, Math.PI * 2);
+                ctx.strokeStyle = i % 2 === 0 ? 'rgba(33, 150, 243, 0.8)' : 'rgba(156, 39, 176, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+        
+        // 绘制干涉线（加强线和减弱线）
+        function drawInterferenceLines() {
+            if (!showInterferenceLines) return;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            
+            // 绘制加强线 (Δr = kλ)
+            for (let k = -3; k <= 3; k++) {
+                drawInterferenceCurve(k * wavelength, 'rgba(76, 175, 80, 0.7)');
+            }
+            
+            // 绘制减弱线 (Δr = (k+0.5)λ)
+            for (let k = -3; k <= 3; k++) {
+                drawInterferenceCurve((k + 0.5) * wavelength, 'rgba(244, 67, 54, 0.7)');
+            }
+            
+            ctx.setLineDash([]);
+        }
+        
+        // 绘制干涉曲线（双曲线）
+        function drawInterferenceCurve(pathDiff, color) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            
+            // 使用参数方程近似绘制双曲线
+            // 对于双曲线 |dist1 - dist2| = pathDiff
+            // 可以使用参数方程近似
+            
+            const a = pathDiff / 2; // 双曲线的实半轴
+            const c = sourceDistance / 2; // 焦距的一半
+            
+            // 如果a > c，双曲线不存在（跳过）
+            if (Math.abs(a) > c) return;
+            
+            const b = Math.sqrt(c * c - a * a);
+            
+            // 绘制双曲线的两支
+            const steps = 200;
+            const scale = 1;
+            
+            // 右支
+            for (let i = 0; i <= steps; i++) {
+                const t = -3 + (6 * i) / steps;
+                const x = a * Math.cosh(t) * scale;
+                const y = b * Math.sinh(t) * scale;
+                
+                // 转换到画布坐标
+                const canvasX = canvas.width / 2 + x;
+                const canvasY = canvas.height / 2 + y;
+                
+                if (i === 0) {
+                    ctx.moveTo(canvasX, canvasY);
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            
+            // 左支
+            for (let i = 0; i <= steps; i++) {
+                const t = -3 + (6 * i) / steps;
+                const x = -a * Math.cosh(t) * scale;
+                const y = b * Math.sinh(t) * scale;
+                
+                // 转换到画布坐标
+                const canvasX = canvas.width / 2 + x;
+                const canvasY = canvas.height / 2 + y;
+                
+                if (i === 0) {
+                    ctx.moveTo(canvasX, canvasY);
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            
+            ctx.stroke();
+        }
+        
+        // 绘制检测点
+        function drawDetectionPoints() {
+            detectionPoints.forEach((point, index) => {
+                // 绘制点
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = point.result === '加强' ? '#4caf50' : 
+                               point.result === '减弱' ? '#f44336' : '#ff9800';
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 绘制标签
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`P${index + 1}`, point.x, point.y - 15);
+                
+                // 绘制到波源的连线（如果点较少）
+                if (detectionPoints.length <= 5) {
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    ctx.lineTo(source1.x, source1.y);
+                    ctx.strokeStyle = 'rgba(33, 150, 243, 0.5)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    ctx.lineTo(source2.x, source2.y);
+                    ctx.strokeStyle = 'rgba(156, 39, 176, 0.5)';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            });
+        }
+        
+        // 绘制鼠标位置信息
+        function drawMouseInfo() {
+            if (!showMouseInfo || mouseX < 0 || mouseY < 0) return;
+            
+            // 计算鼠标位置的干涉信息
+            const info = calculatePointInfo(mouseX, mouseY);
+            
+            // 绘制一个十字准星
+            ctx.beginPath();
+            ctx.moveTo(mouseX - 15, mouseY);
+            ctx.lineTo(mouseX + 15, mouseY);
+            ctx.moveTo(mouseX, mouseY - 15);
+            ctx.lineTo(mouseX, mouseY + 15);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            
+            // 绘制信息框
+            const boxWidth = 180;
+            const boxHeight = 110;
+            const boxX = mouseX + 20;
+            const boxY = mouseY - boxHeight / 2;
+            
+            // 确保信息框在画布内
+            const adjustedX = boxX + boxWidth > canvas.width ? mouseX - boxWidth - 20 : boxX;
+            
+            // 绘制背景
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(adjustedX, boxY, boxWidth, boxHeight);
+            
+            // 绘制边框
+            ctx.strokeStyle = info.result === '加强' ? '#4caf50' : 
+                             info.result === '减弱' ? '#f44336' : '#ff9800';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(adjustedX, boxY, boxWidth, boxHeight);
+            
+            // 绘制文字
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Δr = ${info.pathDiff} px`, adjustedX + 10, boxY + 25);
+            ctx.fillText(`Δφ = ${info.phaseDiff} rad`, adjustedX + 10, boxY + 45);
+            ctx.fillText(`结果: ${info.result}`, adjustedX + 10, boxY + 65);
+            
+            // 绘制条件
+            ctx.font = '11px Arial';
+            ctx.fillStyle = '#aaa';
+            if (info.result === '加强') {
+                ctx.fillText(`Δr = ${Math.round(info.pathDiff / wavelength)}λ`, adjustedX + 10, boxY + 85);
+            } else if (info.result === '减弱') {
+                ctx.fillText(`Δr = (${Math.round(info.pathDiff / wavelength - 0.5)}+½)λ`, adjustedX + 10, boxY + 85);
+            }
+        }
+        
+        // 计算检测点的干涉信息
+        function calculatePointInfo(x, y) {
+            const dist1 = distance(x, y, source1.x, source1.y);
+            const dist2 = distance(x, y, source2.x, source2.y);
+            const pathDiff = Math.abs(dist1 - dist2);
+            const phaseDiff = (pathDiff / wavelength) * 2 * Math.PI;
+            
+            // 判断干涉类型
+            // 波程差是波长的整数倍 -> 加强
+            // 波程差是半波长的奇数倍 -> 减弱
+            const k = Math.round(pathDiff / wavelength);
+            const tolerance = 5; // 容差5像素
+            
+            let result;
+            if (Math.abs(pathDiff - k * wavelength) < tolerance) {
+                result = '加强';
+            } else if (Math.abs(pathDiff - (k + 0.5) * wavelength) < tolerance) {
+                result = '减弱';
+            } else {
+                // 计算接近程度
+                const toConstructive = Math.min(
+                    Math.abs(pathDiff - k * wavelength),
+                    Math.abs(pathDiff - (k + 1) * wavelength)
+                );
+                const toDestructive = Math.min(
+                    Math.abs(pathDiff - (k + 0.5) * wavelength),
+                    Math.abs(pathDiff - (k - 0.5) * wavelength)
+                );
+                
+                if (toConstructive < toDestructive) {
+                    result = '接近加强';
+                } else {
+                    result = '接近减弱';
+                }
+            }
+            
+            return {
+                dist1: Math.round(dist1),
+                dist2: Math.round(dist2),
+                pathDiff: Math.round(pathDiff),
+                phaseDiff: phaseDiff.toFixed(2),
+                result: result
+            };
+        }
+        
+        // 更新检测点信息显示
+        function updatePointInfoDisplay(info) {
+            dist1Element.textContent = info.dist1 + ' px';
+            dist2Element.textContent = info.dist2 + ' px';
+            pathDiffElement.textContent = info.pathDiff + ' px';
+            phaseDiffElement.textContent = info.phaseDiff + ' rad';
+            interferenceResultElement.textContent = info.result;
+            
+            // 根据结果设置颜色
+            if (info.result === '加强') {
+                interferenceResultElement.style.color = '#4caf50';
+            } else if (info.result === '减弱') {
+                interferenceResultElement.style.color = '#f44336';
+            } else if (info.result === '接近加强') {
+                interferenceResultElement.style.color = '#8bc34a';
+            } else if (info.result === '接近减弱') {
+                interferenceResultElement.style.color = '#ff9800';
+            } else {
+                interferenceResultElement.style.color = '#283593';
+            }
+        }
+        
+        // 绘制函数
+        function draw() {
+            // 清除画布
+            ctx.fillStyle = '#0a122a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制干涉图样
+            drawInterferencePattern();
+            
+            // 绘制干涉线
+            drawInterferenceLines();
+            
+            // 绘制波
+            drawWaves();
+            
+            // 绘制波源
+            drawSources();
+            
+            // 绘制检测点
+            drawDetectionPoints();
+            
+            // 绘制鼠标位置信息
+            drawMouseInfo();
+            
+            // 更新时间
+            if (isPlaying) {
+                time += 1;
+            }
+        }
+        
+        // 动画循环
+        function animate() {
+            draw();
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 初始化
+        function init() {
+            updateDisplayValues();
+            updateSourcePositions();
+            
+            // 添加一些默认检测点
+            // 中点（加强点）
+            detectionPoints.push({
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                ...calculatePointInfo(canvas.width / 2, canvas.height / 2)
+            });
+            
+            // 右侧第一个加强点
+            detectionPoints.push({
+                x: canvas.width / 2 + 100,
+                y: canvas.height / 2,
+                ...calculatePointInfo(canvas.width / 2 + 100, canvas.height / 2)
+            });
+            
+            // 上方第一个减弱点
+            detectionPoints.push({
+                x: canvas.width / 2,
+                y: canvas.height / 2 - 80,
+                ...calculatePointInfo(canvas.width / 2, canvas.height / 2 - 80)
+            });
+            
+            // 开始动画
+            animate();
+            
+            // 添加事件监听器
+            wavelengthSlider.addEventListener('input', function() {
+                wavelength = parseInt(this.value);
+                updateDisplayValues();
+            });
+            
+            distanceSlider.addEventListener('input', function() {
+                sourceDistance = parseInt(this.value);
+                updateDisplayValues();
+                updateSourcePositions();
+            });
+            
+            speedSlider.addEventListener('input', function() {
+                waveSpeed = parseFloat(this.value);
+                updateDisplayValues();
+            });
+            
+            amplitudeSlider.addEventListener('input', function() {
+                amplitude = parseInt(this.value);
+                updateDisplayValues();
+            });
+            
+            playPauseBtn.addEventListener('click', function() {
+                isPlaying = !isPlaying;
+                playPauseBtn.innerHTML = isPlaying ? 
+                    '<i class="fas fa-pause"></i> 暂停' : 
+                    '<i class="fas fa-play"></i> 播放';
+            });
+            
+            stepBtn.addEventListener('click', function() {
+                time += 10; // 前进10个时间单位
+                draw();
+            });
+            
+            resetBtn.addEventListener('click', function() {
+                time = 0;
+                detectionPoints = [];
+                
+                // 重新添加默认检测点
+                detectionPoints.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    ...calculatePointInfo(canvas.width / 2, canvas.height / 2)
+                });
+                
+                detectionPoints.push({
+                    x: canvas.width / 2 + 100,
+                    y: canvas.height / 2,
+                    ...calculatePointInfo(canvas.width / 2 + 100, canvas.height / 2)
+                });
+                
+                detectionPoints.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2 - 80,
+                    ...calculatePointInfo(canvas.width / 2, canvas.height / 2 - 80)
+                });
+                
+                draw();
+                
+                // 重置显示
+                updatePointInfoDisplay(calculatePointInfo(canvas.width / 2, canvas.height / 2));
+            });
+            
+            toggleLinesBtn.addEventListener('click', function() {
+                showInterferenceLines = !showInterferenceLines;
+                toggleLinesBtn.innerHTML = showInterferenceLines ? 
+                    '<i class="fas fa-eye-slash"></i> 隐藏干涉线' : 
+                    '<i class="fas fa-drafting-compass"></i> 显示干涉线';
+                draw();
+            });
+            
+            // 画布点击事件 - 添加检测点
+            canvas.addEventListener('click', function(event) {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                
+                // 计算该点的干涉信息
+                const info = calculatePointInfo(x, y);
+                
+                // 添加到检测点列表
+                detectionPoints.push({
+                    x: x,
+                    y: y,
+                    ...info
+                });
+                
+                // 更新显示
+                updatePointInfoDisplay(info);
+                
+                // 重绘
+                draw();
+            });
+            
+            // 鼠标移动事件 - 显示实时信息
+            canvas.addEventListener('mousemove', function(event) {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = event.clientX - rect.left;
+                mouseY = event.clientY - rect.top;
+                showMouseInfo = true;
+                draw();
+            });
+            
+            canvas.addEventListener('mouseleave', function() {
+                showMouseInfo = false;
+                draw();
+            });
+            
+            // 初始显示一个检测点信息
+            const initialInfo = calculatePointInfo(canvas.width / 2, canvas.height / 2);
+            updatePointInfoDisplay(initialInfo);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
